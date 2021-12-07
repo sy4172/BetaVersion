@@ -1,39 +1,48 @@
 package com.example.betaversion;
 
+import android.media.MediaPlayer;
+
 import java.util.Date;
 
 /**
  * The type Mission for creating mission for preparing to each event.
- * @version  	1.0
+ * @version  	2.0
  */
 public class Mission {
     private String title;
-    private Date dateOfChange;
     private boolean isText;
     private String textContent;
-    private String audioContent;
+    private MediaPlayer audioContent;
+    private Date dateOfChange;
+    private int frequency; // According to a Spinner object.
+    private Date lastDateToRemind;
 
     /**
      * Instantiates a new Mission for the RT Firebase Database.
      */
-    public Mission(){}
+    public Mission() {}
 
     /**
      * Instantiates a new Mission.
      *
-     * @param title        the title
-     * @param dateOfChange the date of change
-     * @param isText       the is text
-     * @param textContent  the text content
-     * @param audioContent the audio content
+     * @param title            the title
+     * @param isText           the is text
+     * @param textContent      the text content
+     * @param audioContent     the audio content
+     * @param dateOfChange     the date of change
+     * @param frequency        the frequency
+     * @param lastDateToRemind the last date to remind
      */
-    public Mission(String title, Date dateOfChange, boolean isText, String textContent, String audioContent){
+    public Mission(String title, boolean isText, String textContent, MediaPlayer audioContent, Date dateOfChange, int frequency, Date lastDateToRemind){
         this.title = title;
-        this.dateOfChange = dateOfChange;
         this.isText = isText;
         this.textContent = textContent;
         this.audioContent = audioContent;
+        this.dateOfChange = dateOfChange;
+        this.frequency = frequency;
+        this.lastDateToRemind = lastDateToRemind;
     }
+
 
     /**
      * Gets title.
@@ -54,24 +63,6 @@ public class Mission {
     }
 
     /**
-     * Gets date of change.
-     *
-     * @return the date of change
-     */
-    public Date getDateOfChange() {
-        return dateOfChange;
-    }
-
-    /**
-     * Sets date of change.
-     *
-     * @param dateOfChange the date of change
-     */
-    public void setDateOfChange(Date dateOfChange) {
-        this.dateOfChange = dateOfChange;
-    }
-
-    /**
      * Is text boolean.
      *
      * @return the boolean
@@ -83,10 +74,10 @@ public class Mission {
     /**
      * Sets text.
      *
-     * @param isTextUsed the is text used
+     * @param text the text
      */
-    public void setText(boolean isTextUsed) {
-        isText = isTextUsed;
+    public void setText(boolean text) {
+        isText = text;
     }
 
     /**
@@ -112,7 +103,7 @@ public class Mission {
      *
      * @return the audio content
      */
-    public String getAudioContent() {
+    public MediaPlayer getAudioContent() {
         return audioContent;
     }
 
@@ -121,7 +112,61 @@ public class Mission {
      *
      * @param audioContent the audio content
      */
-    public void setAudioContent(String audioContent) {
+    public void setAudioContent(MediaPlayer audioContent) {
         this.audioContent = audioContent;
+    }
+
+    /**
+     * Gets date of change.
+     *
+     * @return the date of change
+     */
+    public Date getDateOfChange() {
+        return dateOfChange;
+    }
+
+    /**
+     * Sets date of change.
+     *
+     * @param dateOfChange the date of change
+     */
+    public void setDateOfChange(Date dateOfChange) {
+        this.dateOfChange = dateOfChange;
+    }
+
+    /**
+     * Gets frequency.
+     *
+     * @return the frequency
+     */
+    public int getFrequency() {
+        return frequency;
+    }
+
+    /**
+     * Sets frequency.
+     *
+     * @param frequency the frequency
+     */
+    public void setFrequency(int frequency) {
+        this.frequency = frequency;
+    }
+
+    /**
+     * Gets last date to remind.
+     *
+     * @return the last date to remind
+     */
+    public Date getLastDateToRemind() {
+        return lastDateToRemind;
+    }
+
+    /**
+     * Sets last date to remind.
+     *
+     * @param lastDateToRemind the last date to remind
+     */
+    public void setLastDateToRemind(Date lastDateToRemind) {
+        this.lastDateToRemind = lastDateToRemind;
     }
 }

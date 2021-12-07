@@ -1,10 +1,11 @@
 package com.example.betaversion;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
  * The type Event for creating new event in the system of the business.
- * @version  	1.0
+ *  * @version  	2.0
  */
 public class Event {
     private String customerName;
@@ -19,12 +20,8 @@ public class Event {
     private char eventCharacterize;
     private String eventPayment;
     private int eventEmployees;
-    private String [] eventEquipments;
-
-    /**
-     * Instantiates a new Event for the RT Firebase Database.
-     */
-    public Event (){}
+    private ArrayList<Material> eventEquipments;
+    private ArrayList<Mission> eventMissions;
 
     /**
      * Instantiates a new Event.
@@ -42,8 +39,9 @@ public class Event {
      * @param eventPayment      the event payment
      * @param eventEmployees    the event employees
      * @param eventEquipments   the event equipments
+     * @param eventMissions     the event missions
      */
-    public Event(String customerName, String customerPhone, String customerEmail, Date dateOfEvent, Date dateOfCreation, String eventName, int eventCost, String eventInformation, String eventContent, char eventCharacterize, String eventPayment, int eventEmployees, String [] eventEquipments){
+    public Event(String customerName, String customerPhone, String customerEmail, Date dateOfEvent, Date dateOfCreation, String eventName, int eventCost, String eventInformation, String eventContent, char eventCharacterize, String eventPayment, int eventEmployees, ArrayList<Material> eventEquipments, ArrayList<Mission> eventMissions){
         this.customerName = customerName;
         this.customerPhone = customerPhone;
         this.customerEmail = customerEmail;
@@ -57,7 +55,9 @@ public class Event {
         this.eventPayment = eventPayment;
         this.eventEmployees = eventEmployees;
         this.eventEquipments = eventEquipments;
+        this.eventMissions = eventMissions;
     }
+
 
     /**
      * Gets customer name.
@@ -276,11 +276,11 @@ public class Event {
     }
 
     /**
-     * Get event equipments string [ ].
+     * Gets event equipments.
      *
-     * @return the string [ ]
+     * @return the event equipments
      */
-    public String[] getEventEquipments() {
+    public ArrayList<Material> getEventEquipments() {
         return eventEquipments;
     }
 
@@ -289,7 +289,25 @@ public class Event {
      *
      * @param eventEquipments the event equipments
      */
-    public void setEventEquipments(String[] eventEquipments) {
+    public void setEventEquipments(ArrayList<Material> eventEquipments) {
         this.eventEquipments = eventEquipments;
+    }
+
+    /**
+     * Gets event missions.
+     *
+     * @return the event missions
+     */
+    public ArrayList<Mission> getEventMissions() {
+        return eventMissions;
+    }
+
+    /**
+     * Sets event missions.
+     *
+     * @param eventMissions the event missions
+     */
+    public void setEventMissions(ArrayList<Mission> eventMissions) {
+        this.eventMissions = eventMissions;
     }
 }

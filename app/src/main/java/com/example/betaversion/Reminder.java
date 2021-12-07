@@ -1,33 +1,42 @@
 package com.example.betaversion;
 
+import android.media.MediaPlayer;
+
 import java.util.Date;
 
 /**
- * The type Reminder for the events system.
- * @version  	1.0
+ * The type Reminder for the notes that related to the business management.
+ * @version  	2.0
  */
 public class Reminder {
     private String title;
-    private Date lastDateReminder;
-    private String frequency; // need to create it: based on the user choice form a spinner
+    private boolean isText;
+    private String textContent;
+    private MediaPlayer audioContent;
+    private Date lastDateToRemind;
 
     /**
      * Instantiates a new Reminder for the RT Firebase Database.
      */
-    public Reminder (){}
+    public Reminder() {}
 
     /**
      * Instantiates a new Reminder.
      *
      * @param title            the title
-     * @param lastDateReminder the last date reminder
-     * @param frequency        the frequency
+     * @param isText           the is text
+     * @param textContent      the text content
+     * @param audioContent     the audio content
+     * @param lastDateToRemind the last date to remind
      */
-    public Reminder(String title, Date lastDateReminder, String frequency){
+    public Reminder(String title, boolean isText, String textContent, MediaPlayer audioContent, Date lastDateToRemind){
         this.title = title;
-        this.lastDateReminder = lastDateReminder;
-        this.frequency = frequency;
+        this.isText = isText;
+        this.textContent = textContent;
+        this.audioContent = audioContent;
+        this.lastDateToRemind = lastDateToRemind;
     }
+
 
     /**
      * Gets title.
@@ -48,39 +57,75 @@ public class Reminder {
     }
 
     /**
-     * Gets last date reminder.
+     * Is text boolean.
      *
-     * @return the last date reminder
+     * @return the boolean
      */
-    public Date getLastDateReminder() {
-        return lastDateReminder;
+    public boolean isText() {
+        return isText;
     }
 
     /**
-     * Sets last date reminder.
+     * Sets text.
      *
-     * @param lastDateReminder the last date reminder
+     * @param text the text
      */
-    public void setLastDateReminder(Date lastDateReminder) {
-        this.lastDateReminder = lastDateReminder;
+    public void setText(boolean text) {
+        isText = text;
     }
 
     /**
-     * Gets frequency.
+     * Gets text content.
      *
-     * @return the frequency
+     * @return the text content
      */
-    public String getFrequency() {
-        return frequency;
+    public String getTextContent() {
+        return textContent;
     }
 
     /**
-     * Sets frequency.
+     * Sets text content.
      *
-     * @param frequency the frequency
+     * @param textContent the text content
      */
-    public void setFrequency(String frequency) {
-        this.frequency = frequency;
+    public void setTextContent(String textContent) {
+        this.textContent = textContent;
+    }
+
+    /**
+     * Gets audio content.
+     *
+     * @return the audio content
+     */
+    public MediaPlayer getAudioContent() {
+        return audioContent;
+    }
+
+    /**
+     * Sets audio content.
+     *
+     * @param audioContent the audio content
+     */
+    public void setAudioContent(MediaPlayer audioContent) {
+        this.audioContent = audioContent;
+    }
+
+    /**
+     * Gets last date to remind.
+     *
+     * @return the last date to remind
+     */
+    public Date getLastDateToRemind() {
+        return lastDateToRemind;
+    }
+
+    /**
+     * Sets last date to remind.
+     *
+     * @param lastDateToRemind the last date to remind
+     */
+    public void setLastDateToRemind(Date lastDateToRemind) {
+        this.lastDateToRemind = lastDateToRemind;
     }
 }
 
