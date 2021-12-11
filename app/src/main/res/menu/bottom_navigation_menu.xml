@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/settingsAct"
+        android:checked="false"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_settings"
+        android:title="הגדרות" />
+    <item
+        android:id="@+id/viewer"
+        android:enabled="true"
+        android:icon="@drawable/ic_event"
+        android:title="צפייה"/>
+
+    <item
+        android:enabled="false"
+        android:title=""/>
+
+    <item
+        android:id="@+id/events"
+        android:enabled="true"
+        android:icon="@drawable/ic_event_note"
+        android:title="אירועים"/>
+    <item
+        android:id="@+id/newMissions"
+        android:enabled="true"
+        android:icon="@drawable/list"
+        android:title="משימות"/>
+</menu>
