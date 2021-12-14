@@ -5,15 +5,14 @@ import java.util.ArrayList;
 /**
  * The type Business equ for all the properties of the business.
  *
- * @version 2.0
+ * @version 2.1
  */
 public class BusinessEqu {
     private ArrayList<Material> materials;
     private int totalEmployees;
     private int availableEmployees;
-    private double efficiency; // (1-100)%
+    private int efficiency; // (1-100)%
     private ArrayList<Shows> showsList;
-    private ArrayList<Material> materialList;
 
     /**
      * Instantiates a new Business equ for the RT Firebase Database.
@@ -28,15 +27,13 @@ public class BusinessEqu {
      * @param availableEmployees the available employees
      * @param efficiency         the efficiency
      * @param showsList          the shows list
-     * @param materialList       the material list
      */
-    public BusinessEqu(ArrayList<Material> materials, int totalEmployees, int availableEmployees, double efficiency, ArrayList<Shows> showsList, ArrayList<Material> materialList) {
+    public BusinessEqu(ArrayList<Material> materials, int totalEmployees, int availableEmployees, int efficiency, ArrayList<Shows> showsList) {
         this.materials = materials;
         this.totalEmployees = totalEmployees;
         this.availableEmployees = availableEmployees;
         this.efficiency = efficiency;
         this.showsList = showsList;
-        this.materialList = materialList;
     }
 
     /**
@@ -98,7 +95,7 @@ public class BusinessEqu {
      *
      * @return the efficiency
      */
-    public double getEfficiency() {
+    public int getEfficiency() {
         return efficiency;
     }
 
@@ -107,7 +104,7 @@ public class BusinessEqu {
      *
      * @param efficiency the efficiency
      */
-    public void setEfficiency(double efficiency) {
+    public void setEfficiency(int efficiency) {
         this.efficiency = efficiency;
     }
 
@@ -127,23 +124,5 @@ public class BusinessEqu {
      */
     public void setShowsList(ArrayList<Shows> showsList) {
         this.showsList = showsList;
-    }
-
-    /**
-     * Gets material list.
-     *
-     * @return the material list
-     */
-    public ArrayList<Material> getMaterialList() {
-        return materialList;
-    }
-
-    /**
-     * Sets material list.
-     *
-     * @param materialList the material list
-     */
-    public void setMaterialList(ArrayList<Material> materialList) {
-        this.materialList = materialList;
     }
 }

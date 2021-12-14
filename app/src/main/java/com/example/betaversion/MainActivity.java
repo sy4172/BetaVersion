@@ -1,6 +1,7 @@
 package com.example.betaversion;
 
 import static com.example.betaversion.FBref.refReminders;
+import static com.example.betaversion.FBref.reflive_Event;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -12,6 +13,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -26,12 +28,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Objects;
 
 
 /**
- * * @author		Shahar Yani
- * * @version  	2.0
+ * * @author    Shahar Yani
+ * * @version  	4.0
  * * @since		25/11/2021
  *
  * * This MainActivity.class displays the main control on the business.
@@ -41,7 +44,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     BottomNavigationView bottomNavigationView;
 
     ListView closeEventsLV, remaindersLV, missionsLV;
-    ArrayList<String> remindsList;
+    ArrayList<Date> dateEvents;
+    ArrayList<String> titleEvents,remindsList;
     ArrayAdapter<String> adp;
 
     @SuppressLint("WrongConstant")
@@ -59,6 +63,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         remaindersLV = findViewById(R.id.remaindersLV);
         missionsLV = findViewById(R.id.missionsLV);
 
+        bottomNavigationView.setSelectedItemId(R.id.empty); // clear the selection of the bottomNavigationView object
+
         closeEventsLV.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         remaindersLV.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         missionsLV.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -70,9 +76,31 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         remaindersLV.setOnItemClickListener(this);
 
         remindsList = new ArrayList<>();
-        String text = "בדיקה";
-        refReminders.child(text).setValue(text);
+
+        readAllCloseEvents();
         readAllRemainders();
+
+        CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents);
+        closeEventsLV.setAdapter(customAdapterEvents);
+    }
+
+    private void readAllCloseEvents() {
+//        reflive_Event.child("greenEvent").addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dS) {
+//                titleEvents.clear();
+//                dateEvents.clear();
+//                for(DataSnapshot data : dS.getChildren()) {
+//
+//                }
+//                adp = new ArrayAdapter<String>(MainActivity.this,R.layout.support_simple_spinner_dropdown_item, closeEventsList);
+//                closeEventsLV.setAdapter(adp);
+//
+//            }
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//            }
+//        });
     }
 
     private void readAllRemainders() {
@@ -82,8 +110,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 remindsList.clear();
                 String singleRemained;
                 for(DataSnapshot data : dS.getChildren()) {
-                    singleRemained = "- ";
-                    singleRemained += data.getKey();
+                    singleRemained = data.getKey();
                     remindsList.add(singleRemained);
                 }
                 adp = new ArrayAdapter<String>(MainActivity.this,R.layout.support_simple_spinner_dropdown_item, remindsList);
@@ -94,7 +121,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
-
     }
 
     @Override
@@ -165,15 +191,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onNavigationItemReselected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        //Intent si;
+        Intent si;
 
         if (id == R.id.off){
             Logout();
         }
         else if (id == R.id.settingsAct){
             Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
-//            si = new Intent(this, settingsActivity.class);
-//            startActivity(si);
+            si = new Intent(this, settingsActivity.class);
+            startActivity(si);
         }
         else if (id == R.id.viewer){
             Toast.makeText(this, "Signle Event", Toast.LENGTH_SHORT).show();

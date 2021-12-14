@@ -19,13 +19,13 @@
             app:navigationIcon="@drawable/ic_back"
             android:onClick="moveToPreviousAct"
             app:menu="@menu/layout_top_bar"
-            app:title="BOOMAKA"
-            app:titleCentered="true" />
+            app:logo="@drawable/logo_white" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/background"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
         <LinearLayout
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="20dp"
                 app:cardBackgroundColor="#00000000"
-                app:cardCornerRadius="4dp"
+                app:cardCornerRadius="6dp"
                 app:cardElevation="8dp">
 
                 <RelativeLayout
@@ -91,7 +91,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="20dp"
                 app:cardBackgroundColor="#00000000"
-                app:cardCornerRadius="4dp"
+                app:cardCornerRadius="6dp"
                 app:cardElevation="8dp">
 
                 <RelativeLayout
@@ -144,7 +144,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="20dp"
                 app:cardBackgroundColor="#00000000"
-                app:cardCornerRadius="4dp"
+                app:cardCornerRadius="6dp"
                 app:cardElevation="8dp">
 
                 <RelativeLayout
@@ -197,6 +197,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
+                android:layout_marginTop="35dp"
                 app:itemBackground="@color/white"
                 app:menu="@menu/bottom_navigation_menu">
 
@@ -205,11 +206,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_centerHorizontal="true"
-                    android:layout_gravity="bottom|center"
-                    android:layout_marginBottom="20dp"
+                    android:layout_gravity="center"
                     android:contentDescription="@string/app_name"
                     android:onClick="moveToCreateAnEvent"
-                    android:src="@drawable/ic_add" />
+                    android:src="@drawable/ic_add"
+                    app:fabSize="mini"
+                    app:tint="@color/white"/>
             </com.google.android.material.bottomnavigation.BottomNavigationView>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
