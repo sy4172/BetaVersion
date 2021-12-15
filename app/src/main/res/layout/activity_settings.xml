@@ -19,74 +19,58 @@
             android:background="@color/orange_500"
             android:clickable="true"
             android:onClick="moveToPreviousAct"
-            app:title="הגדרות מערכת"
             app:menu="@menu/layout_top_bar"
             app:navigationIcon="@drawable/ic_back"
+            app:title="הגדרות מערכת"
 
             app:titleCentered="true" />
+
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/background"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical">
 
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="10" />
+
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="0px"
                 android:layout_margin="20dp"
-                android:layout_weight="20"
-                app:cardBackgroundColor="#00000000"
-                app:cardCornerRadius="6dp"
-                app:cardElevation="8dp">
+                android:layout_weight="10"
+                app:cardCornerRadius="4dp">
 
-                <RelativeLayout
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:background="@color/white">
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <Space
+                        android:layout_width="0px"
                         android:layout_height="match_parent"
-                        android:orientation="vertical">
+                        android:layout_weight="1" />
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="0px"
-                            android:layout_weight="3">
+                    <Spinner
+                        android:id="@+id/spinner"
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="10" />
 
-                            <Space
-                                android:layout_width="0px"
-                                android:layout_height="match_parent"
-                                android:layout_weight="4" />
-
-                            <TextView
-                                android:layout_width="0px"
-                                android:layout_height="match_parent"
-                                android:layout_marginRight="10dp"
-                                android:layout_weight="2"
-                                android:gravity="center|start"
-                                android:text="נתונים כללים"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
-
-                        </LinearLayout>
-
-                        <ListView
-                            android:id="@+id/genDataLV"
-                            android:layout_width="match_parent"
-                            android:layout_height="0px"
-                            android:layout_weight="5" />
-
-                    </LinearLayout>
-
-                </RelativeLayout>
+                    <Space
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+                </LinearLayout>
 
             </androidx.cardview.widget.CardView>
 
@@ -94,163 +78,60 @@
                 android:layout_width="match_parent"
                 android:layout_height="0px"
                 android:layout_margin="20dp"
-                android:layout_weight="20"
-                app:cardBackgroundColor="#00000000"
-                app:cardCornerRadius="6dp"
-                app:cardElevation="8dp">
+                android:layout_weight="80"
+                app:cardCornerRadius="4dp">
 
-                <RelativeLayout
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:background="@color/white">
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical">
+                        android:layout_height="0dp"
+                        android:layout_weight="10"
+                        android:orientation="horizontal">
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="0px"
-                            android:layout_weight="3">
+                        <Button
+                            style="@style/Widget.MaterialComponents.Button.Icon"
+                            android:layout_width="0px"
+                            android:layout_height="match_parent"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginBottom="2dp"
+                            android:layout_weight="3"
+                            android:id="@+id/buttonSelection"
+                            android:gravity="center|right"
+                            android:onClick="createNewItem"
+                            android:text="חדש"
+                            android:textStyle="bold"
+                            app:icon="@drawable/ic_add" />
 
-                            <Space
-                                android:layout_width="0px"
-                                android:layout_height="match_parent"
-                                android:layout_weight="5" />
+                        <Space
+                            android:layout_width="0px"
+                            android:layout_height="match_parent"
+                            android:layout_weight="3" />
 
-                            <Button
-                                style="@style/Widget.MaterialComponents.Button.Icon"
-                                android:layout_width="0px"
-                                android:layout_height="match_parent"
-                                android:layout_marginLeft="15dp"
-                                android:layout_marginTop="2dp"
-                                android:layout_marginBottom="2dp"
-                                android:layout_weight="3"
-                                android:gravity="center|right"
-                                android:onClick="createNewMaterial"
-                                android:text="חדש"
-                                android:textStyle="bold"
-                                app:icon="@drawable/ic_add" />
-
-                            <TextView
-                                android:layout_width="0px"
-                                android:layout_height="match_parent"
-                                android:layout_marginRight="10dp"
-                                android:layout_weight="1.5"
-                                android:gravity="center|start"
-                                android:text="ציוד"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
-
-                        </LinearLayout>
-
-                        <ListView
-                            android:id="@+id/materialsLV"
-                            android:layout_width="match_parent"
-                            android:layout_height="0px"
-                            android:layout_weight="5"
-                            android:isScrollContainer="true" />
-
+                        <TextView
+                            android:id="@+id/titleChoose"
+                            android:layout_width="0px"
+                            android:layout_height="match_parent"
+                            android:layout_weight="3"
+                            android:gravity="center"
+                            android:textStyle="bold" />
 
                     </LinearLayout>
 
-                </RelativeLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="0px"
-                android:layout_margin="20dp"
-                android:layout_weight="20"
-                app:cardBackgroundColor="#00000000"
-                app:cardCornerRadius="6dp"
-                app:cardElevation="8dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:background="@color/white">
-
-                    <LinearLayout
+                    <ListView
+                        android:id="@+id/generalLV"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="0px"
-                            android:layout_weight="3">
-
-                            <Space
-                                android:layout_width="0px"
-                                android:layout_height="match_parent"
-                                android:layout_weight="4" />
-
-                            <Button
-                                style="@style/Widget.MaterialComponents.Button.Icon"
-                                android:layout_width="0px"
-                                android:layout_height="match_parent"
-                                android:layout_marginTop="2dp"
-                                android:layout_marginRight="15dp"
-                                android:layout_marginBottom="2dp"
-                                android:layout_weight="3"
-                                android:gravity="center|right"
-                                android:onClick="createNewShow"
-                                android:text="חדש"
-                                android:textStyle="bold"
-                                app:icon="@drawable/ic_add" />
-
-                            <TextView
-                                android:layout_width="0px"
-                                android:layout_height="match_parent"
-                                android:layout_marginRight="10dp"
-                                android:layout_weight="2"
-                                android:gravity="center|start"
-                                android:text="מופעים"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
-
-                        </LinearLayout>
-
-                        <ListView
-                            android:id="@+id/showsLV"
-                            android:layout_width="match_parent"
-                            android:layout_height="0px"
-                            android:layout_weight="5" />
-
-                    </LinearLayout>
-
-                </RelativeLayout>
+                        android:layout_height="0px"
+                        android:layout_margin="15dp"
+                        android:layout_weight="80" />
+                </LinearLayout>
 
             </androidx.cardview.widget.CardView>
-
-            <com.google.android.material.bottomnavigation.BottomNavigationView
-                android:id="@+id/bottomNavigationView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_marginTop="35dp"
-                app:itemBackground="@color/white"
-                app:menu="@menu/bottom_navigation_menu">
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"
-                    android:layout_gravity="center"
-                    android:backgroundTint="@color/orange_500"
-                    android:contentDescription="@string/app_name"
-                    android:onClick="moveToCreateAnEvent"
-                    android:src="@drawable/ic_add"
-                    app:fabSize="mini"
-                    app:tint="@color/white" />
-
-            </com.google.android.material.bottomnavigation.BottomNavigationView>
 
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-
-
+    </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

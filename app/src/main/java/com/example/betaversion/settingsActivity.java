@@ -17,9 +17,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -33,19 +37,25 @@ import java.util.Objects;
 
 /**
  * * @author    Shahar Yani
- * * @version  	3.0
+ * * @version  	4.0
  * * @since		11/12/2021
  *
  * * This settingsActivity.class displays the settings control on the business and all the properties.
  */
-public class settingsActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener {
+public class settingsActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener, AdapterView.OnItemSelectedListener {
 
     BottomNavigationView bottomNavigationView;
 
-    ListView genDataLV, materialsLV, showsLV;
+    Button buttonSelection;
+    ListView materialsLV, showsLV, generalLV;
+
+    Spinner spinner; // The Spinner to sort the display
+    TextView titleChoose;
 
     ArrayList<String> keysList, materialsKeyList, showsKeyList;
+
     ArrayList<Integer> dataList, materialsDataList, showsDataList;
+
 
     ArrayList<Material> allMaterials; // Summarize all the Material objects that were created
     ArrayList<Shows> allShows;// Summarize all the Shows objects that were created
@@ -54,31 +64,35 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
     CustomAdapterSettings customAdapterSettings2; // For the materialsLV
     CustomAdapterSettings customAdapterSettings3; // For the showsLV
 
+    /**
+     * The Generate list for the selection.
+     */
+    String [] generateList = new String[]{"נתונים כללים","ציוד","מופעים"};
+    /**
+     * The Option that selected.
+     */
+    String option;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
+        generalLV = findViewById(R.id.generalLV);
+        spinner = findViewById(R.id.spinner);
+        bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        titleChoose = findViewById(R.id.titleChoose);
+        buttonSelection = findViewById(R.id.buttonSelection);
+
         ActionBar actionBar = getSupportActionBar();
         Objects.requireNonNull(actionBar).hide();
         actionBar.setHomeButtonEnabled(true);
 
-        bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        genDataLV = findViewById(R.id.genDataLV);
-        materialsLV = findViewById(R.id.materialsLV);
-        showsLV = findViewById(R.id.showsLV);
-
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
         bottomNavigationView.setOnNavigationItemReselectedListener(this);
 
-        materialsLV.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
-        showsLV.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
-
-        materialsLV.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        showsLV.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-
-        showsLV.setOnCreateContextMenuListener(this);
-        materialsLV.setOnCreateContextMenuListener(this);
+        generalLV.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
+        generalLV.setOnCreateContextMenuListener(this);
 
         keysList = new ArrayList<>();
         dataList = new ArrayList<>();
@@ -92,10 +106,9 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         allMaterials = new ArrayList<>();
         allShows = new ArrayList<>();
 
-        // Getting all the settings properties from the FireBase DataBase
-        getAllSysData();
-        getAllMaterials();
-        getAllShows();
+        ArrayAdapter<String> adpSpinner = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, generateList);
+        spinner.setAdapter(adpSpinner);
+        buttonSelection.setVisibility(View.INVISIBLE);
     }
 
     private void getAllShows() {
@@ -114,7 +127,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
                 }
                 customAdapterSettings1 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList);
                 customAdapterSettings1.notifyDataSetChanged();
-                showsLV.setAdapter(customAdapterSettings1);
+                generalLV.setAdapter(customAdapterSettings1);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -139,7 +152,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
                 customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList);
                 customAdapterSettings2.notifyDataSetChanged();
-                materialsLV.setAdapter(customAdapterSettings2);
+                generalLV.setAdapter(customAdapterSettings2);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -167,7 +180,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
                 customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), keysList, dataList);
                 customAdapterSettings3.notifyDataSetChanged();
-                genDataLV.setAdapter(customAdapterSettings3);
+                generalLV.setAdapter(customAdapterSettings3);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -294,10 +307,8 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
     /**
      * Create new material to save in the business system.
-     *
-     * @param view the button that is pressed
      */
-    public void createNewMaterial(View view) {
+    public void createNewMaterial() {
         Material temp = new Material();
 
         LinearLayout AdScreen = new LinearLayout(this);
@@ -344,10 +355,8 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
     /**
      * Create new show to save in the business system.
-     *
-     * @param view the button that is pressed
      */
-    public void createNewShow(View view) {
+    public void createNewShow() {
         Shows temp = new Shows();
 
         LinearLayout AdScreen = new LinearLayout(this);
@@ -421,7 +430,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
             materialsDataList.remove(pos);
             allMaterials.remove(pos);
             customAdapterSettings2.notifyDataSetChanged();
-            materialsLV.setAdapter(customAdapterSettings2);
+            generalLV.setAdapter(customAdapterSettings2);
             refBusinessEqu.child("Materials").child(String.valueOf(pos)).removeValue();
         }
         else if (option.equals("עדכן חומר")){
@@ -432,7 +441,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
             showsDataList.remove(pos);
             allShows.remove(pos);
             customAdapterSettings3.notifyDataSetChanged();
-            materialsLV.setAdapter(customAdapterSettings3);
+            generalLV.setAdapter(customAdapterSettings3);
             refBusinessEqu.child("Shows").child(String.valueOf(pos)).removeValue();
         }
         else if (option.equals("עדכן מופע")){
@@ -476,7 +485,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
                     customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList);
                     customAdapterSettings3.notifyDataSetChanged();
-                    showsLV.setAdapter(customAdapterSettings3);
+                    generalLV.setAdapter(customAdapterSettings3);
                 }
             }
         });
@@ -525,7 +534,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
                     customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList);
                     customAdapterSettings2.notifyDataSetChanged();
-                    materialsLV.setAdapter(customAdapterSettings2);
+                    generalLV.setAdapter(customAdapterSettings2);
                 }
             }
         });
@@ -538,5 +547,40 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
         AlertDialog ad = adb.create();
         ad.show();
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        option = generateList[i];
+
+        if (option.equals("נתונים כללים")){
+            buttonSelection.setVisibility(View.INVISIBLE);
+            titleChoose.setText("נתונים כללים");
+            getAllSysData();
+        }
+        else if (option.equals("ציוד")){
+            buttonSelection.setVisibility(View.VISIBLE);
+            titleChoose.setText("ציוד");
+            getAllMaterials();
+        }
+        else if (option.equals("מופעים")){
+            buttonSelection.setVisibility(View.VISIBLE);
+            titleChoose.setText("מופעים");
+            getAllShows();
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+    }
+
+    /**
+     * Create new item according the selection.
+     *
+     * @param view the view
+     */
+    public void createNewItem(View view) {
+        if (option.equals("מופעים")) createNewShow();
+        else if (option.equals("ציוד")) createNewMaterial();
     }
 }
