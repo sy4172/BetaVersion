@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.betaversion">
+    package="com.example.betaversion" >
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -14,7 +14,7 @@
         android:roundIcon="@drawable/administrator"
         android:supportsRtl="true"
         android:theme="@style/Theme.BetaVersion"
-        tools:ignore="AllowBackup">
+        tools:ignore="AllowBackup" >
         <activity
             android:name=".SignUpActivity"
             android:exported="false" />
@@ -26,7 +26,7 @@
             android:exported="false" />
         <activity
             android:name=".splashActivity"
-            android:exported="true">
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

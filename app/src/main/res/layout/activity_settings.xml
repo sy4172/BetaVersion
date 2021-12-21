@@ -30,108 +30,231 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/background"
+        android:layout_marginTop="55dp"
+        android:gravity="bottom"
         android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="0dp"
+            android:layout_margin="10dp"
+            android:layout_weight="30"
+            android:orientation="vertical"
+            android:showDividers="end">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_margin="5dp"
+                android:layout_weight="10"
+                android:orientation="horizontal">
+
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:onClick="updateTotal"
+                    android:text="עדכן" />
+
+                <TextView
+                    android:id="@+id/totalTV"
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2"
+                    android:gravity="center|right"
+                    android:text='סה"כ עובדים'
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_margin="5dp"
+                android:layout_weight="10"
+                android:orientation="horizontal">
+
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:onClick="updateAvailable"
+                    android:text="עדכן" />
+
+                <TextView
+                    android:id="@+id/availableTV"
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2"
+                    android:gravity="center|right"
+                    android:text='סה"כ עובדים זמינים'
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:orientation="horizontal">
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/efficiencyTV"
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center|right|top"
+                    android:text="נצילות החומרים"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:layout_weight="3" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:layout_weight="10"
+            android:orientation="horizontal">
 
             <Space
-                android:layout_width="match_parent"
-                android:layout_height="0px"
-                android:layout_weight="10" />
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_weight="2" />
 
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="0px"
-                android:layout_margin="20dp"
-                android:layout_weight="10"
-                app:cardCornerRadius="4dp">
+            <Button
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:foregroundGravity="center"
+                android:onClick="createNewItem"
+                android:text=" "
+                app:icon="@drawable/ic_add" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+            <Space
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/displayTL"
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_weight="7">
+
+                <com.google.android.material.tabs.TabItem
+                    android:id="@+id/materialsTab"
+                    android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:text="ציוד" />
 
-                    <Space
-                        android:layout_width="0px"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1" />
-
-                    <Spinner
-                        android:id="@+id/spinner"
-                        android:layout_width="0px"
-                        android:layout_height="match_parent"
-                        android:layout_weight="10" />
-
-                    <Space
-                        android:layout_width="0px"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1" />
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="0px"
-                android:layout_margin="20dp"
-                android:layout_weight="80"
-                app:cardCornerRadius="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <com.google.android.material.tabs.TabItem
+                    android:id="@+id/showsTab"
+                    android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:text="מופעים" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="10"
-                        android:orientation="horizontal">
+            </com.google.android.material.tabs.TabLayout>
 
-                        <Button
-                            style="@style/Widget.MaterialComponents.Button.Icon"
-                            android:layout_width="0px"
-                            android:layout_height="match_parent"
-                            android:layout_marginLeft="15dp"
-                            android:layout_marginTop="2dp"
-                            android:layout_marginBottom="2dp"
-                            android:layout_weight="3"
-                            android:id="@+id/buttonSelection"
-                            android:gravity="center|right"
-                            android:onClick="createNewItem"
-                            android:text="חדש"
-                            android:textStyle="bold"
-                            app:icon="@drawable/ic_add" />
+            <Space
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_weight="2" />
+        </LinearLayout>
 
-                        <Space
-                            android:layout_width="0px"
-                            android:layout_height="match_parent"
-                            android:layout_weight="3" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:layout_weight="3" />
 
-                        <TextView
-                            android:id="@+id/titleChoose"
-                            android:layout_width="0px"
-                            android:layout_height="match_parent"
-                            android:layout_weight="3"
-                            android:gravity="center"
-                            android:textStyle="bold" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:layout_weight="50">
 
-                    </LinearLayout>
+            <Space
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
-                    <ListView
-                        android:id="@+id/generalLV"
-                        android:layout_width="match_parent"
-                        android:layout_height="0px"
-                        android:layout_margin="15dp"
-                        android:layout_weight="80" />
-                </LinearLayout>
+            <ListView
+                android:id="@+id/generalLV"
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_gravity="bottom"
+                android:layout_weight="8"
+                android:foregroundGravity="bottom"
+                android:scrollbars="horizontal"
+                android:smoothScrollbar="true" />
 
-            </androidx.cardview.widget.CardView>
+            <Space
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
         </LinearLayout>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:layout_weight="3" />
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigationView"
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:layout_gravity="bottom"
+            android:layout_marginTop="15dp"
+            android:layout_weight="10"
+            app:itemBackground="@color/white"
+            app:menu="@menu/bottom_navigation_menu">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center"
+                android:contentDescription="@string/app_name"
+                android:onClick="moveToCreateAnEvent"
+                android:src="@drawable/ic_add"
+                app:fabSize="mini"
+                app:tint="@color/white" />
+        </com.google.android.material.bottomnavigation.BottomNavigationView>
+
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

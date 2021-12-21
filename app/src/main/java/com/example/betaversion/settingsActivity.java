@@ -11,22 +11,23 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.ContextMenu;
+import android.view.GestureDetector;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.tabs.TabItem;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -42,47 +43,42 @@ import java.util.Objects;
  *
  * * This settingsActivity.class displays the settings control on the business and all the properties.
  */
-public class settingsActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener, AdapterView.OnItemSelectedListener {
+public class settingsActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener {
 
     BottomNavigationView bottomNavigationView;
-
-    Button buttonSelection;
-    ListView materialsLV, showsLV, generalLV;
-
-    Spinner spinner; // The Spinner to sort the display
-    TextView titleChoose;
-
-    ArrayList<String> keysList, materialsKeyList, showsKeyList;
-
+    TabItem showsTab, materialsTab;
+    ListView generalLV;
+    TextView efficiencyTV, availableTV, totalTV;
+    ArrayList<String> keysList, materialsKeyList, showsKeyList, showsDesList, materialsUsedList;
     ArrayList<Integer> dataList, materialsDataList, showsDataList;
-
 
     ArrayList<Material> allMaterials; // Summarize all the Material objects that were created
     ArrayList<Shows> allShows;// Summarize all the Shows objects that were created
 
-    CustomAdapterSettings customAdapterSettings1; // For the general properties
     CustomAdapterSettings customAdapterSettings2; // For the materialsLV
     CustomAdapterSettings customAdapterSettings3; // For the showsLV
 
-    /**
-     * The Generate list for the selection.
-     */
-    String [] generateList = new String[]{"נתונים כללים","ציוד","מופעים"};
+    SwipeListener swipeListener;
     /**
      * The Option that selected.
      */
     String option;
 
+    BusinessEqu businessEqu;
+
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
         generalLV = findViewById(R.id.generalLV);
-        spinner = findViewById(R.id.spinner);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        titleChoose = findViewById(R.id.titleChoose);
-        buttonSelection = findViewById(R.id.buttonSelection);
+        totalTV = findViewById(R.id.totalTV);
+        availableTV = findViewById(R.id.availableTV);
+        efficiencyTV = findViewById(R.id.efficiencyTV);
+        materialsTab = findViewById(R.id.materialsTab);
+        showsTab = findViewById(R.id.showsTab);
 
         ActionBar actionBar = getSupportActionBar();
         Objects.requireNonNull(actionBar).hide();
@@ -90,6 +86,8 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
         bottomNavigationView.setOnNavigationItemReselectedListener(this);
+
+        swipeListener = new SwipeListener(generalLV); // Initialize the swipe listener
 
         generalLV.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         generalLV.setOnCreateContextMenuListener(this);
@@ -99,24 +97,30 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
         materialsKeyList = new ArrayList<>();
         materialsDataList = new ArrayList<>();
+        materialsUsedList = new ArrayList<>();
 
         showsKeyList = new ArrayList<>();
         showsDataList = new ArrayList<>();
+        showsDesList = new ArrayList<>();
 
         allMaterials = new ArrayList<>();
         allShows = new ArrayList<>();
 
-        ArrayAdapter<String> adpSpinner = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, generateList);
-        spinner.setAdapter(adpSpinner);
-        buttonSelection.setVisibility(View.INVISIBLE);
+        businessEqu = new BusinessEqu();
+
+        option = "ציוד";
+
+        getAllSysData();
+        getAllMaterials();
     }
 
     private void getAllShows() {
-        refBusinessEqu.child("Shows").addListenerForSingleValueEvent(new ValueEventListener() {
+        refBusinessEqu.child("showsList").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
                 showsKeyList.clear();
                 showsDataList.clear();
+                showsDesList.clear();
 
                 for(DataSnapshot data : dS.getChildren()) {
                     Shows tempShow = data.getValue(Shows.class);
@@ -124,10 +128,8 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
                     showsKeyList.add(Objects.requireNonNull(tempShow).getShowTitle());
                     showsDataList.add(tempShow.getCost());
+                    showsDesList.add(tempShow.getDescription());
                 }
-                customAdapterSettings1 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList);
-                customAdapterSettings1.notifyDataSetChanged();
-                generalLV.setAdapter(customAdapterSettings1);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -136,11 +138,13 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
     }
 
     private void getAllMaterials() {
-        refBusinessEqu.child("Materials").addListenerForSingleValueEvent(new ValueEventListener() {
+        refBusinessEqu.child("materials").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
                 materialsKeyList.clear();
                 materialsDataList.clear();
+                materialsUsedList.clear();
+                allMaterials.clear();
 
                 for(DataSnapshot data : dS.getChildren()) {
                     Material temp = data.getValue(Material.class);
@@ -148,9 +152,10 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
                     materialsKeyList.add(Objects.requireNonNull(temp).getTypeOfMaterial());
                     materialsDataList.add(temp.getTotalAmount());
+                    materialsUsedList.add(String.valueOf(temp.getUsedAmount()));
                 }
 
-                customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList);
+                customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList);
                 customAdapterSettings2.notifyDataSetChanged();
                 generalLV.setAdapter(customAdapterSettings2);
             }
@@ -162,12 +167,13 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
     private void getAllSysData() {
         refBusinessEqu.addListenerForSingleValueEvent(new ValueEventListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
-                dataList.clear();
                 keysList.clear();
+                dataList.clear();
 
-                for(DataSnapshot data : dS.getChildren()) {
+                for(int i = 0; i < 1; i ++) {
                     keysList.add("סה\"כ עובדים");
                     dataList.add(dS.child("totalEmployees").getValue(Integer.class));
 
@@ -177,10 +183,11 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
                     keysList.add("נצילות החומרים");
                     dataList.add(dS.child("efficiency").getValue(Integer.class));
                 }
-
-                customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), keysList, dataList);
-                customAdapterSettings3.notifyDataSetChanged();
-                generalLV.setAdapter(customAdapterSettings3);
+                efficiencyTV.setText(dataList.get(2)+"%");
+                if (dataList.get(2) > 85) efficiencyTV.setTextColor(Color.RED);
+                else efficiencyTV.setTextColor(Color.GRAY);
+                availableTV.setText(dataList.get(1)+"");
+                totalTV.setText(dataList.get(0)+"");
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -309,6 +316,14 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
      * Create new material to save in the business system.
      */
     public void createNewMaterial() {
+        getAllShows();
+        getAllMaterials();
+
+        businessEqu.setTotalEmployees(dataList.get(0));
+        businessEqu.setAvailableEmployees(dataList.get(1));
+        businessEqu.setEfficiency(dataList.get(2));
+        businessEqu.setShowsList(allShows);
+
         Material temp = new Material();
 
         LinearLayout AdScreen = new LinearLayout(this);
@@ -326,20 +341,17 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                if (!typeET.getText().toString().isEmpty() && !totalAmountET.getText().toString().isEmpty()){
-                    temp.setTypeOfMaterial(typeET.getText().toString());
-                    temp.setTotalAmount(Integer.parseInt(totalAmountET.getText().toString()));
+                temp.setTypeOfMaterial(typeET.getText().toString());
+                temp.setTotalAmount(Integer.parseInt(totalAmountET.getText().toString()));
+                temp.setUsedAmount(0);
+                
+                allMaterials.add(temp);
+                businessEqu.setMaterials(allMaterials);
+                refBusinessEqu.setValue(businessEqu);
 
-                    allMaterials.add(temp);
-                    refBusinessEqu.child("Materials").setValue(allMaterials);
-
-                    materialsKeyList.add(temp.getTypeOfMaterial());
-                    materialsDataList.add(temp.getTotalAmount());
-
-                    customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList);
-                    customAdapterSettings2.notifyDataSetChanged();
-                    materialsLV.setAdapter(customAdapterSettings2);
-                }
+                materialsKeyList.add(temp.getTypeOfMaterial());
+                materialsDataList.add(temp.getTotalAmount());
+                materialsUsedList.add(String.valueOf(temp.getUsedAmount()));
             }
         });
         adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
@@ -357,6 +369,14 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
      * Create new show to save in the business system.
      */
     public void createNewShow() {
+        getAllShows();
+        getAllMaterials();
+
+        businessEqu.setMaterials(allMaterials);
+        businessEqu.setTotalEmployees(dataList.get(0));
+        businessEqu.setAvailableEmployees(dataList.get(1));
+        businessEqu.setEfficiency(dataList.get(2));
+
         Shows temp = new Shows();
 
         LinearLayout AdScreen = new LinearLayout(this);
@@ -367,27 +387,28 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         nameET.setHint("שם המופע");
         final EditText costET = new EditText(this);
         costET.setHint("עלות");
+        final EditText desET = new EditText(this);
+        desET.setHint("תיאור");
+        desET.setMaxLines(5);
         AdScreen.addView(nameET);
         AdScreen.addView(costET);
+        AdScreen.addView(desET);
         adb.setView(AdScreen);
 
         adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                if (!nameET.getText().toString().isEmpty() && !costET.getText().toString().isEmpty()){
-                    temp.setShowTitle(nameET.getText().toString());
-                    temp.setCost(Integer.parseInt(costET.getText().toString()));
+                temp.setShowTitle(nameET.getText().toString());
+                temp.setCost(Integer.parseInt(costET.getText().toString()));
+                temp.setDescription(desET.getText().toString());
 
-                    allShows.add(temp);
-                    refBusinessEqu.child("Shows").setValue(allShows);
+                allShows.add(temp);
+                businessEqu.setShowsList(allShows);
+                refBusinessEqu.setValue(businessEqu);
 
-                    showsKeyList.add(temp.getShowTitle());
-                    showsDataList.add(temp.getCost());
-
-                    customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList);
-                    customAdapterSettings3.notifyDataSetChanged();
-                    showsLV.setAdapter(customAdapterSettings3);
-                }
+                showsKeyList.add(temp.getShowTitle());
+                showsDataList.add(temp.getCost());
+                showsDesList.add(temp.getDescription());
             }
         });
         adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
@@ -405,11 +426,11 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         v.setOnCreateContextMenuListener(this);
 
-        if (v == materialsLV){
+        if (option.equals("ציוד")){
             menu.add("הסר חומר");
             menu.add("עדכן חומר");
         }
-        else if (v == showsLV){
+        else if (option.equals("מופעים")){
             menu.add("הסר מופע");
             menu.add("עדכן מופע");
         }
@@ -428,10 +449,11 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         if (option.equals("הסר חומר")){
             materialsKeyList.remove(pos);
             materialsDataList.remove(pos);
+            materialsUsedList.remove(pos);
             allMaterials.remove(pos);
             customAdapterSettings2.notifyDataSetChanged();
             generalLV.setAdapter(customAdapterSettings2);
-            refBusinessEqu.child("Materials").child(String.valueOf(pos)).removeValue();
+            refBusinessEqu.child("materials").child(String.valueOf(pos)).removeValue();
         }
         else if (option.equals("עדכן חומר")){
             updateAMaterial(pos);
@@ -439,16 +461,69 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         else if (option.equals("הסר מופע")){
             showsKeyList.remove(pos);
             showsDataList.remove(pos);
+            showsDesList.remove(pos);
             allShows.remove(pos);
             customAdapterSettings3.notifyDataSetChanged();
             generalLV.setAdapter(customAdapterSettings3);
-            refBusinessEqu.child("Shows").child(String.valueOf(pos)).removeValue();
+            refBusinessEqu.child("showsList").child(String.valueOf(pos)).removeValue();
         }
         else if (option.equals("עדכן מופע")){
             updateAShow(pos);
         }
 
         return super.onContextItemSelected(item);
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void updateAData(int pos) {
+        allShows.clear();
+        allMaterials.clear();
+        getAllShows();
+        getAllMaterials();
+        Toast.makeText(this, dataList.get(pos)+"", Toast.LENGTH_SHORT).show();
+        businessEqu.setMaterials(allMaterials);
+        businessEqu.setTotalEmployees(dataList.get(0));
+        businessEqu.setAvailableEmployees(dataList.get(1));
+        businessEqu.setEfficiency(dataList.get(2));
+        businessEqu.setShowsList(allShows);
+
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        adb.setTitle(keysList.get(pos));
+        final EditText valueET = new EditText(this);
+
+        valueET.setHint("ערך");
+
+        adb.setView(valueET);
+
+        valueET.setText(""+dataList.get(pos));
+        adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dataList.set(pos, Integer.parseInt(valueET.getText().toString()));
+
+                if (pos == 0) {
+                    businessEqu.setTotalEmployees(dataList.get(pos));
+                } else if (pos == 1) {
+                    if (!(dataList.get(pos) > businessEqu.getTotalEmployees()))
+                        businessEqu.setAvailableEmployees(dataList.get(pos));
+                }
+                refBusinessEqu.setValue(businessEqu);
+
+                efficiencyTV.setText(businessEqu.getEfficiency()+"%");
+                if (dataList.get(2) > 85) efficiencyTV.setTextColor(Color.RED);
+                else efficiencyTV.setTextColor(Color.GRAY);
+                availableTV.setText(businessEqu.getAvailableEmployees()+"");
+                totalTV.setText(businessEqu.getTotalEmployees()+"");
+            }
+        }).setNegativeButton("בטל", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+
+        AlertDialog ad = adb.create();
+        ad.show();
     }
 
     @SuppressLint("SetTextI18n")
@@ -463,27 +538,33 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         nameET.setHint("שם המופע");
         final EditText totalAmountET = new EditText(this);
         totalAmountET.setHint("סה\"כ החומר");
+        final EditText desET = new EditText(this);
+        desET.setHint("תוכן");
         AdScreen.addView(nameET);
         AdScreen.addView(totalAmountET);
+        AdScreen.addView(desET);
         adb.setView(AdScreen);
 
         nameET.setText(showsKeyList.get(pos));
         totalAmountET.setText(""+showsDataList.get(pos));
+        desET.setText(showsDesList.get(pos));
 
         adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                if (!nameET.getText().toString().isEmpty() && !totalAmountET.getText().toString().isEmpty()){
+                if ((!nameET.getText().toString().isEmpty() && !nameET.getText().toString().contains("\\d+")) && (!totalAmountET.getText().toString().isEmpty() && totalAmountET.getText().toString().contains("\\d+")) && !desET.getText().toString().isEmpty()){
                     temp.setShowTitle(nameET.getText().toString());
                     temp.setCost(Integer.parseInt(totalAmountET.getText().toString()));
+                    temp.setDescription(desET.getText().toString());
 
                     allShows.set(pos,temp);
-                    refBusinessEqu.child("Shows").setValue(allShows);
+                    refBusinessEqu.child("showsList").setValue(allShows);
 
                     showsKeyList.set(pos, temp.getShowTitle());
                     showsDataList.set(pos, temp.getCost());
+                    showsDesList.set(pos, temp.getDescription());
 
-                    customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList);
+                    customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList);
                     customAdapterSettings3.notifyDataSetChanged();
                     generalLV.setAdapter(customAdapterSettings3);
                 }
@@ -522,7 +603,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                if (!typeET.getText().toString().isEmpty() && !totalAmountET.getText().toString().isEmpty()){
+                if ((!typeET.getText().toString().isEmpty() && !typeET.getText().toString().contains("\\d+")) && (!totalAmountET.getText().toString().isEmpty() && totalAmountET.getText().toString().contains("\\d+"))){
                     temp.setTypeOfMaterial(typeET.getText().toString());
                     temp.setTotalAmount(Integer.parseInt(totalAmountET.getText().toString()));
 
@@ -532,7 +613,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
                     materialsKeyList.set(pos, temp.getTypeOfMaterial());
                     materialsDataList.set(pos, temp.getTotalAmount());
 
-                    customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList);
+                    customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList);
                     customAdapterSettings2.notifyDataSetChanged();
                     generalLV.setAdapter(customAdapterSettings2);
                 }
@@ -549,30 +630,6 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         ad.show();
     }
 
-    @Override
-    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        option = generateList[i];
-
-        if (option.equals("נתונים כללים")){
-            buttonSelection.setVisibility(View.INVISIBLE);
-            titleChoose.setText("נתונים כללים");
-            getAllSysData();
-        }
-        else if (option.equals("ציוד")){
-            buttonSelection.setVisibility(View.VISIBLE);
-            titleChoose.setText("ציוד");
-            getAllMaterials();
-        }
-        else if (option.equals("מופעים")){
-            buttonSelection.setVisibility(View.VISIBLE);
-            titleChoose.setText("מופעים");
-            getAllShows();
-        }
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> adapterView) {
-    }
 
     /**
      * Create new item according the selection.
@@ -580,7 +637,83 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
      * @param view the view
      */
     public void createNewItem(View view) {
-        if (option.equals("מופעים")) createNewShow();
-        else if (option.equals("ציוד")) createNewMaterial();
+        if (option.equals("מופעים"))
+        {
+            createNewShow();
+            customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList);
+            customAdapterSettings3.notifyDataSetChanged();
+            generalLV.setAdapter(customAdapterSettings3);
+
+        }
+        else if (option.equals("ציוד"))
+        {
+            createNewMaterial();
+            customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList);
+            customAdapterSettings2.notifyDataSetChanged();
+            generalLV.setAdapter(customAdapterSettings2);
+        }
+    }
+
+    public void updateTotal(View view) {
+        updateAData(0);
+    }
+
+    public void updateAvailable(View view) {
+        updateAData(1);
+    }
+
+    private class SwipeListener implements View.OnTouchListener{
+        GestureDetector gestureDetector;
+
+        // The mehtod that finds the direction accordingly the change of the x value
+        SwipeListener(View view){
+            int threshold = 10;
+            int velocityThreshold = 10;
+
+                GestureDetector.SimpleOnGestureListener listener = new GestureDetector.SimpleOnGestureListener(){
+                    @Override
+                    public boolean onDown(MotionEvent e) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                        float xDiff = e2.getX() - e1.getX();
+
+                        try {
+                            if (Math.abs(xDiff) > threshold && Math.abs(xDiff) > velocityThreshold) {
+                                if (xDiff > 0) {
+                                    // Swiped Right
+                                    Toast.makeText(settingsActivity.this, "Right", Toast.LENGTH_SHORT).show();
+                                    showsTab.setSelected(false);
+                                    materialsTab.setSelected(true);
+                                    option = "ציוד";
+                                    getAllMaterials();
+
+                                } else {
+                                    Toast.makeText(settingsActivity.this, "Left", Toast.LENGTH_SHORT).show();
+                                    materialsTab.setSelected(false);
+                                    showsTab.setSelected(true);
+                                    option = "מופעים";
+                                    getAllShows();
+
+                                }
+                                return true;
+                            }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        return false;
+                    }
+                };
+                gestureDetector = new GestureDetector(listener);
+                view.setOnTouchListener(this);
+        }
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            return gestureDetector.onTouchEvent(motionEvent);
+        }
     }
 }

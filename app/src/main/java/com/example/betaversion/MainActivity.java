@@ -12,6 +12,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,8 +46,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     ListView closeEventsLV, remaindersLV, missionsLV;
     ArrayList<Date> dateEvents;
-    ArrayList<String> titleEvents,remindsList;
+    ArrayList<String> titleEvents,remindsTitleList, contentTextList;
+    ArrayList<MediaPlayer> audioContentList;
+    ArrayList<Date> lastDateToRemindList;
     ArrayAdapter<String> adp;
+
+    ArrayList<Reminder> allReminds;
+
+    boolean isText;
 
     @SuppressLint("WrongConstant")
     @Override
@@ -75,13 +82,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         missionsLV.setOnItemClickListener(this);
         remaindersLV.setOnItemClickListener(this);
 
-        remindsList = new ArrayList<>();
+        remindsTitleList = new ArrayList<>();
+        contentTextList = new ArrayList<>();
+        audioContentList = new ArrayList<>();
+        lastDateToRemindList = new ArrayList<>();
+        allReminds = new ArrayList<>();
 
         readAllCloseEvents();
         readAllRemainders();
 
         CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents);
         closeEventsLV.setAdapter(customAdapterEvents);
+        Date d = new Date(2021,12,18);
+        Reminder r = new Reminder("כותרת",true, "Context", null, d);
+        allReminds.add(r);
+
+        refReminders.setValue(allReminds);
     }
 
     private void readAllCloseEvents() {
@@ -107,15 +123,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         refReminders.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
-                remindsList.clear();
-                String singleRemained;
-                for(DataSnapshot data : dS.getChildren()) {
-                    singleRemained = data.getKey();
-                    remindsList.add(singleRemained);
-                }
-                adp = new ArrayAdapter<String>(MainActivity.this,R.layout.support_simple_spinner_dropdown_item, remindsList);
-                remaindersLV.setAdapter(adp);
+                remindsTitleList.clear();
+                Reminder temp;
 
+                for(DataSnapshot data : dS.getChildren()) {
+                   temp = data.getValue(Reminder.class);
+
+                   remindsTitleList.add(Objects.requireNonNull(temp).getTitle());
+                   contentTextList.add(temp.getTextContent());
+                   audioContentList.add(temp.getAudioContent());
+                   isText = temp.isText();
+                   lastDateToRemindList.add(temp.getLastDateToRemind());
+                }
+                CustomAdapterReminder customAdapterReminder = new CustomAdapterReminder(getApplicationContext(), remindsTitleList, contentTextList, isText, lastDateToRemindList);
+                remaindersLV.setAdapter(customAdapterReminder);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
