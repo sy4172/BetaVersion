@@ -16,4 +16,7 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="toSignUp"> משתמש חדש? <b><font color="#0000FF"><u>הירשם כאן</u></font></b> </string>
+    <string name="toSignIn"> משתמש רשום? <b><font color="#0000FF"><u>היכנס כאן</u></font></b> </string>
+
 </resources>
