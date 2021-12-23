@@ -27,7 +27,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.tabs.TabItem;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -38,33 +37,93 @@ import java.util.Objects;
 
 /**
  * * @author    Shahar Yani
- * * @version  	4.0
+ * * @version  	5.1
  * * @since		11/12/2021
  *
  * * This settingsActivity.class displays the settings control on the business and all the properties.
  */
-public class settingsActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener {
+public class settingsActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener, View.OnTouchListener {
 
+    /**
+     * The Bottom navigation view.
+     */
     BottomNavigationView bottomNavigationView;
-    TabItem showsTab, materialsTab;
-    ListView generalLV;
-    TextView efficiencyTV, availableTV, totalTV;
-    ArrayList<String> keysList, materialsKeyList, showsKeyList, showsDesList, materialsUsedList;
-    ArrayList<Integer> dataList, materialsDataList, showsDataList;
 
+    /**
+     * The General lv.
+     */
+    ListView generalLV;
+    /**
+     * The Efficiency tv.
+     */
+    TextView efficiencyTV, /**
+     * The Available tv.
+     */
+    availableTV, /**
+     * The Total tv.
+     */
+    totalTV, /**
+     * The Selection tv.
+     */
+    selectionTV;
+    /**
+     * The Keys list.
+     */
+    ArrayList<String> keysList, /**
+     * The Materials key list.
+     */
+    materialsKeyList, /**
+     * The Shows key list.
+     */
+    showsKeyList, /**
+     * The Shows des list.
+     */
+    showsDesList, /**
+     * The Materials used list.
+     */
+    materialsUsedList;
+    /**
+     * The Data list.
+     */
+    ArrayList<Integer> dataList, /**
+     * The Materials data list.
+     */
+    materialsDataList, /**
+     * The Shows data list.
+     */
+    showsDataList;
+
+    /**
+     * The All materials.
+     */
     ArrayList<Material> allMaterials; // Summarize all the Material objects that were created
+    /**
+     * The All shows.
+     */
     ArrayList<Shows> allShows;// Summarize all the Shows objects that were created
 
+    /**
+     * The Custom adapter settings 2.
+     */
     CustomAdapterSettings customAdapterSettings2; // For the materialsLV
+    /**
+     * The Custom adapter settings 3.
+     */
     CustomAdapterSettings customAdapterSettings3; // For the showsLV
 
-    SwipeListener swipeListener;
     /**
      * The Option that selected.
      */
     String option;
 
+    /**
+     * The Business equ.
+     */
     BusinessEqu businessEqu;
+    /**
+     * The Swipe listener.
+     */
+    SwipeListener swipeListener;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -77,8 +136,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         totalTV = findViewById(R.id.totalTV);
         availableTV = findViewById(R.id.availableTV);
         efficiencyTV = findViewById(R.id.efficiencyTV);
-        materialsTab = findViewById(R.id.materialsTab);
-        showsTab = findViewById(R.id.showsTab);
+        selectionTV = findViewById(R.id.selectionTV);
 
         ActionBar actionBar = getSupportActionBar();
         Objects.requireNonNull(actionBar).hide();
@@ -87,10 +145,9 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
         bottomNavigationView.setOnNavigationItemReselectedListener(this);
 
-        swipeListener = new SwipeListener(generalLV); // Initialize the swipe listener
-
         generalLV.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         generalLV.setOnCreateContextMenuListener(this);
+        swipeListener = new SwipeListener(generalLV); // Initialize the swipe listener
 
         keysList = new ArrayList<>();
         dataList = new ArrayList<>();
@@ -109,11 +166,19 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         businessEqu = new BusinessEqu();
 
         option = "ציוד";
+        selectionTV.setText(option);
 
         getAllSysData();
         getAllMaterials();
+        customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList);
+        customAdapterSettings2.notifyDataSetChanged();
+        generalLV.setAdapter(customAdapterSettings2);
     }
 
+    /**
+     * getAllShows method gets all the Shows objects that were created to display on the TextView objects from the FireBase DataBase.
+     *
+     */
     private void getAllShows() {
         refBusinessEqu.child("showsList").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -121,6 +186,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
                 showsKeyList.clear();
                 showsDataList.clear();
                 showsDesList.clear();
+                allShows.clear();
 
                 for(DataSnapshot data : dS.getChildren()) {
                     Shows tempShow = data.getValue(Shows.class);
@@ -137,6 +203,10 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         });
     }
 
+    /**
+     * getAllMaterials method gets all the Materials objects that were created to display on the TextView objects from the FireBase DataBase.
+     *
+     */
     private void getAllMaterials() {
         refBusinessEqu.child("materials").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -154,10 +224,6 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
                     materialsDataList.add(temp.getTotalAmount());
                     materialsUsedList.add(String.valueOf(temp.getUsedAmount()));
                 }
-
-                customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList);
-                customAdapterSettings2.notifyDataSetChanged();
-                generalLV.setAdapter(customAdapterSettings2);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -165,6 +231,10 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         });
     }
 
+    /**
+     * getAllSysData method gets all the main properties to display on the TextView objects from the FireBase DataBase.
+     *
+     */
     private void getAllSysData() {
         refBusinessEqu.addListenerForSingleValueEvent(new ValueEventListener() {
             @SuppressLint("SetTextI18n")
@@ -654,66 +724,98 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         }
     }
 
+    /**
+     * Update total method passes the to recognize to update the TotalEmployee attribute.
+     *
+     * @param view the the button that near the TotalEmployee attribute TextView.
+     */
     public void updateTotal(View view) {
         updateAData(0);
     }
 
+    /**
+     * Update Available method passes the to recognize to update the AvailableEmployee attribute.
+     *
+     * @param view the the button that near the AvailableEmployee attribute TextView.
+     */
     public void updateAvailable(View view) {
         updateAData(1);
     }
 
     private class SwipeListener implements View.OnTouchListener{
-        GestureDetector gestureDetector;
 
-        // The mehtod that finds the direction accordingly the change of the x value
+        GestureDetector gestureDetector; // The Gesture detector that detecte that motion of the finger.
+
+        /**
+         * Instantiates a new Swipe listener for react accordingly to the direction.
+         *
+         * @param view the view
+         */
+        // The method that finds the direction accordingly the change of the x value
         SwipeListener(View view){
-            int threshold = 10;
-            int velocityThreshold = 10;
+            int threshold = 100;
+            int velocityThreshold = 100;
 
-                GestureDetector.SimpleOnGestureListener listener = new GestureDetector.SimpleOnGestureListener(){
-                    @Override
-                    public boolean onDown(MotionEvent e) {
-                        return false;
-                    }
+            GestureDetector.SimpleOnGestureListener listener = new GestureDetector.SimpleOnGestureListener(){
+                @Override
+                public boolean onDown(MotionEvent e) {
+                    return false;
+                }
 
-                    @Override
-                    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                        float xDiff = e2.getX() - e1.getX();
 
-                        try {
-                            if (Math.abs(xDiff) > threshold && Math.abs(xDiff) > velocityThreshold) {
-                                if (xDiff > 0) {
-                                    // Swiped Right
-                                    Toast.makeText(settingsActivity.this, "Right", Toast.LENGTH_SHORT).show();
-                                    showsTab.setSelected(false);
-                                    materialsTab.setSelected(true);
-                                    option = "ציוד";
-                                    getAllMaterials();
-
-                                } else {
-                                    Toast.makeText(settingsActivity.this, "Left", Toast.LENGTH_SHORT).show();
-                                    materialsTab.setSelected(false);
-                                    showsTab.setSelected(true);
-                                    option = "מופעים";
-                                    getAllShows();
-
-                                }
-                                return true;
+                @Override
+                public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                    float xDiff = e2.getX() - e1.getX();
+                    float yDiff = e2.getY() - e1.getY();
+                    // Check that is ONLY 'Left' or 'Right' swipe
+                    try {
+                        if (Math.abs(xDiff) > threshold && Math.abs(xDiff) > velocityThreshold && Math.abs(yDiff) < threshold) {
+                            if (xDiff > 0) {
+                                // Swiped Right
+                                option = "ציוד";
+                                selectionTV.setText(option);
+                                getAllMaterials();
+                                customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList);
+                                customAdapterSettings2.notifyDataSetChanged();
+                                generalLV.setAdapter(customAdapterSettings2);
+                            } else {
+                                // Swiped Left
+                                option = "מופעים";
+                                selectionTV.setText(option);
+                                getAllShows();
+                                customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList);
+                                customAdapterSettings3.notifyDataSetChanged();
+                                generalLV.setAdapter(customAdapterSettings3);
                             }
+                            return true;
                         }
-                        catch (Exception e){
-                            e.printStackTrace();
-                        }
-                        return false;
                     }
-                };
-                gestureDetector = new GestureDetector(listener);
-                view.setOnTouchListener(this);
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    return false;
+                }
+            };
+            // Creates that listener that displays the customAdapter.
+            gestureDetector = new GestureDetector(listener);
+            view.setOnTouchListener(this);
         }
 
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
             return gestureDetector.onTouchEvent(motionEvent);
         }
+
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        return true;
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
     }
 }
+
+

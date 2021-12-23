@@ -159,10 +159,10 @@
             <Button
                 android:layout_width="0px"
                 android:layout_height="match_parent"
-                android:layout_weight="2"
+                android:layout_weight="3"
                 android:foregroundGravity="center"
                 android:onClick="createNewItem"
-                android:text=" "
+                android:text="חדש"
                 app:icon="@drawable/ic_add" />
 
             <Space
@@ -170,25 +170,17 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
 
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/displayTL"
+            <TextView
+                android:id="@+id/selectionTV"
                 android:layout_width="0px"
                 android:layout_height="match_parent"
-                android:layout_weight="7">
-
-                <com.google.android.material.tabs.TabItem
-                    android:id="@+id/materialsTab"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="ציוד" />
-
-                <com.google.android.material.tabs.TabItem
-                    android:id="@+id/showsTab"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="מופעים" />
-
-            </com.google.android.material.tabs.TabLayout>
+                android:layout_weight="3"
+                android:gravity="center"
+                android:onClick="displayLists"
+                android:text="ציוד"
+                android:textColor="@color/black"
+                android:textSize="24sp"
+                android:textStyle="bold" />
 
             <Space
                 android:layout_width="0px"
