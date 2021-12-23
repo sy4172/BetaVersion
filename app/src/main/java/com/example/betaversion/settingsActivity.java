@@ -37,7 +37,7 @@ import java.util.Objects;
 
 /**
  * * @author    Shahar Yani
- * * @version  	5.2
+ * * @version  	5.3
  * * @since		11/12/2021
  *
  * * This settingsActivity.class displays the settings control on the business and all the properties.
@@ -111,7 +111,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
         getAllSysData();
         getAllMaterials();
-        customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList);
+        customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList, false);
         customAdapterSettings2.notifyDataSetChanged();
         generalLV.setAdapter(customAdapterSettings2);
     }
@@ -575,7 +575,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
                     showsDataList.set(pos, temp.getCost());
                     showsDesList.set(pos, temp.getDescription());
 
-                    customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList);
+                    customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList, true);
                     customAdapterSettings3.notifyDataSetChanged();
                     generalLV.setAdapter(customAdapterSettings3);
                 }
@@ -624,7 +624,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
                     materialsKeyList.set(pos, temp.getTypeOfMaterial());
                     materialsDataList.set(pos, temp.getTotalAmount());
 
-                    customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList);
+                    customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList, false);
                     customAdapterSettings2.notifyDataSetChanged();
                     generalLV.setAdapter(customAdapterSettings2);
                 }
@@ -651,7 +651,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         if (option.equals("מופעים"))
         {
             createNewShow();
-            customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList);
+            customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList, true);
             customAdapterSettings3.notifyDataSetChanged();
             generalLV.setAdapter(customAdapterSettings3);
 
@@ -659,7 +659,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         else if (option.equals("ציוד"))
         {
             createNewMaterial();
-            customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList);
+            customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList, false);
             customAdapterSettings2.notifyDataSetChanged();
             generalLV.setAdapter(customAdapterSettings2);
         }
@@ -716,7 +716,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
                                 option = "ציוד";
                                 selectionTV.setText(option);
                                 getAllMaterials();
-                                customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList);
+                                customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList, false);
                                 customAdapterSettings2.notifyDataSetChanged();
                                 generalLV.setAdapter(customAdapterSettings2);
                             } else {
@@ -724,7 +724,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
                                 option = "מופעים";
                                 selectionTV.setText(option);
                                 getAllShows();
-                                customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList);
+                                customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList, true);
                                 customAdapterSettings3.notifyDataSetChanged();
                                 generalLV.setAdapter(customAdapterSettings3);
                             }

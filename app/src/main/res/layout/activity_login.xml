@@ -59,11 +59,12 @@
                         android:layout_width="0px"
                         android:layout_height="match_parent"
                         android:layout_gravity="center"
-                        android:layout_weight="3"
+                        android:layout_weight="5"
+                        android:fontFamily="@font/rubik_bold"
                         android:text="הרשמה"
                         android:textAlignment="center"
                         android:textColor="@color/black200"
-                        android:textSize="24sp"
+                        android:textSize="34sp"
                         android:textStyle="bold" />
 
                     <Space
@@ -100,6 +101,7 @@
                             android:id="@+id/emailET"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:fontFamily="@font/rubik_medium"
                             android:inputType="textEmailAddress"
                             android:textColor="@color/black"
                             android:textColorHint="@color/orange_500" />
@@ -139,6 +141,7 @@
                             android:id="@+id/passwordET"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:fontFamily="@font/rubik_medium"
                             android:inputType="textPassword"
                             android:textColor="@color/black"
                             android:textColorHint="@color/orange_500" />
@@ -179,6 +182,7 @@
                             android:id="@+id/phoneET"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:fontFamily="@font/rubik_medium"
                             android:inputType="phone"
                             android:textColor="@color/black"
                             android:textColorHint="@color/orange_500" />
@@ -211,8 +215,10 @@
                     <CheckBox
                         android:id="@+id/checkBox"
                         android:layout_width="0px"
+                        android:onClick="changeConnection"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
+                        android:fontFamily="@font/rubik_light"
                         android:text="מכשיר אישי" />
 
                     <Space
@@ -242,6 +248,7 @@
                         android:layout_height="match_parent"
                         android:layout_weight="3"
                         android:backgroundTint="@color/orange_500"
+                        android:fontFamily="@font/rubik_medium"
                         android:onClick="reactToLogin"
                         android:text="התחבר" />
 
@@ -272,6 +279,7 @@
                         android:layout_width="0px"
                         android:layout_height="match_parent"
                         android:layout_weight="5"
+                        android:fontFamily="@font/rubik_semi_bold"
                         android:gravity="center"
                         android:onClick="changeStatus"
                         android:text="@string/toSignIn"

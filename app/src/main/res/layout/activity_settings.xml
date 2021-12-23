@@ -46,6 +46,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="0px"
                 android:layout_margin="5dp"
+                android:layout_marginBottom="0dp"
                 android:layout_weight="10"
                 android:orientation="horizontal">
 
@@ -54,22 +55,30 @@
                     android:layout_height="match_parent"
                     android:layout_margin="5dp"
                     android:layout_weight="1"
+                    android:fontFamily="@font/rubik_light"
                     android:gravity="center"
                     android:onClick="updateTotal"
                     android:text="עדכן" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
 
                 <TextView
                     android:id="@+id/totalTV"
                     android:layout_width="0px"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:gravity="center"
+                    android:fontFamily="@font/rubik_regular"
+                    android:gravity="center|right"
                     android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="0px"
                     android:layout_height="match_parent"
-                    android:layout_weight="2"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/rubik_bold"
                     android:gravity="center|right"
                     android:text='סה"כ עובדים'
                     android:textSize="18sp"
@@ -80,6 +89,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="0px"
                 android:layout_margin="5dp"
+                android:layout_marginTop="0dp"
                 android:layout_weight="10"
                 android:orientation="horizontal">
 
@@ -88,6 +98,7 @@
                     android:layout_height="match_parent"
                     android:layout_margin="5dp"
                     android:layout_weight="1"
+                    android:fontFamily="@font/rubik_light"
                     android:gravity="center"
                     android:onClick="updateAvailable"
                     android:text="עדכן" />
@@ -97,13 +108,15 @@
                     android:layout_width="0px"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:gravity="center"
+                    android:fontFamily="@font/rubik_regular"
+                    android:gravity="center|right"
                     android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="0px"
                     android:layout_height="match_parent"
                     android:layout_weight="2"
+                    android:fontFamily="@font/rubik_bold"
                     android:gravity="center|right"
                     android:text='סה"כ עובדים זמינים'
                     android:textSize="18sp"
@@ -126,13 +139,15 @@
                     android:layout_width="0px"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:gravity="center"
+                    android:fontFamily="@font/rubik_regular"
+                    android:gravity="center|right"
                     android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="0px"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:fontFamily="@font/rubik_medium"
                     android:gravity="center|right|top"
                     android:text="נצילות החומרים"
                     android:textSize="14sp"
@@ -160,6 +175,7 @@
                 android:layout_width="0px"
                 android:layout_height="match_parent"
                 android:layout_weight="3"
+                android:fontFamily="@font/rubik_light"
                 android:foregroundGravity="center"
                 android:onClick="createNewItem"
                 android:text="חדש"
@@ -175,6 +191,7 @@
                 android:layout_width="0px"
                 android:layout_height="match_parent"
                 android:layout_weight="3"
+                android:fontFamily="@font/rubik_bold"
                 android:gravity="center"
                 android:onClick="displayLists"
                 android:text="ציוד"

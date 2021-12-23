@@ -16,9 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BetaVersion"
         tools:ignore="AllowBackup" >
-        <activity
-            android:name=".SignUpActivity"
-            android:exported="false" />
+
         <activity
             android:name=".settingsActivity"
             android:exported="false" />

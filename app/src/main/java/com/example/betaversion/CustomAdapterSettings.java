@@ -16,13 +16,15 @@ public class CustomAdapterSettings extends BaseAdapter {
     ArrayList<Integer> dataList;
     ArrayList<String> expendDataList;
     LayoutInflater inflter;
+    boolean isShows;
 
-    public CustomAdapterSettings(Context applicationContext, ArrayList<String> keyList, ArrayList<Integer> dataList, ArrayList<String> expendDataList) {
+    public CustomAdapterSettings(Context applicationContext, ArrayList<String> keyList, ArrayList<Integer> dataList, ArrayList<String> expendDataList, boolean isShows) {
         this.context = context;
         this.keyList = keyList;
         this.dataList = dataList;
         this.expendDataList = expendDataList;
         inflter = (LayoutInflater.from(applicationContext));
+        this.isShows = isShows;
     }
 
     @Override
@@ -49,9 +51,15 @@ public class CustomAdapterSettings extends BaseAdapter {
         TextView dataTV = (TextView) view.findViewById(R.id.dataTV);
         TextView expendTV = (TextView) view.findViewById(R.id.expendTV);
 
-        keyTV.setText(keyList.get(i));
-        dataTV.setText(""+dataList.get(i));
-        expendTV.setText(""+expendDataList.get(i));
+        if (isShows){
+            keyTV.setText(keyList.get(i));
+            dataTV.setText(""+dataList.get(i)+"₪");
+            expendTV.setText(""+expendDataList.get(i).substring(0,expendDataList.get(i).length()/2)+"...");
+        } else {
+            keyTV.setText(keyList.get(i));
+            dataTV.setText(""+dataList.get(i));
+            expendTV.setText(""+expendDataList.get(i));
+        }
 
         return view;
     }
