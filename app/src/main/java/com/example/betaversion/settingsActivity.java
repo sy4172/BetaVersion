@@ -37,93 +37,34 @@ import java.util.Objects;
 
 /**
  * * @author    Shahar Yani
- * * @version  	5.1
+ * * @version  	5.2
  * * @since		11/12/2021
  *
  * * This settingsActivity.class displays the settings control on the business and all the properties.
  */
 public class settingsActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener, View.OnTouchListener {
 
-    /**
-     * The Bottom navigation view.
-     */
     BottomNavigationView bottomNavigationView;
 
-    /**
-     * The General lv.
-     */
-    ListView generalLV;
-    /**
-     * The Efficiency tv.
-     */
-    TextView efficiencyTV, /**
-     * The Available tv.
-     */
-    availableTV, /**
-     * The Total tv.
-     */
-    totalTV, /**
-     * The Selection tv.
-     */
-    selectionTV;
-    /**
-     * The Keys list.
-     */
-    ArrayList<String> keysList, /**
-     * The Materials key list.
-     */
-    materialsKeyList, /**
-     * The Shows key list.
-     */
-    showsKeyList, /**
-     * The Shows des list.
-     */
-    showsDesList, /**
-     * The Materials used list.
-     */
-    materialsUsedList;
-    /**
-     * The Data list.
-     */
-    ArrayList<Integer> dataList, /**
-     * The Materials data list.
-     */
-    materialsDataList, /**
-     * The Shows data list.
-     */
-    showsDataList;
+    ListView generalLV; // the ListView that display the Mateails & Shows objects
 
-    /**
-     * The All materials.
-     */
+    TextView efficiencyTV, availableTV, totalTV, selectionTV;
+
+    ArrayList<String> keysList, materialsKeyList, showsKeyList, showsDesList, materialsUsedList;
+    ArrayList<Integer> dataList, materialsDataList, showsDataList;
+
     ArrayList<Material> allMaterials; // Summarize all the Material objects that were created
-    /**
-     * The All shows.
-     */
     ArrayList<Shows> allShows;// Summarize all the Shows objects that were created
 
-    /**
-     * The Custom adapter settings 2.
-     */
+
     CustomAdapterSettings customAdapterSettings2; // For the materialsLV
-    /**
-     * The Custom adapter settings 3.
-     */
     CustomAdapterSettings customAdapterSettings3; // For the showsLV
 
-    /**
-     * The Option that selected.
-     */
-    String option;
+    String option; // The Option that selected.
 
-    /**
-     * The Business equ.
-     */
-    BusinessEqu businessEqu;
-    /**
-     * The Swipe listener.
-     */
-    SwipeListener swipeListener;
+    BusinessEqu businessEqu; // the general object to all the settings properties in order to upload the FireBase DataBase
+
+    SwipeListener swipeListener; // the Object for detecting the swipe of the object generalLV
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
