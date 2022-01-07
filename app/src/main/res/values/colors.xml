@@ -7,4 +7,9 @@
     <color name="black200">#231F01</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="green_flag">#008000</color>
+    <color name="red_flag">#B22222</color>
+    <color name="orange_flag">#FFA500</color>
+
 </resources>

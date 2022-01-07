@@ -16,7 +16,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BetaVersion"
         tools:ignore="AllowBackup" >
-
+        <activity
+            android:name=".newEventActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".reminderActivity"
+            android:exported="false" />
         <activity
             android:name=".settingsActivity"
             android:exported="false" />

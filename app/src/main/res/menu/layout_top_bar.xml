@@ -6,6 +6,6 @@
         android:icon="@android:drawable/ic_lock_power_off"
         app:showAsAction="always"
         android:layout_gravity="right"
-        android:onClick="onNavigationItemReselected"
+        android:onClick="Logout"
         android:title="" />
 </menu>

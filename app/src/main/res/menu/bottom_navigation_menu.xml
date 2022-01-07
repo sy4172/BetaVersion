@@ -9,10 +9,10 @@
         android:title="הגדרות"
         app:showAsAction="always" />
     <item
-        android:id="@+id/viewer"
+        android:id="@+id/remainder"
         android:enabled="true"
-        android:icon="@drawable/ic_event"
-        android:title="צפייה"
+        android:icon="@drawable/ic_round_speaker_notes"
+        android:title="תזכורות"
         app:showAsAction="always" />
 
     <item

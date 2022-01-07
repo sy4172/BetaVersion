@@ -58,7 +58,7 @@ public class CustomAdapterSettings extends BaseAdapter {
         } else {
             keyTV.setText(keyList.get(i));
             dataTV.setText(""+dataList.get(i));
-            expendTV.setText(""+expendDataList.get(i));
+            expendTV.setText("נוצל "+expendDataList.get(i));
         }
 
         return view;

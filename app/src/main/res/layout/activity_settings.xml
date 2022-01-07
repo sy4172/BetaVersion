@@ -4,155 +4,169 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_anchorGravity="bottom"
     tools:context=".settingsActivity">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+<!--    <com.google.android.material.appbar.AppBarLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="0dp">-->
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/topAppBar"
-            style="@style/Widget.MaterialComponents.Toolbar.Primary"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/orange_500"
-            android:clickable="true"
-            android:onClick="moveToPreviousAct"
-            app:menu="@menu/layout_top_bar"
-            app:navigationIcon="@drawable/ic_back"
-            app:title="הגדרות מערכת"
+<!--        <com.google.android.material.appbar.MaterialToolbar-->
+<!--            style="@style/Widget.MaterialComponents.Toolbar.Primary"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="?attr/actionBarSize"-->
+<!--            android:background="@color/orange_500"-->
+<!--            android:clickable="true"-->
+<!--            android:onClick="checkIfToExit"-->
+<!--            app:menu="@menu/layout_top_bar"-->
+<!--            app:navigationIcon="@drawable/ic_back"-->
+<!--            app:title="תזכורות"-->
+<!--            app:titleCentered="true"/>-->
 
-            app:titleCentered="true" />
-
-    </com.google.android.material.appbar.AppBarLayout>
+<!--    </com.google.android.material.appbar.AppBarLayout>-->
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="55dp"
+        android:layout_gravity="bottom"
+        android:layout_marginLeft="12dp"
+        android:layout_marginTop="60dp"
+        android:layout_marginRight="12dp"
         android:gravity="bottom"
         android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_margin="10dp"
+            android:layout_height="0px"
             android:layout_weight="30"
-            android:orientation="vertical"
-            android:showDividers="end">
+            android:orientation="horizontal">
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="0px"
-                android:layout_margin="5dp"
-                android:layout_marginBottom="0dp"
-                android:layout_weight="10"
-                android:orientation="horizontal">
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_weight="5"
+                android:orientation="vertical">
 
-                <Button
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_margin="5dp"
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0px"
                     android:layout_weight="1"
-                    android:fontFamily="@font/rubik_light"
+                    android:fontFamily="@font/rubik_bold"
                     android:gravity="center"
-                    android:onClick="updateTotal"
-                    android:text="עדכן" />
-
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                    android:text="עובדים ברוטו"
+                    android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/totalTV"
-                    android:layout_width="0px"
-                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:layout_height="0px"
                     android:layout_weight="1"
                     android:fontFamily="@font/rubik_regular"
                     android:gravity="center|right"
                     android:textSize="16sp" />
 
-                <TextView
-                    android:layout_width="0px"
-                    android:layout_height="match_parent"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:fontFamily="@font/rubik_bold"
-                    android:gravity="center|right"
-                    android:text='סה"כ עובדים'
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:orientation="horizontal">
+
+                    <Space
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+
+                    <Button
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_margin="5dp"
+                        android:layout_weight="10"
+                        android:fontFamily="@font/rubik_light"
+                        android:gravity="center"
+                        android:onClick="updateAData"
+                        android:text="עדכן" />
+                    <Space
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+                </LinearLayout>
+
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="0px"
-                android:layout_margin="5dp"
-                android:layout_marginTop="0dp"
-                android:layout_weight="10"
-                android:orientation="horizontal">
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
 
-                <Button
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_margin="5dp"
+            <LinearLayout
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_weight="5"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0px"
                     android:layout_weight="1"
-                    android:fontFamily="@font/rubik_light"
+                    android:fontFamily="@font/rubik_bold"
                     android:gravity="center"
-                    android:onClick="updateAvailable"
-                    android:text="עדכן" />
+                    android:text="עובדים נטו"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
 
                 <TextView
                     android:id="@+id/availableTV"
-                    android:layout_width="0px"
-                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:layout_height="0px"
                     android:layout_weight="1"
                     android:fontFamily="@font/rubik_regular"
                     android:gravity="center|right"
                     android:textSize="16sp" />
 
-                <TextView
-                    android:layout_width="0px"
-                    android:layout_height="match_parent"
-                    android:layout_weight="2"
-                    android:fontFamily="@font/rubik_bold"
-                    android:gravity="center|right"
-                    android:text='סה"כ עובדים זמינים'
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <Space
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:orientation="horizontal">
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_weight="5"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0px"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/rubik_bold"
+                    android:gravity="center"
+                    android:text="נצילות החומרים"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
                 <Space
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:layout_height="0px"
                     android:layout_weight="1" />
 
                 <TextView
                     android:id="@+id/efficiencyTV"
-                    android:layout_width="0px"
-                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:layout_height="0px"
                     android:layout_weight="1"
                     android:fontFamily="@font/rubik_regular"
                     android:gravity="center|right"
                     android:textSize="16sp" />
 
-                <TextView
-                    android:layout_width="0px"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/rubik_medium"
-                    android:gravity="center|right|top"
-                    android:text="נצילות החומרים"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
             </LinearLayout>
+
         </LinearLayout>
 
         <Space
@@ -169,7 +183,7 @@
             <Space
                 android:layout_width="0px"
                 android:layout_height="match_parent"
-                android:layout_weight="2" />
+                android:layout_weight="1" />
 
             <Button
                 android:layout_width="0px"
@@ -190,11 +204,10 @@
                 android:id="@+id/selectionTV"
                 android:layout_width="0px"
                 android:layout_height="match_parent"
-                android:layout_weight="3"
+                android:layout_weight="4"
                 android:fontFamily="@font/rubik_bold"
                 android:gravity="center"
-                android:onClick="displayLists"
-                android:text="ציוד"
+                android:text="ציוד / מופעים"
                 android:textColor="@color/black"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -202,7 +215,7 @@
             <Space
                 android:layout_width="0px"
                 android:layout_height="match_parent"
-                android:layout_weight="2" />
+                android:layout_weight="1" />
         </LinearLayout>
 
         <Space
@@ -245,11 +258,16 @@
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNavigationView"
             android:layout_width="match_parent"
-            android:layout_height="0px"
+            android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:layout_marginTop="15dp"
-            android:layout_weight="10"
+            android:layout_margin="0dp"
+            android:isScrollContainer="true"
+            android:keepScreenOn="false"
+            android:overScrollMode="never"
+            android:scrollbars="horizontal"
             app:itemBackground="@color/white"
+            app:itemIconTint="@color/black200"
+            app:itemTextColor="@color/black200"
             app:menu="@menu/bottom_navigation_menu">
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -260,10 +278,15 @@
                 android:layout_gravity="center"
                 android:contentDescription="@string/app_name"
                 android:onClick="moveToCreateAnEvent"
-                android:src="@drawable/ic_add"
-                app:fabSize="mini"
-                app:tint="@color/white" />
+                android:src="@drawable/ic_baseline_add_circle_outline"
+                app:backgroundTint="@color/white"
+                app:fabCustomSize="10dp"
+                app:fabSize="normal"
+                app:maxImageSize="48dp"
+                app:tint="@color/black200" />
         </com.google.android.material.bottomnavigation.BottomNavigationView>
 
     </LinearLayout>
+
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

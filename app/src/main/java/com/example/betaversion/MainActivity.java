@@ -100,6 +100,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         refReminders.setValue(allReminds);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        bottomNavigationView.setSelectedItemId(R.id.empty);
+    }
+
     private void readAllCloseEvents() {
 //        reflive_Event.child("greenEvent").addListenerForSingleValueEvent(new ValueEventListener() {
 //            @Override
@@ -167,8 +173,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void moveToCreateAnEvent(View view) {
         Toast.makeText(this, "New Event", Toast.LENGTH_SHORT).show();
-//        Intent si = new Intent(this, newEventActivity.class);
-//        startActivity(si);
+        Intent si = new Intent(this, newEventActivity.class);
+        startActivity(si);
     }
 
     @Override
@@ -177,15 +183,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Intent si;
 
         if (id == R.id.settingsAct){
-            Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
             si = new Intent(this, settingsActivity.class);
             startActivity(si);
         }
-        else if (id == R.id.viewer){
-            Toast.makeText(this, "Single Event", Toast.LENGTH_SHORT).show();
-//                si = new Intent(this,singleEventActivity.class);
-//                startActivity(si);
-//                finish();
+        else if (id == R.id.remainder){
+            si = new Intent(this, reminderActivity.class);
+            startActivity(si);
         }
         else if (id == R.id.events){
             Toast.makeText(this, "All Events", Toast.LENGTH_SHORT).show();
@@ -214,19 +217,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         int id = item.getItemId();
         Intent si;
 
-        if (id == R.id.off){
-            Logout();
-        }
-        else if (id == R.id.settingsAct){
-            Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
+       if (id == R.id.settingsAct){
             si = new Intent(this, settingsActivity.class);
             startActivity(si);
         }
-        else if (id == R.id.viewer){
-            Toast.makeText(this, "Signle Event", Toast.LENGTH_SHORT).show();
-//                si = new Intent(this,singleEventActivity.class);
-//                startActivity(si);
-//                finish();
+        else if (id == R.id.remainder){
+            Toast.makeText(this, "reminder", Toast.LENGTH_SHORT).show();
+            si = new Intent(this, reminderActivity.class);
+            startActivity(si);
         }
         else if (id == R.id.events){
             Toast.makeText(this, "All Events", Toast.LENGTH_SHORT).show();
@@ -242,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    public void Logout() {
+    public void Logout(MenuItem item) {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         adb.setTitle("Are you sure?");
         SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);

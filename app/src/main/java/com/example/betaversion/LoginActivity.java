@@ -127,11 +127,22 @@ public class LoginActivity extends AppCompatActivity {
 
         currentUser = mAuth.getCurrentUser();
 
-        if (toSkip && (currentUser != null)){
+        if (toSkip && (currentUser != null) && checkInternetConnection()){
             Variable.setEmailVer(emailET.getText().toString());
             Intent si = new Intent(this, MainActivity.class);
             startActivity(si);
             finish();
+        } else{
+            // Asking to connect to the Internet
+            // Action: startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+
+            // Responds to click on the action
+            Snackbar.make(layoutView, "לא זוהה חיבור לאינטרנט", 10000).setAction("התחבר", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                }
+            }).show();
         }
     }
 

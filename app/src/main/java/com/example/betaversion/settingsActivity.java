@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.ContextMenu;
 import android.view.GestureDetector;
 import android.view.MenuItem;
@@ -27,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -106,14 +108,24 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
         businessEqu = new BusinessEqu();
 
-        option = "ציוד";
-        selectionTV.setText(option);
+        option = " ";
 
         getAllSysData();
-        getAllMaterials();
-        customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList, false);
-        customAdapterSettings2.notifyDataSetChanged();
-        generalLV.setAdapter(customAdapterSettings2);
+        SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
+        if (!settings.getBoolean("understoodClick",false)){
+            Snackbar.make(generalLV, "החלק כדי לראות את המופעים והחומרים", 5000).setAction("הבנתי", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // Writing to the SharedPreferences file
+                    SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putBoolean("understoodClick",true);
+                    editor.apply();
+                }
+            }).show();
+        }
+
+        bottomNavigationView.setSelectedItemId(R.id.settingsAct);
     }
 
     /**
@@ -209,10 +221,31 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
     /**
      * Move to previous act. when the back button is pressed.
      *
-     * @param view the back button
      */
-    public void moveToPreviousAct(View view) {
+    public void moveToPreviousAct() {
         super.onBackPressed();
+    }
+
+    public void checkIfToExit(View view) {
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        adb.setTitle("לצאת ולא לשמור?");
+
+        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+
+        adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                moveToPreviousAct();
+            }
+        });
+
+        AlertDialog ad = adb.create();
+        ad.show();
     }
 
     /**
@@ -234,7 +267,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         if (id == R.id.off){
             Logout();
         }
-        else if (id == R.id.viewer){
+        else if (id == R.id.remainder){
             Toast.makeText(this, "Single Event", Toast.LENGTH_SHORT).show();
 //                si = new Intent(this,singleEventActivity.class);
 //                startActivity(si);
@@ -259,7 +292,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         int id = item.getItemId();
         Intent si;
 
-        if (id == R.id.viewer){
+        if (id == R.id.remainder){
             Toast.makeText(this, "Single Event", Toast.LENGTH_SHORT).show();
 //                si = new Intent(this,singleEventActivity.class);
 //                startActivity(si);
@@ -486,12 +519,12 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
     }
 
     @SuppressLint("SetTextI18n")
-    private void updateAData(int pos) {
+    private void updateAData(View view) {
         allShows.clear();
         allMaterials.clear();
         getAllShows();
         getAllMaterials();
-        Toast.makeText(this, dataList.get(pos)+"", Toast.LENGTH_SHORT).show();
+
         businessEqu.setMaterials(allMaterials);
         businessEqu.setTotalEmployees(dataList.get(0));
         businessEqu.setAvailableEmployees(dataList.get(1));
@@ -499,25 +532,20 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         businessEqu.setShowsList(allShows);
 
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle(keysList.get(pos));
+        adb.setTitle(keysList.get(0));
         final EditText valueET = new EditText(this);
 
         valueET.setHint("ערך");
 
         adb.setView(valueET);
 
-        valueET.setText(""+dataList.get(pos));
+        valueET.setText(""+dataList.get(0));
         adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                dataList.set(pos, Integer.parseInt(valueET.getText().toString()));
+                dataList.set(0, Integer.parseInt(valueET.getText().toString()));
+                businessEqu.setTotalEmployees(dataList.get(0));
 
-                if (pos == 0) {
-                    businessEqu.setTotalEmployees(dataList.get(pos));
-                } else if (pos == 1) {
-                    if (!(dataList.get(pos) > businessEqu.getTotalEmployees()))
-                        businessEqu.setAvailableEmployees(dataList.get(pos));
-                }
                 refBusinessEqu.setValue(businessEqu);
 
                 efficiencyTV.setText(businessEqu.getEfficiency()+"%");
@@ -539,6 +567,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
     @SuppressLint("SetTextI18n")
     private void updateAShow(int pos) {
+        getAllShows();
         Shows temp = new Shows(allShows.get(pos).getShowTitle(), allShows.get(pos).getDescription(), allShows.get(pos).getCost());
 
         LinearLayout AdScreen = new LinearLayout(this);
@@ -563,22 +592,20 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                if ((!nameET.getText().toString().isEmpty() && !nameET.getText().toString().contains("\\d+")) && (!totalAmountET.getText().toString().isEmpty() && totalAmountET.getText().toString().contains("\\d+")) && !desET.getText().toString().isEmpty()){
-                    temp.setShowTitle(nameET.getText().toString());
-                    temp.setCost(Integer.parseInt(totalAmountET.getText().toString()));
-                    temp.setDescription(desET.getText().toString());
+                temp.setShowTitle(nameET.getText().toString());
+                temp.setCost(Integer.parseInt(totalAmountET.getText().toString()));
+                temp.setDescription(desET.getText().toString());
 
-                    allShows.set(pos,temp);
-                    refBusinessEqu.child("showsList").setValue(allShows);
+                allShows.set(pos,temp);
+                refBusinessEqu.child("showsList").setValue(allShows);
 
-                    showsKeyList.set(pos, temp.getShowTitle());
-                    showsDataList.set(pos, temp.getCost());
-                    showsDesList.set(pos, temp.getDescription());
+                showsKeyList.set(pos, temp.getShowTitle());
+                showsDataList.set(pos, temp.getCost());
+                showsDesList.set(pos, temp.getDescription());
 
-                    customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList, true);
-                    customAdapterSettings3.notifyDataSetChanged();
-                    generalLV.setAdapter(customAdapterSettings3);
-                }
+                customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList, true);
+                customAdapterSettings3.notifyDataSetChanged();
+                generalLV.setAdapter(customAdapterSettings3);
             }
         });
         adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
@@ -594,6 +621,7 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
 
     @SuppressLint("SetTextI18n")
     private void updateAMaterial(int pos) {
+        getAllMaterials();
         Material temp = new Material(allMaterials.get(pos).getTypeOfMaterial(), allMaterials.get(pos).getTotalAmount(), allMaterials.get(pos).getUsedAmount());
 
         LinearLayout AdScreen = new LinearLayout(this);
@@ -614,20 +642,18 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                if ((!typeET.getText().toString().isEmpty() && !typeET.getText().toString().contains("\\d+")) && (!totalAmountET.getText().toString().isEmpty() && totalAmountET.getText().toString().contains("\\d+"))){
-                    temp.setTypeOfMaterial(typeET.getText().toString());
-                    temp.setTotalAmount(Integer.parseInt(totalAmountET.getText().toString()));
+                temp.setTypeOfMaterial(typeET.getText().toString());
+                temp.setTotalAmount(Integer.parseInt(totalAmountET.getText().toString()));
 
-                    allMaterials.set(pos,temp);
-                    refBusinessEqu.child("Materials").setValue(allMaterials);
+                allMaterials.set(pos,temp);
+                refBusinessEqu.child("Materials").setValue(allMaterials);
 
-                    materialsKeyList.set(pos, temp.getTypeOfMaterial());
-                    materialsDataList.set(pos, temp.getTotalAmount());
+                materialsKeyList.set(pos, temp.getTypeOfMaterial());
+                materialsDataList.set(pos, temp.getTotalAmount());
 
-                    customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList, false);
-                    customAdapterSettings2.notifyDataSetChanged();
-                    generalLV.setAdapter(customAdapterSettings2);
-                }
+                customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList, false);
+                customAdapterSettings2.notifyDataSetChanged();
+                generalLV.setAdapter(customAdapterSettings2);
             }
         });
         adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
@@ -663,25 +689,11 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
             customAdapterSettings2.notifyDataSetChanged();
             generalLV.setAdapter(customAdapterSettings2);
         }
+        else{
+            Snackbar.make(generalLV, "לא נבחרה אפשרות", 5000).show();
+        }
     }
 
-    /**
-     * Update total method passes the to recognize to update the TotalEmployee attribute.
-     *
-     * @param view the the button that near the TotalEmployee attribute TextView.
-     */
-    public void updateTotal(View view) {
-        updateAData(0);
-    }
-
-    /**
-     * Update Available method passes the to recognize to update the AvailableEmployee attribute.
-     *
-     * @param view the the button that near the AvailableEmployee attribute TextView.
-     */
-    public void updateAvailable(View view) {
-        updateAData(1);
-    }
 
     private class SwipeListener implements View.OnTouchListener{
 
