@@ -9,11 +9,12 @@
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/drawable/ic_launcher_background.xml" value="0.2037037037037037" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/drawable/ic_next_button.xml" value="0.17407407407407408" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/drawable/ic_search_black_24dp.xml" value="0.20512820512820512" />
+        <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/drawable/null1.xml" value="0.10572916666666667" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/font/rubik_fonts.xml" value="0.22239583333333332" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/layout/activity_login.xml" value="0.2" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/layout/activity_main.xml" value="0.2" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/layout/activity_map.xml" value="0.18795289855072464" />
-        <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/layout/activity_new_event.xml" value="0.22" />
+        <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/layout/activity_new_event.xml" value="0.2" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/layout/activity_reminder.xml" value="0.16" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/layout/activity_scrolling.xml" value="0.1" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/layout/activity_settings.xml" value="0.22" />
@@ -32,6 +33,7 @@
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/menu/main.xml" value="0.1921875" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/menu/menu_scrolling.xml" value="0.17222222222222222" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/menu/top_navigation_menu.xml" value="0.1527777777777778" />
+        <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/xml/root_preferences.xml" value="0.14" />
       </map>
     </option>
   </component>

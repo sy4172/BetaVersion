@@ -1,5 +1,8 @@
 package com.example.betaversion;
 
+import static com.example.betaversion.FBref.refBusinessEqu;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -12,6 +15,7 @@ import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -22,9 +26,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
-import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
@@ -40,8 +49,14 @@ public class newEventActivity extends AppCompatActivity {
 
     TextView eventTitleTV, dateTV;
     ImageView flag;
+    ChipGroup chipGroupShows, chipGroupMaterials;
 
-    Date selectedDate;
+    Date selectedDate, currentDate;
+
+    ArrayList<Shows> allShows;
+    ArrayList<Material> allMaterials;
+    ArrayList<String> showsKeyList, showsDesList, materialsKeyList, materialsUsedList;
+    ArrayList<Integer> showsDataList, materialsDataList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +66,8 @@ public class newEventActivity extends AppCompatActivity {
         eventTitleTV = findViewById(R.id.eventTitleTV);
         flag = findViewById(R.id.flag);
         dateTV = findViewById(R.id.dateTV);
+        chipGroupShows = findViewById(R.id.chipGroupShows);
+        chipGroupMaterials = findViewById(R.id.chipGroupMaterials);
 
         ActionBar actionBar = getSupportActionBar();
         Objects.requireNonNull(actionBar).hide();
@@ -65,8 +82,141 @@ public class newEventActivity extends AppCompatActivity {
         });
 
         selectedDate = new Date();
+        currentDate = Calendar.getInstance().getTime();
+
         // For setting the flag color to green
         DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.green_flag));
+
+        allShows = new ArrayList<>();
+        showsKeyList = new ArrayList<>();
+        showsDataList = new ArrayList<>();
+        showsDesList = new ArrayList<>();
+
+        allMaterials = new ArrayList<>();
+        materialsKeyList = new ArrayList<>();
+        materialsDataList = new ArrayList<>();
+        materialsUsedList = new ArrayList<>();
+
+        getAllShowsToDisplay();
+        getAllMaterialsToDisplay();
+    }
+
+    /**
+     * getAllShowsToDisplay method gets all the Shows objects that were created to display on the TextView objects from the FireBase DataBase.
+     *
+     */
+    private void getAllShowsToDisplay() {
+        refBusinessEqu.child("showsList").addListenerForSingleValueEvent(new ValueEventListener() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dS) {
+                showsKeyList.clear();
+                showsDataList.clear();
+                showsDesList.clear();
+                allShows.clear();
+
+                for (DataSnapshot data : dS.getChildren()) {
+                    Shows tempShow = data.getValue(Shows.class);
+                    allShows.add(tempShow);
+
+                    showsKeyList.add(Objects.requireNonNull(tempShow).getShowTitle());
+                    showsDataList.add(tempShow.getCost());
+                    showsDesList.add(tempShow.getDescription());
+                }
+
+                for (int i = 0; i < showsKeyList.size() - 1; i++) {
+                    Chip tempChip = new Chip(newEventActivity.this);
+                    tempChip.setText(showsKeyList.get(i));
+                    tempChip.setTextAppearance(R.style.ChipTextAppearance);
+                    tempChip.setChipIconResource(R.drawable.null1);
+                    tempChip.setChipBackgroundColorResource(R.color.brown_200);
+                    final boolean[] isToAdd = {true};
+
+                    // Adding the onClick method that will add the selected shows to the Event constructor
+
+                    tempChip.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            // the variable isToAdd became as an array due to the fact that it can't possible to use a general variable in an anonymous method
+                            if (isToAdd[0]){
+                                tempChip.setChipIconResource(R.drawable.ic_check);
+                                tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
+                                isToAdd[0] = false;
+                            }
+                            else{
+                                tempChip.setChipIconResource(R.drawable.null1);
+                                isToAdd[0] = true;
+                            }
+                        }
+                    });
+
+
+                    chipGroupShows.addView(tempChip);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+    }
+
+    /**
+     * getAllMaterialsToDisplay method gets all the Materials objects that were created to display on the TextView objects from the FireBase DataBase.
+     *
+     */
+    private void getAllMaterialsToDisplay() {
+        refBusinessEqu.child("materials").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dS) {
+                materialsKeyList.clear();
+                materialsDataList.clear();
+                materialsUsedList.clear();
+                allMaterials.clear();
+
+                for(DataSnapshot data : dS.getChildren()) {
+                    Material temp = data.getValue(Material.class);
+                    allMaterials.add(temp);
+
+                    materialsKeyList.add(Objects.requireNonNull(temp).getTypeOfMaterial());
+                    materialsDataList.add(temp.getTotalAmount());
+                    materialsUsedList.add(String.valueOf(temp.getUsedAmount()));
+                }
+
+                for (int i = 0; i < materialsKeyList.size() - 1; i++) {
+                    Chip tempChip = new Chip(newEventActivity.this);
+                    tempChip.setText(materialsKeyList.get(i));
+                    tempChip.setTextAppearance(R.style.ChipTextAppearance);
+                    tempChip.setChipIconResource(R.drawable.null1);
+                    tempChip.setChipBackgroundColorResource(R.color.brown_200);
+                    final boolean[] isToAdd = {true};
+
+                    // Adding the onClick method that will add the selected shows to the Event constructor
+
+                    tempChip.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            // the variable isToAdd became as an array due to the fact that it can't possible to use a general variable in an anonymous method
+                            if (isToAdd[0]){
+                                tempChip.setChipIconResource(R.drawable.ic_check);
+                                tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
+                                isToAdd[0] = false;
+                            }
+                            else{
+                                tempChip.setChipIconResource(R.drawable.null1);
+                                isToAdd[0] = true;
+                            }
+                        }
+                    });
+
+
+                    chipGroupMaterials.addView(tempChip);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
     }
 
     private void changeTitleEvent() {
@@ -123,6 +273,28 @@ public class newEventActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
+    @Override
+    public void onBackPressed() {
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        adb.setTitle("לצאת ולא לשמור?");
+
+        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+
+        adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                moveToPreviousAct();
+            }
+        });
+
+        AlertDialog ad = adb.create();
+        ad.show();
+    }
 
     public void Logout(MenuItem item) {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);

@@ -66,8 +66,7 @@
 
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="0px"
-                android:layout_weight="15" />
+                android:layout_height="10dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -76,8 +75,7 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
-                    android:layout_height="0px"
-                    android:layout_weight="55"
+                    android:layout_height="wrap_content"
                     android:hint="שם הלקוח"
                     app:errorTextAppearance="@style/TextAppearance.AppCompat.Body1">
 
@@ -94,13 +92,11 @@
 
                 <Space
                     android:layout_width="match_parent"
-                    android:layout_height="0px"
-                    android:layout_weight="5" />
+                    android:layout_height="10dp" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
-                    android:layout_height="0px"
-                    android:layout_weight="55"
+                    android:layout_height="wrap_content"
                     android:hint="אימייל"
                     app:errorTextAppearance="@style/TextAppearance.AppCompat.Body1">
 
@@ -117,14 +113,13 @@
 
                 <Space
                     android:layout_width="match_parent"
-                    android:layout_height="0px"
+                    android:layout_height="10dp"
                     android:layout_weight="5" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/textField"
                     android:layout_width="match_parent"
-                    android:layout_height="0px"
-                    android:layout_weight="55"
+                    android:layout_height="wrap_content"
                     android:hint="טלפון לקוח"
                     app:errorTextAppearance="@style/TextAppearance.AppCompat.Body1">
 
@@ -141,13 +136,11 @@
 
                 <Space
                     android:layout_width="match_parent"
-                    android:layout_height="0px"
-                    android:layout_weight="5" />
+                    android:layout_height="10dp" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
-                    android:layout_height="0px"
-                    android:layout_weight="55"
+                    android:layout_height="wrap_content"
                     android:hint="מיקום האירוע"
                     app:errorTextAppearance="@style/TextAppearance.AppCompat.Body1">
 
@@ -164,14 +157,13 @@
 
                 <Space
                     android:layout_width="match_parent"
-                    android:layout_height="0px"
-                    android:layout_weight="15" />
+                    android:layout_height="10dp" />
 
             </LinearLayout>
 
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="5dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -183,8 +175,8 @@
                     android:layout_width="0px"
                     android:layout_height="match_parent"
                     android:layout_weight="4"
-                    android:gravity="center"
                     android:fontFamily="@font/rubik_medium"
+                    android:gravity="center"
                     android:text="dd/mm/yyyy hh:mm"
                     android:textSize="16sp" />
 
@@ -196,11 +188,15 @@
                 <ImageButton
                     android:id="@+id/imageButton"
                     android:layout_width="0px"
-                    android:onClick="openDatePicker"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:onClick="openDatePicker"
                     app:srcCompat="@drawable/ic_event" />
             </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="5dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -215,12 +211,18 @@
                     android:textAlignment="viewEnd"
                     android:textSize="16sp" />
 
-                <TextView
-                    android:id="@+id/allSelectedMatirials"
+                <HorizontalScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:fontFamily="@font/rubik_regular"
-                    android:text="TextView" />
+                    android:layout_height="wrap_content">
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupMaterials"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    </com.google.android.material.chip.ChipGroup>
+                </HorizontalScrollView>
+
             </LinearLayout>
 
             <ListView
@@ -231,8 +233,7 @@
 
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="0px"
-                android:layout_weight="15" />
+                android:layout_height="10dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -257,7 +258,7 @@
 
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="0px"
+                android:layout_height="10dp"
                 android:layout_weight="5" />
 
             <LinearLayout
@@ -269,23 +270,21 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/rubik_medium"
-                    android:text="המופעים שנבחרו לאירוע"
+                    android:text="המופעים שיהיו באירוע"
                     android:textAlignment="viewEnd"
                     android:textSize="16sp" />
 
-                <TextView
-                    android:id="@+id/allSelectedShows"
+                <HorizontalScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:fontFamily="@font/rubik_regular"
-                    android:text="TextView" />
+                    android:layout_height="wrap_content">
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupShows"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:singleLine="true"/>
+                </HorizontalScrollView>
             </LinearLayout>
-
-            <ListView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            </ListView>
 
             <Space
                 android:layout_width="match_parent"
