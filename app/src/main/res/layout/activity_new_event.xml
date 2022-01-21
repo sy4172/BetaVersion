@@ -171,7 +171,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/dateTV"
+                    android:id="@+id/selectedDateTV"
                     android:layout_width="0px"
                     android:layout_height="match_parent"
                     android:layout_weight="4"
@@ -250,7 +250,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:fontFamily="@font/rubik_medium"
-                        android:inputType="textAutoCorrect|textCapSentences|textAutoComplete"
+                        android:inputType="textMultiLine|textAutoCorrect|textCapSentences|textAutoComplete"
+                        android:scrollbars="vertical"
+                        android:maxLines="7"
                         android:textColor="@color/black"
                         android:textColorHint="@color/orange_500" />
                 </com.google.android.material.textfield.TextInputLayout>

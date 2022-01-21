@@ -2,12 +2,17 @@ package com.example.betaversion;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.FirebaseStorage;
+
 
 public class FBref {
 
     public static final FirebaseDatabase FBDB = FirebaseDatabase.getInstance();
+    public static final FirebaseStorage storage = FirebaseStorage.getInstance();
 
-    public static DatabaseReference refTotal = FBDB.getReference("betaversion-19d10-default-rtdb");
+    public static final StorageReference storageRef = storage.getReference();
+
     public static DatabaseReference refReminders = FBDB.getReference("Reminder");
     public static DatabaseReference refBusinessEqu = FBDB.getReference("BusinessEqu");
     public static DatabaseReference refEnd_Event = FBDB.getReference("End_Event");

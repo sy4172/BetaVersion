@@ -65,7 +65,7 @@ public class newEventActivity extends AppCompatActivity {
 
         eventTitleTV = findViewById(R.id.eventTitleTV);
         flag = findViewById(R.id.flag);
-        dateTV = findViewById(R.id.dateTV);
+        dateTV = findViewById(R.id.selectedDateTV);
         chipGroupShows = findViewById(R.id.chipGroupShows);
         chipGroupMaterials = findViewById(R.id.chipGroupMaterials);
 

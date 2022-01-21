@@ -694,6 +694,10 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         }
     }
 
+    public void moveToPreviousAct(View view) {
+        super.onBackPressed();
+    }
+
 
     private class SwipeListener implements View.OnTouchListener{
 

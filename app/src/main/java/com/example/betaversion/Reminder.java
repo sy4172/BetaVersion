@@ -2,6 +2,7 @@ package com.example.betaversion;
 
 import android.media.MediaPlayer;
 
+import java.io.File;
 import java.util.Date;
 
 /**
@@ -12,7 +13,7 @@ public class Reminder {
     private String title;
     private boolean isText;
     private String textContent;
-    private MediaPlayer audioContent;
+    private String audioContent;
     private Date lastDateToRemind;
 
     /**
@@ -29,7 +30,7 @@ public class Reminder {
      * @param audioContent     the audio content
      * @param lastDateToRemind the last date to remind
      */
-    public Reminder(String title, boolean isText, String textContent, MediaPlayer audioContent, Date lastDateToRemind){
+    public Reminder(String title, boolean isText, String textContent, String audioContent, Date lastDateToRemind){
         this.title = title;
         this.isText = isText;
         this.textContent = textContent;
@@ -97,7 +98,7 @@ public class Reminder {
      *
      * @return the audio content
      */
-    public MediaPlayer getAudioContent() {
+    public String getAudioContent() {
         return audioContent;
     }
 
@@ -106,7 +107,7 @@ public class Reminder {
      *
      * @param audioContent the audio content
      */
-    public void setAudioContent(MediaPlayer audioContent) {
+    public void setAudioContent(String audioContent) {
         this.audioContent = audioContent;
     }
 

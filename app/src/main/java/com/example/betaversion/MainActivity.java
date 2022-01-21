@@ -26,8 +26,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Objects;
@@ -46,14 +48,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     ListView closeEventsLV, remaindersLV, missionsLV;
     ArrayList<Date> dateEvents;
-    ArrayList<String> titleEvents,remindsTitleList, contentTextList;
-    ArrayList<MediaPlayer> audioContentList;
-    ArrayList<Date> lastDateToRemindList;
+    ArrayList<String> titleEvents;
     ArrayAdapter<String> adp;
 
-    ArrayList<Reminder> allReminds;
+    ArrayList<String> remindersTitleList, remindersContextList;
+    ArrayList<String> remindersAudioContentList;
+    ArrayList<Date> remindersLastDateToRemindList;
+    ArrayList<Boolean> isTextList;
 
-    boolean isText;
 
     @SuppressLint("WrongConstant")
     @Override
@@ -82,22 +84,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         missionsLV.setOnItemClickListener(this);
         remaindersLV.setOnItemClickListener(this);
 
-        remindsTitleList = new ArrayList<>();
-        contentTextList = new ArrayList<>();
-        audioContentList = new ArrayList<>();
-        lastDateToRemindList = new ArrayList<>();
-        allReminds = new ArrayList<>();
+        remindersTitleList = new ArrayList<>();
+        remindersContextList = new ArrayList<>();
+        remindersAudioContentList = new ArrayList<>();
+        remindersLastDateToRemindList = new ArrayList<>();
+        isTextList = new ArrayList<>();
 
         readAllCloseEvents();
         readAllRemainders();
 
         CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents);
         closeEventsLV.setAdapter(customAdapterEvents);
-        Date d = new Date(2021,12,18);
-        Reminder r = new Reminder("כותרת",true, "Context", null, d);
-        allReminds.add(r);
-
-        refReminders.setValue(allReminds);
     }
 
     @Override
@@ -126,22 +123,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void readAllRemainders() {
-        refReminders.addListenerForSingleValueEvent(new ValueEventListener() {
+        Query query = refReminders.orderByChild("LastDateToRemind").limitToFirst(2);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
-                remindsTitleList.clear();
-                Reminder temp;
+                remindersTitleList.clear();
+                remindersContextList.clear();
+                remindersAudioContentList.clear();
+                isTextList.clear();
+                remindersLastDateToRemindList.clear();
 
                 for(DataSnapshot data : dS.getChildren()) {
-                   temp = data.getValue(Reminder.class);
+                    Reminder temp = data.getValue(Reminder.class);
 
-                   remindsTitleList.add(Objects.requireNonNull(temp).getTitle());
-                   contentTextList.add(temp.getTextContent());
-                   audioContentList.add(temp.getAudioContent());
-                   isText = temp.isText();
-                   lastDateToRemindList.add(temp.getLastDateToRemind());
+                    remindersTitleList.add(Objects.requireNonNull(temp).getTitle());
+                    remindersContextList.add(temp.getTextContent());
+                    remindersAudioContentList.add(temp.getAudioContent());
+                    isTextList.add(temp.isText());
+                    remindersLastDateToRemindList.add(temp.getLastDateToRemind());
                 }
-                CustomAdapterReminder customAdapterReminder = new CustomAdapterReminder(getApplicationContext(), remindsTitleList, contentTextList, isText, lastDateToRemindList);
+                CustomAdapterReminder customAdapterReminder = new CustomAdapterReminder(getApplicationContext(), remindersTitleList, remindersContextList, remindersAudioContentList, isTextList, remindersLastDateToRemindList);
                 remaindersLV.setAdapter(customAdapterReminder);
             }
             @Override
@@ -222,7 +223,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             startActivity(si);
         }
         else if (id == R.id.remainder){
-            Toast.makeText(this, "reminder", Toast.LENGTH_SHORT).show();
             si = new Intent(this, reminderActivity.class);
             startActivity(si);
         }
@@ -278,5 +278,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void moveToPreviousAct(View view) {
         super.onBackPressed();
+    }
+
+    public void moveToReminderAct(View view) {
+        startActivity(new Intent(this, reminderActivity.class));
     }
 }
