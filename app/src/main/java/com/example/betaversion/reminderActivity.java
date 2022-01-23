@@ -147,9 +147,12 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
         dataFile = null;
         mediaPlayer = new MediaPlayer();
 
-        if (getIntent() != null && !getIntent().getStringExtra("audioContent").isEmpty()){
-            Toast.makeText(this, getIntent().getStringExtra("audioContent"), Toast.LENGTH_SHORT).show();
-        }
+        Intent gi = getIntent();
+//        if (gi != null){
+//            if(gi.getStringExtra("audioContent").isEmpty()) {
+//                Toast.makeText(this, getIntent().getStringExtra("audioContent"), Toast.LENGTH_SHORT).show();
+//            }
+//        }
 
 
         bottomNavigationView.setSelectedItemId(R.id.remainder); // set the selection of the bottomNavigationView object to the current activity

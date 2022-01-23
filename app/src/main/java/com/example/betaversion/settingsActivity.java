@@ -44,9 +44,7 @@ import java.util.Objects;
  *
  * * This settingsActivity.class displays the settings control on the business and all the properties.
  */
-public class settingsActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener, View.OnTouchListener {
-
-    BottomNavigationView bottomNavigationView;
+public class settingsActivity extends AppCompatActivity implements View.OnTouchListener {
 
     ListView generalLV; // the ListView that display the Mateails & Shows objects
 
@@ -75,7 +73,6 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         setContentView(R.layout.activity_settings);
 
         generalLV = findViewById(R.id.generalLV);
-        bottomNavigationView = findViewById(R.id.bottomNavigationView);
         totalTV = findViewById(R.id.totalTV);
         availableTV = findViewById(R.id.availableTV);
         efficiencyTV = findViewById(R.id.efficiencyTV);
@@ -85,8 +82,6 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
         Objects.requireNonNull(actionBar).hide();
         actionBar.setHomeButtonEnabled(true);
 
-        bottomNavigationView.setOnNavigationItemSelectedListener(this);
-        bottomNavigationView.setOnNavigationItemReselectedListener(this);
 
         generalLV.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         generalLV.setOnCreateContextMenuListener(this);
@@ -124,8 +119,6 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
                 }
             }).show();
         }
-
-        bottomNavigationView.setSelectedItemId(R.id.settingsAct);
     }
 
     /**
@@ -255,72 +248,15 @@ public class settingsActivity extends AppCompatActivity implements BottomNavigat
      */
     public void moveToCreateAnEvent(View view) {
         Toast.makeText(this, "New Event", Toast.LENGTH_SHORT).show();
-//        Intent si = new Intent(this, newEventActivity.class);
-//        startActivity(si);
+        Intent si = new Intent(this, newEventActivity.class);
+        startActivity(si);
     }
 
-    @Override
-    public void onNavigationItemReselected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-        Intent si;
-
-        if (id == R.id.off){
-            Logout();
-        }
-        else if (id == R.id.remainder){
-            Toast.makeText(this, "Single Event", Toast.LENGTH_SHORT).show();
-//                si = new Intent(this,singleEventActivity.class);
-//                startActivity(si);
-//                finish();
-        }
-        else if (id == R.id.events){
-            Toast.makeText(this, "All Events", Toast.LENGTH_SHORT).show();
-//                si = new Intent(this,eventsActivity.class);
-//                startActivity(si);
-//                finish();
-        }
-        else if (id == R.id.newMissions){
-            Toast.makeText(this, "New Missions", Toast.LENGTH_SHORT).show();
-//                si = new Intent(this,newMissionsActivity.class);
-//                startActivity(si);
-//                finish();
-        }
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-        Intent si;
-
-        if (id == R.id.remainder){
-            Toast.makeText(this, "Single Event", Toast.LENGTH_SHORT).show();
-//                si = new Intent(this,singleEventActivity.class);
-//                startActivity(si);
-//                finish();
-        }
-        else if (id == R.id.events){
-            Toast.makeText(this, "All Events", Toast.LENGTH_SHORT).show();
-//                si = new Intent(this,eventsActivity.class);
-//                startActivity(si);
-//                finish();
-        }
-        else if (id == R.id.newMissions){
-            Toast.makeText(this, "New Missions", Toast.LENGTH_SHORT).show();
-//            si = new Intent(this, newMissionsActivity.class);
-//            startActivity(si);
-//            finish();
-        }
-        else{
-            return false;
-        }
-
-        return true;
-    }
 
     /**
      * Logout method for logout from the user.
      */
-    public void Logout() {
+    public void Logout(MenuItem item) {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         adb.setTitle("להתנתק?");
         SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
