@@ -14,8 +14,13 @@ import android.widget.TextView;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
+import java.util.Objects;
 
 public class CustomAdapterReminder extends BaseAdapter{
     Context context;
@@ -23,10 +28,10 @@ public class CustomAdapterReminder extends BaseAdapter{
     ArrayList<String> contentTextList;
     ArrayList<String> remindersAudioContentList;
     ArrayList<Boolean> isText;
-    ArrayList<Date> lastDateToRemindList;
+    ArrayList<String> lastDateToRemindList;
     LayoutInflater inflter;
 
-    public CustomAdapterReminder(Context applicationContext, ArrayList<String> remindsTitleList, ArrayList<String> contentTextList, ArrayList<String> remindersAudioContentList, ArrayList<Boolean> isText, ArrayList<Date> lastDateToRemindList) {
+    public CustomAdapterReminder(Context applicationContext, ArrayList<String> remindsTitleList, ArrayList<String> contentTextList, ArrayList<String> remindersAudioContentList, ArrayList<Boolean> isText, ArrayList<String> lastDateToRemindList) {
         this.context = context;
         this.remindsTitleList = remindsTitleList;
         this.contentTextList = contentTextList;
@@ -62,7 +67,16 @@ public class CustomAdapterReminder extends BaseAdapter{
         ImageView statusIV = view.findViewById(R.id.statusIV);
 
         titleTV.setText(remindsTitleList.get(i));
-        lastDateTV.setText(lastDateToRemindList.get(i).getDate()+"/"+lastDateToRemindList.get(i).getMonth()+"/"+lastDateToRemindList.get(i).getYear());
+        // cast the String to date
+        DateFormat format = new SimpleDateFormat("yyyyMMddHHmmyyyyMMddHHmmss", Locale.ENGLISH);
+        Date tempSelectedDate  = null;
+        try {
+            tempSelectedDate = format.parse(lastDateToRemindList.get(i));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        lastDateTV.setText(Objects.requireNonNull(tempSelectedDate).getDate()+"/"+tempSelectedDate.getMonth()+"/"+tempSelectedDate.getYear());
+
         if (!isText.get(i)) {
             contentTV.setText(contentTextList.get(i));
             statusIV.setImageResource(R.drawable.ic_mic);

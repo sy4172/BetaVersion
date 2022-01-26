@@ -14,7 +14,7 @@ public class Reminder {
     private boolean isText;
     private String textContent;
     private String audioContent;
-    private Date lastDateToRemind;
+    private String lastDateToRemind;
 
     /**
      * Instantiates a new Reminder for the RT Firebase Database.
@@ -30,7 +30,7 @@ public class Reminder {
      * @param audioContent     the audio content
      * @param lastDateToRemind the last date to remind
      */
-    public Reminder(String title, boolean isText, String textContent, String audioContent, Date lastDateToRemind){
+    public Reminder(String title, boolean isText, String textContent, String audioContent, String lastDateToRemind){
         this.title = title;
         this.isText = isText;
         this.textContent = textContent;
@@ -116,7 +116,7 @@ public class Reminder {
      *
      * @return the last date to remind
      */
-    public Date getLastDateToRemind() {
+    public String getLastDateToRemind() {
         return lastDateToRemind;
     }
 
@@ -125,7 +125,7 @@ public class Reminder {
      *
      * @param lastDateToRemind the last date to remind
      */
-    public void setLastDateToRemind(Date lastDateToRemind) {
+    public void setLastDateToRemind(String lastDateToRemind) {
         this.lastDateToRemind = lastDateToRemind;
     }
 }

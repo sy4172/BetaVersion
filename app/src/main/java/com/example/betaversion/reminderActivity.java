@@ -71,9 +71,13 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -106,8 +110,7 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
     EditText titleReminderET, contextReminderET;
 
     ListView remaindersLV;
-    ArrayList<String> remindersTitleList, remindersContextList, remindersAudioContentList;
-    ArrayList<Date> remindersLastDateToRemindList;
+    ArrayList<String> remindersKeyList, remindersTitleList, remindersContextList, remindersAudioContentList, remindersLastDateToRemindList;
     ArrayList<Boolean> isTextList;
     CustomAdapterReminder customAdapterReminder;
 
@@ -161,6 +164,7 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
         currentDate = new Date();
         selectedDate = new Date();
 
+        remindersKeyList = new ArrayList<>();
         remindersTitleList = new ArrayList<>();
         remindersAudioContentList = new ArrayList<>();
         remindersContextList = new ArrayList<>();
@@ -221,11 +225,11 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
         removeTV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String reminderID = String.valueOf(remindersLastDateToRemindList.get(pos).getDate()*remindersLastDateToRemindList.get(pos).getYear()*remindersLastDateToRemindList.get(pos).getMonth()*remindersTitleList.get(pos).length());
-                refReminders.child(reminderID).removeValue();
+                refReminders.child(remindersKeyList.get(pos)).removeValue();
                 // Remove from the FireBase Storage
                 removeTheRecord(remindersTitleList.get(pos));
                 remindersTitleList.remove(pos);
+                remindersKeyList.remove(pos);
                 remindersContextList.remove(pos);
                 remindersLastDateToRemindList.remove(pos);
                 isTextList.remove(pos);
@@ -342,12 +346,13 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
     }
 
     private void readAllRemainders() {
-        Query query = refReminders.orderByChild("LastDateToRemind");
+        Query query = refReminders.orderByChild("lastDateToRemind");
         currentDate = new Date();
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
+                remindersKeyList.clear();
                 remindersAudioContentList.clear();
                 remindersTitleList.clear();
                 remindersContextList.clear();
@@ -359,7 +364,18 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
                 for(DataSnapshot data : dS.getChildren()) {
                     temp = data.getValue(Reminder.class);
 
-                    if (Objects.requireNonNull(temp).getLastDateToRemind().compareTo(currentDate) > 0){
+                    // Cast from String to Date
+
+                    DateFormat format = new SimpleDateFormat("yyyyMMddHHmmyyyyMMddHHmmss", Locale.ENGLISH);
+                    Date selectedDate = null;
+                    try {
+                        selectedDate = format.parse(Objects.requireNonNull(temp).getLastDateToRemind());
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (Objects.requireNonNull(selectedDate).compareTo(currentDate) > 0){
+                        remindersKeyList.add(data.getKey());
                         remindersTitleList.add(temp.getTitle());
                         remindersContextList.add(temp.getTextContent());
                         remindersAudioContentList.add(temp.getAudioContent());
@@ -374,7 +390,8 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
                 customAdapterReminder = new CustomAdapterReminder(getApplicationContext(), remindersTitleList, remindersContextList, remindersAudioContentList, isTextList, remindersLastDateToRemindList);
                 remaindersLV.setAdapter(customAdapterReminder);
 
-                displayRemainders();
+                //sortRemindersBySelectedDate();
+                publishRemainders();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -383,12 +400,21 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void displayRemainders() {
+    private void publishRemainders() {
         for (int i = 0; i < remindersLastDateToRemindList.size(); i++) {
             Intent notificationIntent = new Intent(reminderActivity.this, notificationPublisher.class) ;
 
+            // Cast from String to Date
+            DateFormat format = new SimpleDateFormat("yyyyMMddHHmmyyyyMMddHHmmss", Locale.ENGLISH);
+            Date selectedDate = null;
+            try {
+                selectedDate = format.parse(remindersLastDateToRemindList.get(i));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
             notificationIntent.putExtra("Content",remindersContextList.get(i)) ;
-            notificationIntent.putExtra("SubText","(קיים עד "+ remindersLastDateToRemindList.get(i).getDate()+"/"+ remindersLastDateToRemindList.get(i).getMonth()+"/"+ remindersLastDateToRemindList.get(i).getYear()+")");
+            notificationIntent.putExtra("SubText","(קיים עד "+ Objects.requireNonNull(selectedDate).getDate()+"/"+ selectedDate.getMonth()+"/"+ selectedDate.getYear()+")");
             notificationIntent.putExtra("Title", remindersTitleList.get(i));
             notificationIntent.putExtra("audioContent",remindersAudioContentList.get(i));
             notificationIntent.putExtra("index",i);
@@ -774,21 +800,24 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
 //                        Snackbar.make(recordLayout,"התאריך עבר", 1000).show();
 //                    }
                     else {
-                        tempReminder.setLastDateToRemind(selectedDate);
+                        // Cast the selected Date to String
+                        DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmyyyyMMddHHmmss");
+                        String strDate = dateFormat.format(selectedDate);
+                        strDate += dateFormat.format(currentDate);
+
+                        tempReminder.setLastDateToRemind(strDate);
                         tempReminder.setTextContent("<קטע קול>");
                         Snackbar.make(recordLayout,"התזכורת נשמרה", 1000).show();
 
                         readAllRemainders();
 
                         if (mediaSaverFile != null){
-
-                            String reminderID = String.valueOf(selectedDate.getDate()*selectedDate.getYear()*selectedDate.getMonth()*tempReminder.getTitle().length());
-
                             String urlOfRecord = uploadTheRecording();
                             tempReminder.setAudioContent(urlOfRecord);
 
-                            refReminders.child(reminderID).setValue(tempReminder);
+                            refReminders.child(strDate).setValue(tempReminder);
 
+                            remindersKeyList.add(String.valueOf(strDate));
                             remindersTitleList.add((tempReminder).getTitle());
                             remindersContextList.add(tempReminder.getTextContent());
                             remindersAudioContentList.add(tempReminder.getAudioContent());
@@ -905,13 +934,17 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
             Snackbar.make(textLayout,"השדה לא יתחיל עם ספרות", 1000).show();
         }
         else{
-           Reminder tempReminder = new Reminder(tempTitle, true, tempContext," ",selectedDate);
+            // Cast the selected Date to String
+            DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmyyyyMMddHHmmss");
+            String strDate = dateFormat.format(selectedDate);
+
+            Reminder tempReminder = new Reminder(tempTitle, true, tempContext," ",strDate);
 
             readAllRemainders();
 
-            String reminderID = String.valueOf(selectedDate.getDate()*selectedDate.getYear()*selectedDate.getMonth()*tempReminder.getTitle().length());
-            refReminders.child(reminderID).setValue(tempReminder);
+            refReminders.child(strDate).setValue(tempReminder);
 
+            remindersKeyList.add(strDate);
             remindersTitleList.add((tempReminder).getTitle());
             remindersContextList.add(tempReminder.getTextContent());
             remindersAudioContentList.add(tempReminder.getAudioContent());

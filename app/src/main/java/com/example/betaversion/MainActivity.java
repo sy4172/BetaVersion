@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     ArrayList<String> remindersTitleList, remindersContextList;
     ArrayList<String> remindersAudioContentList;
-    ArrayList<Date> remindersLastDateToRemindList;
+    ArrayList<String> remindersLastDateToRemindList;
     ArrayList<Boolean> isTextList;
 
 
@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void readAllRemainders() {
-        Query query = refReminders.orderByChild("LastDateToRemind").limitToFirst(2);
+        Query query = refReminders.limitToFirst(2);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
