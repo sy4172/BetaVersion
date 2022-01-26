@@ -75,7 +75,7 @@ public class CustomAdapterReminder extends BaseAdapter{
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        lastDateTV.setText(Objects.requireNonNull(tempSelectedDate).getDate()+"/"+tempSelectedDate.getMonth()+"/"+tempSelectedDate.getYear());
+        lastDateTV.setText(Objects.requireNonNull(tempSelectedDate).getDate()+"/"+tempSelectedDate.getMonth()+1+"/"+tempSelectedDate.getYear());
 
         if (!isText.get(i)) {
             contentTV.setText(contentTextList.get(i));
