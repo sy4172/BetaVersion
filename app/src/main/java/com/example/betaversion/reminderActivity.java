@@ -854,9 +854,10 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
                     @SuppressLint("SetTextI18n")
                     @Override
                     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        month ++;
-                        selectedDate = new Date(year,month, dayOfMonth,0,0);
-                        dateTV.setText(selectedDate.getDate()+"/"+ selectedDate.getMonth()+"/"+ selectedDate.getYear());
+                        Calendar c = Calendar.getInstance();
+                        c.set(year, month++, dayOfMonth,0,0,0);
+                        selectedDate = new Date(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH),0,0,0);
+                        dateTV.setText(selectedDate.getDate()+"/"+selectedDate.getMonth()+1+"/"+selectedDate.getYear());
                     }
                 }, year, month, day);
 
@@ -904,10 +905,10 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
             @SuppressLint("SetTextI18n")
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                month ++;
-                selectedDate = new Date(year,month, dayOfMonth,0,0);
-                selectedDateTV.setText(selectedDate.getDate()+"/"+selectedDate.getMonth()+"/"+selectedDate.getYear());
-
+                Calendar c = Calendar.getInstance();
+                c.set(year, month++, dayOfMonth,0,0,0);
+                selectedDate = new Date(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH),0,0,0);
+                selectedDateTV.setText(selectedDate.getDate()+"/"+selectedDate.getMonth()+1+"/"+selectedDate.getYear());
             }
         }, year, month, day);
 
