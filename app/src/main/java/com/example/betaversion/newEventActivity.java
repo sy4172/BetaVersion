@@ -18,21 +18,29 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -40,34 +48,58 @@ import java.util.Objects;
 
 /**
  * * @author    Shahar Yani
- * * @version  	1.0
+ * * @version  	2.0
  * * @since		30/12/2021
  *
  * * This newEventActivity.class displays and creates all the events of the customers.
  */
-public class newEventActivity extends AppCompatActivity {
+public class newEventActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
-    TextView eventTitleTV, dateTV;
+    LinearLayout layout;
+    TextView eventTitleTV, dateTV, totalEmployeeTV, eventCostTV;
     ImageView flag;
     ChipGroup chipGroupShows, chipGroupMaterials;
+    EditText nameCustomerET, emailCustomerET, phoneCustomerET, locationET, contentET;
 
+    String customerName, customerPhone, customerEmail, eventLocation, eventContent, userSelection, eventStrDate;
+    int eventCost;
     Date selectedDate, currentDate;
 
-    ArrayList<Shows> allShows;
-    ArrayList<Material> allMaterials;
+    ArrayList<Shows> allShows, selectedShows;
+    ArrayList<Material> allMaterials, selectedMaterials;
     ArrayList<String> showsKeyList, showsDesList, materialsKeyList, materialsUsedList;
     ArrayList<Integer> showsDataList, materialsDataList;
+
+    Spinner paymentSpinner;
+    String [] paymentSelection = new String[]{" ","שוטף +30","שוטף +60","שוטף +90"};
+
+    Event newEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_event);
 
+        layout = findViewById(R.id.layout);
         eventTitleTV = findViewById(R.id.eventTitleTV);
         flag = findViewById(R.id.flag);
+        nameCustomerET = findViewById(R.id.nameCustomerET);
+        emailCustomerET = findViewById(R.id.emailCustomerET);
+        phoneCustomerET = findViewById(R.id.phoneCustomerET);
+        locationET = findViewById(R.id.locationET);
+        contentET = findViewById(R.id.contentET);
+        eventCostTV = findViewById(R.id.eventCostTV);
+
         dateTV = findViewById(R.id.selectedDateTV);
         chipGroupShows = findViewById(R.id.chipGroupShows);
         chipGroupMaterials = findViewById(R.id.chipGroupMaterials);
+        paymentSpinner = findViewById(R.id.paymentSpinner);
+        totalEmployeeTV = findViewById(R.id.totalEmployeeTV);
+
+        ArrayAdapter<String> adp = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, paymentSelection);
+        paymentSpinner.setAdapter(adp);
+
+        paymentSpinner.setOnItemSelectedListener(this);
 
         ActionBar actionBar = getSupportActionBar();
         Objects.requireNonNull(actionBar).hide();
@@ -99,6 +131,10 @@ public class newEventActivity extends AppCompatActivity {
 
         getAllShowsToDisplay();
         getAllMaterialsToDisplay();
+
+        newEvent = new Event();
+        selectedMaterials = new ArrayList<>();
+        selectedShows = new ArrayList<>();
     }
 
     /**
@@ -131,6 +167,7 @@ public class newEventActivity extends AppCompatActivity {
                     tempChip.setChipIconResource(R.drawable.null1);
                     tempChip.setChipBackgroundColorResource(R.color.brown_200);
                     final boolean[] isToAdd = {true};
+                    int index = i;
 
                     // Adding the onClick method that will add the selected shows to the Event constructor
 
@@ -142,10 +179,18 @@ public class newEventActivity extends AppCompatActivity {
                                 tempChip.setChipIconResource(R.drawable.ic_check);
                                 tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
                                 isToAdd[0] = false;
+                                selectedShows.add(allShows.get(index));
+                                eventCost += showsDataList.get(index);
+                                eventCostTV.setText(String.valueOf(eventCost));
                             }
                             else{
                                 tempChip.setChipIconResource(R.drawable.null1);
                                 isToAdd[0] = true;
+
+                                if (eventCost > 0){
+                                    eventCost -= showsDataList.get(index);
+                                    eventCostTV.setText(String.valueOf(eventCost));
+                                }
                             }
                         }
                     });
@@ -190,6 +235,7 @@ public class newEventActivity extends AppCompatActivity {
                     tempChip.setChipIconResource(R.drawable.null1);
                     tempChip.setChipBackgroundColorResource(R.color.brown_200);
                     final boolean[] isToAdd = {true};
+                    int index = i;
 
                     // Adding the onClick method that will add the selected shows to the Event constructor
 
@@ -201,6 +247,7 @@ public class newEventActivity extends AppCompatActivity {
                                 tempChip.setChipIconResource(R.drawable.ic_check);
                                 tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
                                 isToAdd[0] = false;
+                                selectedMaterials.add(allMaterials.get(index));
                             }
                             else{
                                 tempChip.setChipIconResource(R.drawable.null1);
@@ -249,7 +296,11 @@ public class newEventActivity extends AppCompatActivity {
 
     public void checkIfToExit(View view) {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle("לצאת ולא לשמור?");
+        TextView titleTV = new TextView(this);
+        titleTV.setText("היציאה לא תשמור");
+        titleTV.setGravity(Gravity.RIGHT);
+        titleTV.setTextSize(18);
+        adb.setCustomTitle(titleTV);
 
         adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
             @Override
@@ -276,7 +327,11 @@ public class newEventActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle("לצאת ולא לשמור?");
+        TextView titleTV = new TextView(this);
+        titleTV.setText("היציאה לא תשמור");
+        titleTV.setGravity(Gravity.RIGHT);
+        titleTV.setTextSize(18);
+        adb.setCustomTitle(titleTV);
 
         adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
             @Override
@@ -341,10 +396,9 @@ public class newEventActivity extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                month ++;
-                selectedDate = new Date(year,month, dayOfMonth,0,0);
-                dateTV.setText(selectedDate.getDate()+"/"+selectedDate.getMonth()+"/"+selectedDate.getYear());
-
+                Calendar c = Calendar.getInstance();
+                c.set(year, month++, dayOfMonth,0,0,0);
+                selectedDate = new Date(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH),0,0,0);
                 openTimePicker();
             }
         }, year, month, day);
@@ -362,13 +416,161 @@ public class newEventActivity extends AppCompatActivity {
                     @SuppressLint("SetTextI18n")
                     @Override
                     public void onTimeSet(TimePicker tp, int hour, int minute) {
-                        selectedDate.setHours(hour);
-                        selectedDate.setMinutes(minute);
-                        String temp = dateTV.getText().toString();
+                        Calendar c = Calendar.getInstance();
+                        c.set(selectedDate.getYear(), selectedDate.getMonth(),selectedDate.getDay(), hour, minute);
 
-                        dateTV.setText(temp +"  "+ selectedDate.getHours()+":"+selectedDate.getMinutes());
+                        if (c.after(currentDate)){
+                            selectedDate.setTime(c.getTimeInMillis());
+                            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                            String strDate = dateFormat.format(selectedDate);
+                            dateTV.setText(strDate);
+                        }
+                        else{
+                            Snackbar.make(layout,"תאריך לא רלוונטי", 3000).show();
+                        }
                     }
                 }, hour, minutes, true);
         picker.show();
     }
+
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        userSelection = paymentSelection[i];
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
+
+
+    public void createNewEvent(View view) {
+        currentDate = new Date();
+        if (checkEvent()){
+            // Creates the event as a constructor
+            newEvent.setEventName(eventTitleTV.getText().toString());
+            newEvent.setCustomerName(customerName);
+            newEvent.setCustomerPhone(customerPhone);
+            newEvent.setCustomerEmail(customerEmail);
+            newEvent.setEventLocation(eventLocation);
+
+            newEvent.setDateOfEvent(eventStrDate);
+            // Casting the Date to String
+            DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+            String strDate = dateFormat.format(currentDate);
+            newEvent.setDateOfCreation(strDate);
+
+            newEvent.setEventContent(eventContent);
+            newEvent.setEventEmployees(eventCost);
+            newEvent.setEventPayment(userSelection);
+            newEvent.setEventShows(selectedShows);
+            newEvent.setEventEquipments(selectedMaterials);
+
+            if (userSelection.equals(" ")) openADCheckPayment();
+        }
+    }
+
+    private void openADCheckPayment() {
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("תשלום לפני שמסיימים..");
+        titleTV.setGravity(Gravity.RIGHT);
+        titleTV.setTextSize(20);
+        adb.setCustomTitle(titleTV);
+
+        adb.setNegativeButton("אוקיי", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                newEvent.setEventCharacterize('G');
+                DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.green_flag));
+                dialogInterface.dismiss();
+            }
+        });
+
+        adb.setPositiveButton("לא עכשיו", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                newEvent.setEventCharacterize('O');
+                DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.orange_flag));
+                dialogInterface.dismiss();
+            }
+        });
+
+        AlertDialog ad = adb.create();
+        ad.show();
+    }
+
+    private boolean checkEvent() {
+        boolean flag = true;
+        customerName = nameCustomerET.getText().toString();
+        customerEmail = emailCustomerET.getText().toString();
+        customerPhone = phoneCustomerET.getText().toString();
+        eventLocation = locationET.getText().toString();
+        eventContent = contentET.getText().toString();
+
+        if (selectedDate != null){
+            DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+            eventStrDate = dateFormat.format(selectedDate);
+            selectedDate = null;
+        } else if (!dateTV.getText().toString().equals("dd/mm/yyyy hh:mm")){
+            String tempDate = dateTV.getText().toString();
+            tempDate = tempDate.replace("/","");
+            tempDate = tempDate.replace(":","");
+            tempDate = tempDate.replace(" ","");
+
+            String day = tempDate.substring(0,2);
+            String month = tempDate.substring(2,4);
+            String year = tempDate.substring(4,8);
+            String hour = tempDate.substring(8,10);
+            String minute = tempDate.substring(10);
+
+            eventStrDate = year+""+month+""+day+""+hour+""+minute;
+        }
+        else{
+            flag = false;
+            Snackbar.make(layout, "נא לבחור תאריך", 3000).show();
+        }
+
+        if (eventTitleTV.getText().toString().equals("כותרת האירוע") || eventTitleTV.getText().toString().isEmpty() || customerName.isEmpty() || customerEmail.isEmpty() || customerPhone.isEmpty() || eventLocation.isEmpty() || eventContent.isEmpty()){
+            flag = false;
+            Snackbar.make(layout, "שדה לא יהיה ריק", 3000).show();
+        }
+        if (!customerEmail.contains("@") || !customerEmail.endsWith(".com") || customerEmail.contains(" ")){
+            flag = false;
+            Snackbar.make(layout, "כתובת האימייל לא חוקית", 3000).show();
+        }
+        if (customerEmail.substring(customerEmail.indexOf("@"),customerEmail.indexOf(".com") - 1).isEmpty()){
+            flag = false;
+            Snackbar.make(layout, "כתובת האימייל לא חוקית", 3000).show();
+        }
+
+        if (customerPhone.length() < 9 || customerPhone.length() > 10){
+            flag = false;
+            Snackbar.make(layout, "מספר הטלפון לא קיים", 3000).show();
+        }
+        else if(customerPhone.length() == 10){
+            if (!customerPhone.startsWith("05") || customerPhone.contains("#")){
+                flag = false;
+                Snackbar.make(layout, "מספר הטלפון לא קיים", 3000).show();
+            }
+        }
+        else if (customerPhone.length() == 9){
+            if (!customerPhone.startsWith("0")){
+                flag = false;
+                Snackbar.make(layout, "מספר הטלפון לא קיים", 3000).show();
+            }
+        }
+
+        if (selectedMaterials.isEmpty()){
+            flag = false;
+            Snackbar.make(layout,"נא לבחור ציוד לאירוע", 3000).show();
+        }
+        if (selectedMaterials.isEmpty()){
+            flag = false;
+            Snackbar.make(layout,"נא לבחור מופע/ים לאירוע", 3000).show();
+        }
+
+        return  flag;
+    }
+
 }
