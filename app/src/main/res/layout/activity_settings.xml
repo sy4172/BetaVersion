@@ -34,12 +34,13 @@
         android:layout_marginLeft="15dp"
         android:layout_marginTop="60dp"
         android:layout_marginEnd="15dp"
+        android:layout_marginBottom="15dp"
         android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0px"
-            android:layout_weight="30"
+            android:layout_weight="15"
             android:orientation="horizontal">
 
             <LinearLayout
@@ -63,41 +64,16 @@
                     android:layout_height="0px"
                     android:layout_weight="1"
                     android:fontFamily="@font/rubik_regular"
-                    android:gravity="center"
-                    android:textSize="16sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:orientation="horizontal">
-
-                    <Space
-                        android:layout_width="0px"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1" />
-
-                    <Button
-                        android:layout_width="0px"
-                        android:layout_height="match_parent"
-                        android:layout_margin="5dp"
-                        android:layout_weight="10"
-                        android:fontFamily="@font/rubik_light"
-                        android:gravity="center"
-                        android:onClick="updateAData"
-                        android:text="עדכן" />
-
-                    <Space
-                        android:layout_width="0px"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1" />
-                </LinearLayout>
+                    android:gravity="center|top"
+                    android:onClick="updateAData"
+                    android:textSize="16sp"
+                    tools:ignore="SpeakableTextPresentCheck" />
 
             </LinearLayout>
 
             <Space
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1" />
 
             <LinearLayout
@@ -122,19 +98,14 @@
                     android:layout_height="0px"
                     android:layout_weight="1"
                     android:fontFamily="@font/rubik_regular"
-                    android:gravity="center"
+                    android:gravity="center|top"
                     android:textSize="16sp" />
-
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
 
             </LinearLayout>
 
             <Space
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1" />
 
             <LinearLayout
@@ -159,13 +130,8 @@
                     android:layout_height="0px"
                     android:layout_weight="1"
                     android:fontFamily="@font/rubik_regular"
-                    android:gravity="center"
+                    android:gravity="center|top"
                     android:textSize="16sp" />
-
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="0px"
-                    android:layout_weight="1" />
 
             </LinearLayout>
 
@@ -188,15 +154,14 @@
                 android:layout_weight="1" />
 
             <Button
-                android:layout_width="wrap_content"
+                android:layout_width="0px"
                 android:layout_height="match_parent"
                 android:layout_margin="7dp"
                 android:layout_weight="3"
                 android:fontFamily="@font/rubik_light"
                 android:foregroundGravity="center"
                 android:onClick="createNewItem"
-                android:text="חדש"
-                app:icon="@drawable/ic_add" />
+                android:text="חדש" />
 
             <Space
                 android:layout_width="wrap_content"
@@ -204,16 +169,27 @@
                 android:layout_weight="1" />
 
             <TextView
-                android:id="@+id/selectionTV"
-                android:layout_width="wrap_content"
+                android:layout_width="0px"
                 android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:fontFamily="@font/rubik_bold"
+                android:layout_weight="2"
                 android:gravity="center"
-                android:text="ציוד / מופעים"
-                android:textColor="@color/black"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+                android:text="מופעים" />
+
+            <Switch
+                android:id="@+id/selectionSwitch"
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:contentDescription="SWITCH"
+                android:onClick="onSwitchClicked"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+            <TextView
+                android:layout_width="0px"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:gravity="center"
+                android:text="ציוד" />
 
             <Space
                 android:layout_width="wrap_content"
@@ -229,7 +205,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0px"
-            android:layout_weight="50">
+            android:layout_weight="62">
 
             <Space
                 android:layout_width="0px"
@@ -238,13 +214,9 @@
 
             <ListView
                 android:id="@+id/generalLV"
-                android:layout_width="0px"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_weight="8"
-                android:foregroundGravity="bottom"
-                android:scrollbars="horizontal"
-                android:smoothScrollbar="true" />
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="8" />
 
             <Space
                 android:layout_width="0px"
@@ -252,11 +224,6 @@
                 android:layout_weight="1" />
 
         </LinearLayout>
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="0px"
-            android:layout_weight="3" />
 
     </LinearLayout>
 

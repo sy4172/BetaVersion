@@ -24,6 +24,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,16 +40,17 @@ import java.util.Objects;
 
 /**
  * * @author    Shahar Yani
- * * @version  	5.3
+ * * @version  	6.0
  * * @since		11/12/2021
  *
  * * This settingsActivity.class displays the settings control on the business and all the properties.
  */
-public class settingsActivity extends AppCompatActivity implements View.OnTouchListener {
+public class settingsActivity extends AppCompatActivity{
 
     ListView generalLV; // the ListView that display the Mateails & Shows objects
 
-    TextView efficiencyTV, availableTV, totalTV, selectionTV;
+    TextView efficiencyTV, availableTV, totalTV;
+    Switch selectionSwitch;
 
     ArrayList<String> keysList, materialsKeyList, showsKeyList, showsDesList, materialsUsedList;
     ArrayList<Integer> dataList, materialsDataList, showsDataList;
@@ -64,7 +66,6 @@ public class settingsActivity extends AppCompatActivity implements View.OnTouchL
 
     BusinessEqu businessEqu; // the general object to all the settings properties in order to upload the FireBase DataBase
 
-    SwipeListener swipeListener; // the Object for detecting the swipe of the object generalLV
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -76,7 +77,7 @@ public class settingsActivity extends AppCompatActivity implements View.OnTouchL
         totalTV = findViewById(R.id.totalTV);
         availableTV = findViewById(R.id.availableTV);
         efficiencyTV = findViewById(R.id.efficiencyTV);
-        selectionTV = findViewById(R.id.selectionTV);
+        selectionSwitch = findViewById(R.id.selectionSwitch);
 
         ActionBar actionBar = getSupportActionBar();
         Objects.requireNonNull(actionBar).hide();
@@ -85,7 +86,6 @@ public class settingsActivity extends AppCompatActivity implements View.OnTouchL
 
         generalLV.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         generalLV.setOnCreateContextMenuListener(this);
-        swipeListener = new SwipeListener(generalLV); // Initialize the swipe listener
 
         keysList = new ArrayList<>();
         dataList = new ArrayList<>();
@@ -108,7 +108,7 @@ public class settingsActivity extends AppCompatActivity implements View.OnTouchL
         getAllSysData();
         SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
         if (!settings.getBoolean("understoodClick",false)){
-            Snackbar.make(generalLV, "החלק כדי לראות את המופעים והחומרים", 5000).setAction("הבנתי", new View.OnClickListener() {
+            Snackbar.make(generalLV, "גע על הערך של העובדים ברוטו כדי לשנות", 5000).setAction("הבנתי", new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     // Writing to the SharedPreferences file
@@ -119,6 +119,13 @@ public class settingsActivity extends AppCompatActivity implements View.OnTouchL
                 }
             }).show();
         }
+
+        // Initializes the listView object to the default to present the materials array
+        option = "ציוד";
+        getAllMaterials();
+        customAdapterSettings2 = new CustomAdapterSettings(this, materialsKeyList, materialsDataList, materialsUsedList, false);
+        customAdapterSettings2.notifyDataSetChanged();
+        generalLV.setAdapter(customAdapterSettings2);
     }
 
     /**
@@ -455,7 +462,7 @@ public class settingsActivity extends AppCompatActivity implements View.OnTouchL
     }
 
     @SuppressLint("SetTextI18n")
-    private void updateAData(View view) {
+    public void updateAData(View view) {
         allShows.clear();
         allMaterials.clear();
         getAllShows();
@@ -634,80 +641,23 @@ public class settingsActivity extends AppCompatActivity implements View.OnTouchL
         super.onBackPressed();
     }
 
+    public void onSwitchClicked(View view) {
+        boolean isClicked = selectionSwitch.isChecked();
 
-    private class SwipeListener implements View.OnTouchListener{
-
-        GestureDetector gestureDetector; // The Gesture detector that detecte that motion of the finger.
-
-        /**
-         * Instantiates a new Swipe listener for react accordingly to the direction.
-         *
-         * @param view the view
-         */
-        // The method that finds the direction accordingly the change of the x value
-        SwipeListener(View view){
-            int threshold = 100;
-            int velocityThreshold = 100;
-
-            GestureDetector.SimpleOnGestureListener listener = new GestureDetector.SimpleOnGestureListener(){
-                @Override
-                public boolean onDown(MotionEvent e) {
-                    return false;
-                }
-
-
-                @Override
-                public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                    float xDiff = e2.getX() - e1.getX();
-                    float yDiff = e2.getY() - e1.getY();
-                    // Check that is ONLY 'Left' or 'Right' swipe
-                    try {
-                        if (Math.abs(xDiff) > threshold && Math.abs(xDiff) > velocityThreshold && Math.abs(yDiff) < threshold) {
-                            if (xDiff > 0) {
-                                // Swiped Right
-                                option = "ציוד";
-                                selectionTV.setText(option);
-                                getAllMaterials();
-                                customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList, false);
-                                customAdapterSettings2.notifyDataSetChanged();
-                                generalLV.setAdapter(customAdapterSettings2);
-                            } else {
-                                // Swiped Left
-                                option = "מופעים";
-                                selectionTV.setText(option);
-                                getAllShows();
-                                customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList, true);
-                                customAdapterSettings3.notifyDataSetChanged();
-                                generalLV.setAdapter(customAdapterSettings3);
-                            }
-                            return true;
-                        }
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-                    return false;
-                }
-            };
-            // Creates that listener that displays the customAdapter.
-            gestureDetector = new GestureDetector(listener);
-            view.setOnTouchListener(this);
+        if (!isClicked){
+            option = "ציוד";
+            getAllMaterials();
+            customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList, false);
+            customAdapterSettings2.notifyDataSetChanged();
+            generalLV.setAdapter(customAdapterSettings2);
         }
-
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            return gestureDetector.onTouchEvent(motionEvent);
+        else{
+            option = "מופעים";
+            getAllShows();
+            customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList, true);
+            customAdapterSettings3.notifyDataSetChanged();
+            generalLV.setAdapter(customAdapterSettings3);
         }
-
-    }
-
-    @Override
-    public boolean onTouch(View view, MotionEvent motionEvent) {
-        return true;
-    }
-
-    @Override
-    public void onPointerCaptureChanged(boolean hasCapture) {
     }
 }
 
