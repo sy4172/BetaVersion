@@ -39,6 +39,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -74,6 +75,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
     String [] paymentSelection = new String[]{" ","שוטף +30","שוטף +60","שוטף +90"};
 
     Event newEvent;
+    File rootPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,6 +137,12 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         newEvent = new Event();
         selectedMaterials = new ArrayList<>();
         selectedShows = new ArrayList<>();
+
+        rootPath = new File(this.getExternalFilesDir("/"), "myPDFS");
+
+        if(!rootPath.exists()) {
+            rootPath.mkdirs();
+        }
     }
 
     /**
@@ -407,20 +415,23 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
     }
 
     private void openTimePicker() {
-        final Calendar cldr = Calendar.getInstance();
-        int hour = cldr.get(Calendar.HOUR_OF_DAY);
-        int minutes = cldr.get(Calendar.MINUTE);
+        Calendar cldr = Calendar.getInstance();
+        final int hour = cldr.get(Calendar.HOUR_OF_DAY);
+        final int minutes = cldr.get(Calendar.MINUTE);
         // time picker dialog
         TimePickerDialog picker = new TimePickerDialog(this,
                 new TimePickerDialog.OnTimeSetListener() {
                     @SuppressLint("SetTextI18n")
                     @Override
                     public void onTimeSet(TimePicker tp, int hour, int minute) {
-                        Calendar c = Calendar.getInstance();
-                        c.set(selectedDate.getYear(), selectedDate.getMonth(),selectedDate.getDay(), hour, minute);
-
-                        if (c.after(currentDate)){
-                            selectedDate.setTime(c.getTimeInMillis());
+                        //Calendar c = Calendar.getInstance();
+                        //c.set(selectedDate.getYear(), selectedDate.getMonth(),selectedDate.getDay(), hour, minute);
+                        selectedDate.setYear(selectedDate.getYear() - 1900);
+                        selectedDate.setHours(hour);
+                        selectedDate.setMinutes(minute);
+                        selectedDate.setSeconds(0);
+                        if (selectedDate.after(new Date())){
+                            selectedDate.setTime(selectedDate.getTime());
                             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
                             String strDate = dateFormat.format(selectedDate);
                             dateTV.setText(strDate);
@@ -467,7 +478,17 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             newEvent.setEventEquipments(selectedMaterials);
 
             if (userSelection.equals(" ")) openADCheckPayment();
+            
+            creatingFile();
         }
+    }
+
+    private void creatingFile() {
+        File dataFile = new File(rootPath, System.currentTimeMillis()+".docx");
+        if(!rootPath.exists()) {
+            rootPath.mkdirs();
+        }
+
     }
 
     private void openADCheckPayment() {
@@ -535,16 +556,16 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             flag = false;
             Snackbar.make(layout, "שדה לא יהיה ריק", 3000).show();
         }
-        if (!customerEmail.contains("@") || !customerEmail.endsWith(".com") || customerEmail.contains(" ")){
+        else if (!customerEmail.contains("@") || !customerEmail.endsWith(".com") || customerEmail.contains(" ")){
             flag = false;
             Snackbar.make(layout, "כתובת האימייל לא חוקית", 3000).show();
         }
-        if (customerEmail.substring(customerEmail.indexOf("@"),customerEmail.indexOf(".com") - 1).isEmpty()){
+        else if (customerEmail.substring(customerEmail.indexOf("@"),customerEmail.indexOf(".com") - 1).isEmpty()){
             flag = false;
             Snackbar.make(layout, "כתובת האימייל לא חוקית", 3000).show();
         }
 
-        if (customerPhone.length() < 9 || customerPhone.length() > 10){
+        else if (customerPhone.length() < 9 || customerPhone.length() > 10){
             flag = false;
             Snackbar.make(layout, "מספר הטלפון לא קיים", 3000).show();
         }
@@ -561,7 +582,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             }
         }
 
-        if (selectedMaterials.isEmpty()){
+        if  (selectedMaterials.isEmpty()){
             flag = false;
             Snackbar.make(layout,"נא לבחור ציוד לאירוע", 3000).show();
         }

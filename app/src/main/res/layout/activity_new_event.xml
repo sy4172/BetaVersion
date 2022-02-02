@@ -381,8 +381,8 @@
         android:layout_gravity="bottom|right"
         android:layout_margin="12dp"
         android:clickable="true"
-        android:onClick="createNewEvent"
         android:contentDescription="TODO"
+        android:onClick="createNewEvent"
         app:elevation="8dp"
         app:srcCompat="@drawable/ic_baseline_send_24"
         app:tint="@color/white" />
