@@ -19,6 +19,7 @@
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/drawable/ic_search_black_24dp.xml" value="0.20512820512820512" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/drawable/null1.xml" value="0.10572916666666667" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/font/rubik_fonts.xml" value="0.22239583333333332" />
+        <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/font/rubik_regular.xml" value="0.1574074074074074" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/layout/activity_login.xml" value="0.2" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/layout/activity_main.xml" value="0.2" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/layout/activity_map.xml" value="0.18795289855072464" />
@@ -46,6 +47,10 @@
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/menu/menu_scrolling.xml" value="0.17222222222222222" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/menu/top_navigation_menu.xml" value="0.1527777777777778" />
         <entry key="..\:/AndroidProj/BetaVersion/app/src/main/res/xml/root_preferences.xml" value="0.14" />
+        <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/activity_login.xml" value="0.1" />
+        <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/custom_lv_remider.xml" value="0.1" />
+        <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/custom_lv_settings.xml" value="0.25" />
+        <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/menu/bottom_navigation_menu.xml" value="0.1921875" />
       </map>
     </option>
   </component>

@@ -279,7 +279,7 @@
                         android:layout_width="0px"
                         android:layout_height="match_parent"
                         android:layout_weight="5"
-                        android:fontFamily="@font/rubik_semi_bold"
+                        android:fontFamily="@font/rubik_semibold"
                         android:gravity="center"
                         android:onClick="changeStatus"
                         android:text="@string/toSignIn"

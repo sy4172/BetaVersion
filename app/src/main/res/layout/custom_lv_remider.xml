@@ -30,7 +30,7 @@
             android:layout_gravity="top"
             android:layout_marginTop="10dp"
             android:layout_weight="1"
-            android:fontFamily="@font/rubik_semi_bold"
+            android:fontFamily="@font/rubik_semibold"
             android:gravity="right|center_vertical"
             android:textSize="20sp" />
 
