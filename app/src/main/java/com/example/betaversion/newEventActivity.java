@@ -17,7 +17,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +32,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -39,7 +42,13 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
+import org.apache.poi.xwpf.usermodel.Document;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
+
 import java.io.File;
+import java.io.FileOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -478,17 +487,64 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             newEvent.setEventEquipments(selectedMaterials);
 
             if (userSelection.equals(" ")) openADCheckPayment();
-            
-            creatingFile();
+
+            sendingFileToEmail(creatingFile());
         }
     }
 
-    private void creatingFile() {
-        File dataFile = new File(rootPath, System.currentTimeMillis()+".docx");
+    @SuppressLint("LongLogTag")
+    private void sendingFileToEmail(File fileToSend) {
+        Uri uri = Uri.parse("mailto:" + "shahryani96@gmail.com")
+                .buildUpon()
+                .appendQueryParameter("to", newEvent.getCustomerEmail())
+                .appendQueryParameter("subject", "סיכום יצירת אירוע: "+newEvent.getEventName())
+                .appendQueryParameter("body", "להלן קובץ אישור העסקה:")
+                .build();
+
+        Intent emailIntent = new Intent(Intent.ACTION_SENDTO, uri);
+        Uri uriFile =  Uri.fromFile(fileToSend);
+
+        emailIntent.putExtra(Intent.EXTRA_STREAM, uriFile);
+        try {
+            startActivity(Intent.createChooser(emailIntent, "Send mail..."));
+            finish();
+            Log.i("Finished sending email...", "");
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, "There is no email client installed.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private File creatingFile() {
+        File dataFile = new File(rootPath, System.currentTimeMillis()+newEvent.getEventName()+".docx");
         if(!rootPath.exists()) {
             rootPath.mkdirs();
         }
 
+        try {
+            XWPFDocument xwpfDocument = new XWPFDocument();
+            XWPFParagraph xwpfParagraph = xwpfDocument.createParagraph();
+            XWPFRun xwpfRun = xwpfParagraph.createRun();
+
+            xwpfRun.setText("TEST");
+            xwpfRun.setFontSize(24);
+
+            FileOutputStream fileOutputStream = new FileOutputStream(dataFile.getPath());
+            xwpfDocument.write(fileOutputStream);
+
+            if (fileOutputStream != null){
+                fileOutputStream.flush();
+                fileOutputStream.close();
+            }
+            xwpfDocument.close();
+
+            // Casting from 'Word' to 'Pdf'
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        return dataFile;
     }
 
     private void openADCheckPayment() {
@@ -535,9 +591,9 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             selectedDate = null;
         } else if (!dateTV.getText().toString().equals("dd/mm/yyyy hh:mm")){
             String tempDate = dateTV.getText().toString();
-            tempDate = tempDate.replace("/","");
-            tempDate = tempDate.replace(":","");
-            tempDate = tempDate.replace(" ","");
+            tempDate = tempDate.replaceAll("/","");
+            tempDate = tempDate.replaceAll(":","");
+            tempDate = tempDate.replaceAll(" ","");
 
             String day = tempDate.substring(0,2);
             String month = tempDate.substring(2,4);
@@ -552,7 +608,11 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             Snackbar.make(layout, "נא לבחור תאריך", 3000).show();
         }
 
-        if (eventTitleTV.getText().toString().equals("כותרת האירוע") || eventTitleTV.getText().toString().isEmpty() || customerName.isEmpty() || customerEmail.isEmpty() || customerPhone.isEmpty() || eventLocation.isEmpty() || eventContent.isEmpty()){
+        if (eventTitleTV.getText().toString().equals("כותרת האירוע")){
+            flag = false;
+            Snackbar.make(layout, "כותרת אירוע לא תהיה ריקה", 3000).show();
+        }
+        else if (eventTitleTV.getText().toString().isEmpty() || customerName.isEmpty() || customerEmail.isEmpty() || customerPhone.isEmpty() || eventLocation.isEmpty() || eventContent.isEmpty()){
             flag = false;
             Snackbar.make(layout, "שדה לא יהיה ריק", 3000).show();
         }
@@ -582,11 +642,11 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             }
         }
 
-        if  (selectedMaterials.isEmpty()){
+        else if  (selectedMaterials.isEmpty()){
             flag = false;
             Snackbar.make(layout,"נא לבחור ציוד לאירוע", 3000).show();
         }
-        if (selectedMaterials.isEmpty()){
+        else if (selectedMaterials.isEmpty()){
             flag = false;
             Snackbar.make(layout,"נא לבחור מופע/ים לאירוע", 3000).show();
         }
