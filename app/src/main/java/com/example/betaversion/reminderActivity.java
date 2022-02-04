@@ -87,7 +87,7 @@ import java.util.Objects;
  *
  * * This reminderActivity.class displays and creates all the reminds for the business.
  */
-public class reminderActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
+public class reminderActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener {
 
     BottomNavigationView bottomNavigationView;
 
@@ -128,6 +128,9 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
         textLayout = findViewById(R.id.textLayout);
         reminderLayout = findViewById(R.id.reminderLayout);
         remaindersLV = findViewById(R.id.remaindersLV);
+
+        bottomNavigationView.setOnNavigationItemSelectedListener(this);
+        bottomNavigationView.setOnNavigationItemReselectedListener(this);
 
         remaindersLV.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         remaindersLV.setOnItemClickListener(this);
@@ -959,5 +962,64 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
             Snackbar.make(textLayout,"התזכורת נשמרה", 1000).show();
         }
 
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        Intent si;
+
+        if (id == R.id.settingsAct){
+            si = new Intent(this, settingsActivity.class);
+            startActivity(si);
+        }
+        else if (id == R.id.remainder){
+            si = new Intent(this, reminderActivity.class);
+            startActivity(si);
+        }
+        else if (id == R.id.events){
+            Toast.makeText(this, "All Events", Toast.LENGTH_SHORT).show();
+//                si = new Intent(this,eventsActivity.class);
+//                startActivity(si);
+//                finish();
+        }
+        else if (id == R.id.newMissions){
+            Toast.makeText(this, "New Missions", Toast.LENGTH_SHORT).show();
+//            si = new Intent(this, newMissionsActivity.class);
+//            startActivity(si);
+//            finish();
+        }
+        else{
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public void onNavigationItemReselected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        Intent si;
+
+        if (id == R.id.settingsAct){
+            si = new Intent(this, settingsActivity.class);
+            startActivity(si);
+        }
+        else if (id == R.id.remainder){
+            si = new Intent(this, reminderActivity.class);
+            startActivity(si);
+        }
+        else if (id == R.id.events){
+            Toast.makeText(this, "All Events", Toast.LENGTH_SHORT).show();
+//                si = new Intent(this,eventsActivity.class);
+//                startActivity(si);
+//                finish();
+        }
+        else if (id == R.id.newMissions){
+            Toast.makeText(this, "New Missions", Toast.LENGTH_SHORT).show();
+//                si = new Intent(this,newMissionsActivity.class);
+//                startActivity(si);
+//                finish();
+        }
     }
 }

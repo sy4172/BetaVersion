@@ -47,9 +47,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     BottomNavigationView bottomNavigationView;
 
     ListView closeEventsLV, remaindersLV, missionsLV;
-    ArrayList<Date> dateEvents;
-    ArrayList<String> titleEvents;
-    ArrayAdapter<String> adp;
+    ArrayList<String> titleEvents, dateEvents, phonesList;
+    ArrayList<Integer> employeesList;
+    ArrayList<Character> eventsCharacterizeList;
 
     ArrayList<String> remindersTitleList, remindersContextList;
     ArrayList<String> remindersAudioContentList;
@@ -92,9 +92,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         readAllCloseEvents();
         readAllRemainders();
-
-        CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents);
-        closeEventsLV.setAdapter(customAdapterEvents);
     }
 
     @Override
@@ -104,22 +101,34 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void readAllCloseEvents() {
-//        reflive_Event.child("greenEvent").addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dS) {
-//                titleEvents.clear();
-//                dateEvents.clear();
-//                for(DataSnapshot data : dS.getChildren()) {
-//
-//                }
-//                adp = new ArrayAdapter<String>(MainActivity.this,R.layout.support_simple_spinner_dropdown_item, closeEventsList);
-//                closeEventsLV.setAdapter(adp);
-//
-//            }
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//            }
-//        });
+        Query query = reflive_Event.child("greenEvent").limitToFirst(2);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dS) {
+                titleEvents.clear();
+                dateEvents.clear();
+                phonesList.clear();
+                employeesList.clear();
+                eventsCharacterizeList.clear();
+
+                Event tempEvent;
+                for(DataSnapshot data : dS.getChildren()) {
+                    tempEvent = data.getValue(Event.class);
+
+                    titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
+                    dateEvents.add(tempEvent.getDateOfEvent());
+                    phonesList.add(tempEvent.getCustomerPhone());
+                    employeesList.add(tempEvent.getEventEmployees());
+                    eventsCharacterizeList.add(tempEvent.getEventCharacterize());
+                }
+                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, phonesList, employeesList, eventsCharacterizeList);
+                closeEventsLV.setAdapter(customAdapterEvents);
+
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
     }
 
     private void readAllRemainders() {
