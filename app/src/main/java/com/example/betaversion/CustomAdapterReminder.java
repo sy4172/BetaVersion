@@ -41,6 +41,9 @@ public class CustomAdapterReminder extends BaseAdapter{
         inflter = (LayoutInflater.from(applicationContext));
     }
 
+    public CustomAdapterReminder(Context applicationContext, ArrayList<Integer> selections) {
+    }
+
     @Override
     public int getCount() {
         return remindsTitleList.size();

@@ -27,14 +27,16 @@ public class CustomAdapterEvents extends BaseAdapter {
     ArrayList<Integer> employeesList;
     ArrayList<Character> eventsCharacterizeList;
     LayoutInflater inflter;
+    int flagID;
 
-    public CustomAdapterEvents(Context applicationContext,ArrayList<String> titleEvents, ArrayList<String> dateEvents, ArrayList<String> phonesList, ArrayList<Integer> employeesList, ArrayList<Character> eventsCharacterizeList){
+    public CustomAdapterEvents(Context applicationContext,ArrayList<String> titleEvents, ArrayList<String> dateEvents, ArrayList<String> phonesList, ArrayList<Integer> employeesList, ArrayList<Character> eventsCharacterizeList, int flagID){
         this.context = applicationContext;
         this.titleEvents = titleEvents;
         this.dateEvents = dateEvents;
         this.phonesList = phonesList;
         this.employeesList = employeesList;
         this.eventsCharacterizeList = eventsCharacterizeList;
+        this.flagID = flagID;
 
         inflter = (LayoutInflater.from(applicationContext));
     }
@@ -80,7 +82,18 @@ public class CustomAdapterEvents extends BaseAdapter {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 0.2f);
         lp.setMargins(10, 10, 10, 10);
         flagIV.setLayoutParams(lp);
-        DrawableCompat.setTint(flagIV.getDrawable(), ContextCompat.getColor(view.getContext(), R.color.green_flag));
+        if (flagID == 0){
+            DrawableCompat.setTint(flagIV.getDrawable(), ContextCompat.getColor(view.getContext(), R.color.green_flag));
+        }
+        else if (flagID == 1){
+            DrawableCompat.setTint(flagIV.getDrawable(), ContextCompat.getColor(view.getContext(), R.color.orange_flag));
+        }
+        else if (flagID == 2){
+            DrawableCompat.setTint(flagIV.getDrawable(), ContextCompat.getColor(view.getContext(), R.color.red_flag));
+        }
+        else{
+            DrawableCompat.setTint(flagIV.getDrawable(), ContextCompat.getColor(view.getContext(), R.color.gray_700));
+        }
 
 
         return view;

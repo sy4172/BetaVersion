@@ -1,9 +1,5 @@
 package com.example.betaversion;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -12,16 +8,17 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.text.Layout;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -107,7 +104,7 @@ public class LoginActivity extends AppCompatActivity {
      *
      */
     private boolean checkInternetConnection() {
-        boolean connected = false;
+        boolean connected = true;
         try {
             ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo nInfo = cm.getActiveNetworkInfo();
@@ -132,18 +129,19 @@ public class LoginActivity extends AppCompatActivity {
             Intent si = new Intent(this, MainActivity.class);
             startActivity(si);
             finish();
-        } else{
-            // Asking to connect to the Internet
-            // Action: startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-
-            // Responds to click on the action
-            Snackbar.make(layoutView, "לא זוהה חיבור לאינטרנט", 10000).setAction("התחבר", new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                }
-            }).show();
         }
+//        else{
+//            // Asking to connect to the Internet
+//            // Action: startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+//
+//            // Responds to click on the action
+//            Snackbar.make(layoutView, "לא זוהה חיבור לאינטרנט", 10000).setAction("התחבר", new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+//                }
+//            }).show();
+//        }
     }
 
 
@@ -157,11 +155,11 @@ public class LoginActivity extends AppCompatActivity {
         String phone = phoneET.getText().toString();
 
         if (TextUtils.isEmpty(email)){
-            emailET.setError("The email field can not be empty");
+            emailET.setError("שדה לא יהיה ריק");
             emailET.requestFocus();
         }
         else if (TextUtils.isEmpty(password)){
-            passwordET.setError("The password field can not be empty");
+            passwordET.setError("שדה לא יהיה ריק");
             passwordET.requestFocus();
         }
         else {
@@ -185,8 +183,10 @@ public class LoginActivity extends AppCompatActivity {
                             } else {
                                 // If sign in fails, display a message to the user.
                                 Log.w(TAG, "signInWithEmail:failure", task.getException());
-                                Toast.makeText(LoginActivity.this, "It might be no user",
-                                        Toast.LENGTH_SHORT).show();
+                                Snackbar.make(layoutView, "אין משתמש רשום במערכת", 3000).show();
+
+//                                Toast.makeText(LoginActivity.this, "It might be no user",
+//                                        Toast.LENGTH_SHORT).show();
                                 updateUI(null);
                             }
                         }
@@ -201,13 +201,39 @@ public class LoginActivity extends AppCompatActivity {
     public void createUser() {
         String email = emailET.getText().toString();
         String password = passwordET.getText().toString();
+        String phone = phoneET.getText().toString();
+
         if (TextUtils.isEmpty(email)){
             emailET.setError("The email field can not be empty");
+            emailET.requestFocus();
+        }
+        else if (!email.contains("@") || !email.endsWith(".com") || email.contains(" ")){
+            emailET.setError("כתובת האימייל לא חוקית");
+            emailET.requestFocus();
+        }
+        else if (email.substring(email.indexOf("@"),email.indexOf(".com") - 1).isEmpty()){
+            emailET.setError("כתובת האימייל לא חוקית");
             emailET.requestFocus();
         }
         else if (TextUtils.isEmpty(password)){
             passwordET.setError("The password filed can not be empty");
             passwordET.requestFocus();
+        }
+        else if (phone.length() < 9 || phone.length() > 10){
+            phoneET.setError("מספר הטלפון לא חוקי");
+            phoneET.requestFocus();
+        }
+        else if(phone.length() == 10){
+            if (!phone.startsWith("05") || phone.contains("#")){
+                phoneET.setError("מספר הטלפון לא חוקי");
+                phoneET.requestFocus();
+            }
+        }
+        else if (phone.length() == 9){
+            if (!phone.startsWith("0")){
+                phoneET.setError("מספר הטלפון לא חוקי");
+                phoneET.requestFocus();
+            }
         }
         else{
             User tempUser = new User(passwordET.getText().toString(),emailET.getText().toString());
@@ -231,8 +257,9 @@ public class LoginActivity extends AppCompatActivity {
                             } else {
                                 // If sign in fails, display a message to the user.
                                 Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                                Toast.makeText(LoginActivity.this, "The user might be created",
-                                        Toast.LENGTH_SHORT).show();
+                                Snackbar.make(layoutView, "יש משתמש רשום במערכת עם פרטים דומים", 3000).show();
+//                                Toast.makeText(LoginActivity.this, "The user might be created",
+//                                        Toast.LENGTH_SHORT).show();
                                 updateUI(null);
                             }
                         }

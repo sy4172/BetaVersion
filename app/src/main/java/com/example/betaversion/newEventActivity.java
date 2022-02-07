@@ -1,16 +1,13 @@
 package com.example.betaversion;
 
 import static com.example.betaversion.FBref.refBusinessEqu;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
+import static com.example.betaversion.FBref.reflive_Event;
+import static com.example.betaversion.FBref.storageRef;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -34,6 +31,15 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.snackbar.Snackbar;
@@ -41,8 +47,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
-import org.apache.poi.xwpf.usermodel.Document;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -488,8 +496,59 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
             if (userSelection.equals(" ")) openADCheckPayment();
 
-            sendingFileToEmail(creatingFile());
+            File eventFile = creatingFile();
+            sendingFileToEmail(eventFile);
+            uploadFileToFB(eventFile);
+
+            // Save in the RealTimeDataBase TODO: need to check the child writing of the events.
+            if (newEvent.getEventCharacterize() == 'G'){
+                reflive_Event.child("greenEvent").child("").setValue(newEvent);
+            } else{
+                reflive_Event.child("orangeEvent").child("").setValue(newEvent);
+            }
         }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void uploadFileToFB(File eventFile) {
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        final TextView title = new TextView(this);
+        title.setText(newEvent.getEventName()+"מבצע שמירה בענן ל");
+        title.setTextSize(18);
+        title.setPadding(0,15,30,15);
+        title.setTypeface(ResourcesCompat.getFont(title.getContext(), R.font.rubik_medium));
+        progressDialog.setCustomTitle(title);
+        progressDialog.setIcon(R.drawable.logo_white);
+        progressDialog.setProgress(0);
+        progressDialog.setCancelable(false);
+
+
+        Uri file = Uri.fromFile(new File(eventFile.getPath()));
+        StorageReference riversRef = storageRef.child("files/"+file.getLastPathSegment());
+        UploadTask uploadTask = riversRef.putFile(file);
+
+        // Register observers to listen for when the download is done or if it fails
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                Snackbar.make(layout,"שמירה נכשלה", 3000).show();
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                progressDialog.setCancelable(true);
+                progressDialog.show();
+                Snackbar.make(layout,"שמירה בוצעה בהצלחה", 3000).show();
+            }
+        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                int currentProgress = (int) (100*(snapshot.getBytesTransferred()/snapshot.getTotalByteCount()));
+                progressDialog.setProgress(currentProgress);
+                progressDialog.show();
+            }
+        });
     }
 
     @SuppressLint("LongLogTag")
@@ -538,12 +597,20 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             xwpfDocument.close();
 
             // Casting from 'Word' to 'Pdf'
+//            InputStream in = new FileInputStream(new File(dataFile.getPath()));
+//            XWPFDocument document = new XWPFDocument(in);
+//            PdfOptions options = PdfOptions.create();
+//            OutputStream out = new FileOutputStream(new File(dataFile.getName()+".pdf"));
+//            PdfConverter.getInstance().convert(document, out, options);
+//
+//            document.close();
+//            out.close();
         }
         catch (Exception e){
             e.printStackTrace();
         }
 
-
+        // TODO: Save the PDF file that is created in the internal storage
         return dataFile;
     }
 
@@ -627,18 +694,18 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
         else if (customerPhone.length() < 9 || customerPhone.length() > 10){
             flag = false;
-            Snackbar.make(layout, "מספר הטלפון לא קיים", 3000).show();
+            Snackbar.make(layout, "מספר הטלפון לא חוקי", 3000).show();
         }
         else if(customerPhone.length() == 10){
             if (!customerPhone.startsWith("05") || customerPhone.contains("#")){
                 flag = false;
-                Snackbar.make(layout, "מספר הטלפון לא קיים", 3000).show();
+                Snackbar.make(layout, "מספר הטלפון לא חוקי", 3000).show();
             }
         }
         else if (customerPhone.length() == 9){
             if (!customerPhone.startsWith("0")){
                 flag = false;
-                Snackbar.make(layout, "מספר הטלפון לא קיים", 3000).show();
+                Snackbar.make(layout, "מספר הטלפון לא חוקי", 3000).show();
             }
         }
 

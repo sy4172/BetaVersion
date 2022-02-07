@@ -3,24 +3,21 @@ package com.example.betaversion;
 import static com.example.betaversion.FBref.refReminders;
 import static com.example.betaversion.FBref.reflive_Event;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,15 +26,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Objects;
 
 
 /**
  * * @author    Shahar Yani
- * * @version  	4.0
+ * * @version  	4.1
  * * @since		25/11/2021
  *
  * * This MainActivity.class displays the main control on the business.
@@ -90,6 +85,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         remindersLastDateToRemindList = new ArrayList<>();
         isTextList = new ArrayList<>();
 
+        titleEvents = new ArrayList<>();
+        dateEvents = new ArrayList<>();
+        phonesList = new ArrayList<>();
+        employeesList = new ArrayList<>();
+        eventsCharacterizeList = new ArrayList<>();
+
         readAllCloseEvents();
         readAllRemainders();
     }
@@ -121,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     employeesList.add(tempEvent.getEventEmployees());
                     eventsCharacterizeList.add(tempEvent.getEventCharacterize());
                 }
-                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, phonesList, employeesList, eventsCharacterizeList);
+                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, phonesList, employeesList, eventsCharacterizeList,0);
                 closeEventsLV.setAdapter(customAdapterEvents);
 
             }
@@ -164,7 +165,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         if (view == missionsLV){
 //            Intent si = new Intent(this, newMissionsActivity.class);
-//            si.putExtra("isRemainder", false);
 //            si.putExtra("Index", i);
 //            startActivity(si);
         }
@@ -174,15 +174,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //            startActivity(si);
         }
         else if (view == remaindersLV){
-//            Intent si = new Intent(this, newMissionsActivity.class);
-//            si.putExtra("isRemainder", true);
-//            si.putExtra("Index", i);
-//            startActivity(si);
+            Intent si = new Intent(this, reminderActivity.class);
+            si.putExtra("Index", i);
+            startActivity(si);
         }
     }
 
     public void moveToCreateAnEvent(View view) {
-        Toast.makeText(this, "New Event", Toast.LENGTH_SHORT).show();
         Intent si = new Intent(this, newEventActivity.class);
         startActivity(si);
     }
@@ -202,9 +200,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
         else if (id == R.id.events){
             Toast.makeText(this, "All Events", Toast.LENGTH_SHORT).show();
-//                si = new Intent(this,eventsActivity.class);
-//                startActivity(si);
-//                finish();
+            // לכל item יהיה ניווט, צפייה, ועדכון
+            si = new Intent(this, eventsActivity.class);
+            startActivity(si);
+            finish();
         }
         else if (id == R.id.newMissions){
             Toast.makeText(this, "New Missions", Toast.LENGTH_SHORT).show();
