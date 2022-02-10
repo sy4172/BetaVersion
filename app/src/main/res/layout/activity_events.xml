@@ -18,6 +18,9 @@
             android:layout_height="?attr/actionBarSize"
             android:background="@color/orange_500"
             app:logo="@drawable/logo_white"
+            android:clickable="true"
+            android:onClick="moveToPreviousAct"
+            app:navigationIcon="@drawable/ic_back"
             app:menu="@menu/layout_top_bar" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -39,11 +42,12 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
 
-            <Spinner
-                android:id="@+id/selectionSpinner"
-                android:layout_width="0px"
+            <ListView
+                android:id="@+id/selectionLV"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_margin="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
                 android:layout_weight="2" />
 
             <Space

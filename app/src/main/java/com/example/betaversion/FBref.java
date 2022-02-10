@@ -17,4 +17,8 @@ public class FBref {
     public static DatabaseReference refBusinessEqu = FBDB.getReference("BusinessEqu");
     public static DatabaseReference refEnd_Event = FBDB.getReference("End_Event");
     public static DatabaseReference reflive_Event = FBDB.getReference("Live_Event");
+
+    public static DatabaseReference refGreen_Event = reflive_Event.child("greenEvent");
+    public static DatabaseReference refOrange_Event = reflive_Event.child("orangeEvent");
+
 }

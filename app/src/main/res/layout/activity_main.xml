@@ -19,6 +19,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="@color/orange_500"
             app:logo="@drawable/logo_white"
+            app:navigationIcon="@drawable/null1"
             app:menu="@menu/layout_top_bar" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -97,6 +98,7 @@
                             android:layout_width="0px"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
+                            android:onClick="moveToEventsActivity"
                             android:fontFamily="@font/rubik_regular"
                             android:text="עוד" />
 

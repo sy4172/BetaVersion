@@ -1,7 +1,8 @@
 package com.example.betaversion;
 
 import static com.example.betaversion.FBref.refBusinessEqu;
-import static com.example.betaversion.FBref.reflive_Event;
+import static com.example.betaversion.FBref.refGreen_Event;
+import static com.example.betaversion.FBref.refOrange_Event;
 import static com.example.betaversion.FBref.storageRef;
 
 import android.annotation.SuppressLint;
@@ -13,7 +14,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
+import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,7 +42,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -51,17 +57,16 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
-
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -447,7 +452,10 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                         selectedDate.setHours(hour);
                         selectedDate.setMinutes(minute);
                         selectedDate.setSeconds(0);
-                        if (selectedDate.after(new Date())){
+                        if (selectedDate.getDate() == new Date().getDate() && selectedDate.getMonth() == new Date().getMonth() && selectedDate.getYear() == new Date().getYear()){
+                            Snackbar.make(layout,"תאריך לא רלוונטי", 3000).show();
+                        }
+                        else if (selectedDate.after(new Date())){
                             selectedDate.setTime(selectedDate.getTime());
                             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
                             String strDate = dateFormat.format(selectedDate);
@@ -495,32 +503,36 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             newEvent.setEventEquipments(selectedMaterials);
 
             if (userSelection.equals(" ")) openADCheckPayment();
+            else  newEvent.setEventCharacterize("G");
 
             File eventFile = creatingFile();
-            sendingFileToEmail(eventFile);
             uploadFileToFB(eventFile);
 
-            // Save in the RealTimeDataBase TODO: need to check the child writing of the events.
-            if (newEvent.getEventCharacterize() == 'G'){
-                reflive_Event.child("greenEvent").child("").setValue(newEvent);
+            String childID = newEvent.getDateOfEvent();
+            if (newEvent.getEventCharacterize().equals("G")){
+                refGreen_Event.child(childID).setValue(newEvent);
             } else{
-                reflive_Event.child("orangeEvent").child("").setValue(newEvent);
+                refOrange_Event.child(childID).setValue(newEvent);
             }
+            sendingFileToEmail(eventFile);
         }
     }
 
     @SuppressLint("SetTextI18n")
     private void uploadFileToFB(File eventFile) {
-        ProgressDialog progressDialog = new ProgressDialog(this);
+        ProgressDialog progressDialog = new ProgressDialog(newEventActivity.this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        final TextView title = new TextView(this);
-        title.setText(newEvent.getEventName()+"מבצע שמירה בענן ל");
-        title.setTextSize(18);
-        title.setPadding(0,15,30,15);
-        title.setTypeface(ResourcesCompat.getFont(title.getContext(), R.font.rubik_medium));
-        progressDialog.setCustomTitle(title);
-        progressDialog.setIcon(R.drawable.logo_white);
+
+//        final TextView title = new TextView(this);
+//        title.setText("מבצע שמירה בענן ל"+newEvent.getEventName());
+//        title.setTextSize(20);
+//        title.setPadding(0,15,30,15);
+//        title.setTextColor(Color.GRAY);
+//        title.setTypeface(ResourcesCompat.getFont(title.getContext(), R.font.rubik_semibold));
+
+//        progressDialog.setCustomTitle(title);
         progressDialog.setProgress(0);
+        progressDialog.setMessage("שומר בענן "+newEvent.getEventName());
         progressDialog.setCancelable(false);
 
 
@@ -532,14 +544,18 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
+                progressDialog.setCancelable(true);
+                progressDialog.dismiss();
                 Snackbar.make(layout,"שמירה נכשלה", 3000).show();
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                progressDialog.setCancelable(true);
-                progressDialog.show();
-                Snackbar.make(layout,"שמירה בוצעה בהצלחה", 3000).show();
+                if (progressDialog.isShowing()) {
+                    progressDialog.setCancelable(true);
+                    progressDialog.dismiss();
+                    Snackbar.make(layout,"שמירה בוצעה בהצלחה", 3000).show();
+                }
             }
         }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -553,20 +569,21 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
     @SuppressLint("LongLogTag")
     private void sendingFileToEmail(File fileToSend) {
-        Uri uri = Uri.parse("mailto:" + "shahryani96@gmail.com")
-                .buildUpon()
+        Uri uri = Uri.parse("mailto:" + "shahryani96@gmail.com").buildUpon()
                 .appendQueryParameter("to", newEvent.getCustomerEmail())
                 .appendQueryParameter("subject", "סיכום יצירת אירוע: "+newEvent.getEventName())
-                .appendQueryParameter("body", "להלן קובץ אישור העסקה:")
+                .appendQueryParameter("body", "להלן קובץ אישור העסקה: ")
                 .build();
 
         Intent emailIntent = new Intent(Intent.ACTION_SENDTO, uri);
-        Uri uriFile =  Uri.fromFile(fileToSend);
 
-        emailIntent.putExtra(Intent.EXTRA_STREAM, uriFile);
+        emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        Uri path = Uri.fromFile(new File(fileToSend.getAbsolutePath()));
+        emailIntent.putExtra(Intent.EXTRA_STREAM, path);
+
         try {
-            startActivity(Intent.createChooser(emailIntent, "Send mail..."));
-            finish();
+            startActivity(Intent.createChooser(emailIntent, "שלח באמצעות..."));
             Log.i("Finished sending email...", "");
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(this, "There is no email client installed.", Toast.LENGTH_SHORT).show();
@@ -574,43 +591,74 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
     }
 
     private File creatingFile() {
-        File dataFile = new File(rootPath, System.currentTimeMillis()+newEvent.getEventName()+".docx");
         if(!rootPath.exists()) {
             rootPath.mkdirs();
         }
 
+        PdfDocument pdfDocument = new PdfDocument();
+        Paint paint = new Paint();
+        Paint titlePaint = new Paint();
+
+        // Size of the document
+        int width, height;
+        width = 1200;
+        height = 2010;
+
+        // Setting the properties of the PDF document
+        PdfDocument.PageInfo pageInfo1 = new PdfDocument.PageInfo.Builder(width, height,1).create();
+        PdfDocument.Page page1 = pdfDocument.startPage(pageInfo1);
+        Canvas canvas = page1.getCanvas();
+
+        // START OD DOCUMENT
+        Bitmap headBM = BitmapFactory.decodeResource(getResources(), R.drawable.pdf_head);
+        Bitmap scaledbmp1 = Bitmap.createScaledBitmap(headBM,width,height/5,false);
+        canvas.drawBitmap(scaledbmp1, 0,0,paint);
+
+        titlePaint.setTextAlign(Paint.Align.RIGHT);
+        titlePaint.setTextSize(15);
+        paint.setTypeface(Typeface.create("Calibri",Typeface.NORMAL));
+        canvas.drawText( ""+newEvent.getCustomerName(), (float) (width*0.7), 320, titlePaint);
+        canvas.drawText(""+newEvent.getCustomerPhone(),(float) (width*0.7), 350, titlePaint);
+        canvas.drawText(""+newEvent.getCustomerEmail(),(float) (width*0.7), 380, titlePaint);
+
+        Bitmap priceBM = BitmapFactory.decodeResource(getResources(), R.drawable.pdf_prize);
+        Bitmap scaledbmp2 = Bitmap.createScaledBitmap(priceBM,858,45,false);
+        canvas.drawBitmap(scaledbmp2, (width-858)/2,height/5+100,paint);
+
+        Paint prizePaint = new Paint();
+        prizePaint.setTextAlign(Paint.Align.CENTER);
+        prizePaint.setTextSize(15);
+        paint.setTypeface(Typeface.create("Calibri",Typeface.BOLD));
+        canvas.drawText( ""+newEvent.getEventCost(), (float) (width*0.6), (float) (height/5+122.5), prizePaint);
+
+        // Parsing the String of the date to a format String
+        DateFormat format = new SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH);
+        Date tempSelectedDate  = null;
         try {
-            XWPFDocument xwpfDocument = new XWPFDocument();
-            XWPFParagraph xwpfParagraph = xwpfDocument.createParagraph();
-            XWPFRun xwpfRun = xwpfParagraph.createRun();
-
-            xwpfRun.setText("TEST");
-            xwpfRun.setFontSize(24);
-
-            FileOutputStream fileOutputStream = new FileOutputStream(dataFile.getPath());
-            xwpfDocument.write(fileOutputStream);
-
-            if (fileOutputStream != null){
-                fileOutputStream.flush();
-                fileOutputStream.close();
-            }
-            xwpfDocument.close();
-
-            // Casting from 'Word' to 'Pdf'
-//            InputStream in = new FileInputStream(new File(dataFile.getPath()));
-//            XWPFDocument document = new XWPFDocument(in);
-//            PdfOptions options = PdfOptions.create();
-//            OutputStream out = new FileOutputStream(new File(dataFile.getName()+".pdf"));
-//            PdfConverter.getInstance().convert(document, out, options);
-//
-//            document.close();
-//            out.close();
-        }
-        catch (Exception e){
+            tempSelectedDate = format.parse(newEvent.getDateOfCreation());
+        } catch (ParseException e) {
             e.printStackTrace();
         }
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        String strDate = dateFormat.format(Objects.requireNonNull(tempSelectedDate));
+        canvas.drawText(""+strDate,(float) (width*0.43), (float) (height/5+122.5), prizePaint);
 
-        // TODO: Save the PDF file that is created in the internal storage
+        // END OF DOCUMENT
+        Bitmap endBM = BitmapFactory.decodeResource(getResources(), R.drawable.pdf_end);
+        Bitmap scaledbmp3 = Bitmap.createScaledBitmap(endBM,1191,618,false);
+        canvas.drawBitmap(scaledbmp3, (width-1191)/2,height-618,paint);
+
+        pdfDocument.finishPage(page1);
+
+        File dataFile = new File(rootPath, System.currentTimeMillis()+newEvent.getEventName()+".pdf");
+
+        try {
+            pdfDocument.writeTo(new FileOutputStream(dataFile));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        pdfDocument.close();
+
         return dataFile;
     }
 
@@ -625,7 +673,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         adb.setNegativeButton("אוקיי", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                newEvent.setEventCharacterize('G');
+                newEvent.setEventCharacterize("G");
                 DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.green_flag));
                 dialogInterface.dismiss();
             }
@@ -634,7 +682,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         adb.setPositiveButton("לא עכשיו", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                newEvent.setEventCharacterize('O');
+                newEvent.setEventCharacterize("O");
                 DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.orange_flag));
                 dialogInterface.dismiss();
             }

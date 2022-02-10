@@ -1,7 +1,7 @@
 package com.example.betaversion;
 
+import static com.example.betaversion.FBref.refGreen_Event;
 import static com.example.betaversion.FBref.refReminders;
-import static com.example.betaversion.FBref.reflive_Event;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -42,9 +42,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     BottomNavigationView bottomNavigationView;
 
     ListView closeEventsLV, remaindersLV, missionsLV;
-    ArrayList<String> titleEvents, dateEvents, phonesList;
+    ArrayList<String> titleEvents, dateEvents, phonesList, namesList;
     ArrayList<Integer> employeesList;
-    ArrayList<Character> eventsCharacterizeList;
 
     ArrayList<String> remindersTitleList, remindersContextList;
     ArrayList<String> remindersAudioContentList;
@@ -79,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         missionsLV.setOnItemClickListener(this);
         remaindersLV.setOnItemClickListener(this);
 
+
         remindersTitleList = new ArrayList<>();
         remindersContextList = new ArrayList<>();
         remindersAudioContentList = new ArrayList<>();
@@ -89,20 +89,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         dateEvents = new ArrayList<>();
         phonesList = new ArrayList<>();
         employeesList = new ArrayList<>();
-        eventsCharacterizeList = new ArrayList<>();
+        namesList = new ArrayList<>();
 
-        readAllCloseEvents();
         readAllRemainders();
+        readAllCloseEvents();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         bottomNavigationView.setSelectedItemId(R.id.empty);
+        readAllRemainders();
+        readAllCloseEvents();
     }
 
     private void readAllCloseEvents() {
-        Query query = reflive_Event.child("greenEvent").limitToFirst(2);
+        Query query = refGreen_Event.limitToFirst(2);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
@@ -110,21 +112,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 dateEvents.clear();
                 phonesList.clear();
                 employeesList.clear();
-                eventsCharacterizeList.clear();
+                namesList.clear();
 
-                Event tempEvent;
                 for(DataSnapshot data : dS.getChildren()) {
-                    tempEvent = data.getValue(Event.class);
+                    Event tempEvent = data.getValue(Event.class);
 
                     titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
                     dateEvents.add(tempEvent.getDateOfEvent());
                     phonesList.add(tempEvent.getCustomerPhone());
                     employeesList.add(tempEvent.getEventEmployees());
-                    eventsCharacterizeList.add(tempEvent.getEventCharacterize());
+                    namesList.add(tempEvent.getCustomerName());
                 }
-                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, phonesList, employeesList, eventsCharacterizeList,0);
-                closeEventsLV.setAdapter(customAdapterEvents);
 
+                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,0);
+                closeEventsLV.setAdapter(customAdapterEvents);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -152,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     isTextList.add(temp.isText());
                     remindersLastDateToRemindList.add(temp.getLastDateToRemind());
                 }
+
                 CustomAdapterReminder customAdapterReminder = new CustomAdapterReminder(getApplicationContext(), remindersTitleList, remindersContextList, remindersAudioContentList, isTextList, remindersLastDateToRemindList);
                 remaindersLV.setAdapter(customAdapterReminder);
             }
@@ -169,9 +171,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //            startActivity(si);
         }
         else if (view == closeEventsLV){
-//            Intent si = new Intent(this, eventsActivity.class);
-//            si.putExtra("Index", i);
-//            startActivity(si);
+            Intent si = new Intent(this, eventsActivity.class);
+            si.putExtra("Index", i);
+            startActivity(si);
         }
         else if (view == remaindersLV){
             Intent si = new Intent(this, reminderActivity.class);
@@ -199,11 +201,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             startActivity(si);
         }
         else if (id == R.id.events){
-            Toast.makeText(this, "All Events", Toast.LENGTH_SHORT).show();
             // לכל item יהיה ניווט, צפייה, ועדכון
             si = new Intent(this, eventsActivity.class);
             startActivity(si);
-            finish();
         }
         else if (id == R.id.newMissions){
             Toast.makeText(this, "New Missions", Toast.LENGTH_SHORT).show();
@@ -290,5 +290,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void moveToReminderAct(View view) {
         startActivity(new Intent(this, reminderActivity.class));
+    }
+
+    public void moveToEventsActivity(View view) {
+        startActivity(new Intent(this, eventsActivity.class));
     }
 }

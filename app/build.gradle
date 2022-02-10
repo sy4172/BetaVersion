@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.betaversion"
-        minSdk 26 //21
+        minSdk 21
         targetSdk 30
         versionCode 1
         versionName "1.0"
@@ -53,9 +53,4 @@ dependencies {
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-
-    // IN TEST
-    implementation 'org.apache.poi:poi-ooxml:4.1.2'
-    implementation 'javax.xml.stream:stax-api:1.0'
-    //implementation 'fr.opensagres.poi.xwpf.converter.pdf:2.0.2.jar'
 }

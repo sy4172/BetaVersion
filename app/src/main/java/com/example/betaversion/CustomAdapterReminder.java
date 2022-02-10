@@ -2,7 +2,6 @@ package com.example.betaversion;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.media.MediaPlayer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,9 +38,6 @@ public class CustomAdapterReminder extends BaseAdapter{
         this.isText = isText;
         this.lastDateToRemindList = lastDateToRemindList;
         inflter = (LayoutInflater.from(applicationContext));
-    }
-
-    public CustomAdapterReminder(Context applicationContext, ArrayList<Integer> selections) {
     }
 
     @Override

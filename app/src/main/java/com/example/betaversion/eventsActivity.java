@@ -13,7 +13,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,22 +29,20 @@ import java.util.Objects;
 
 /**
  * * @author    Shahar Yani
- * * @version  	1.1
+ * * @version  	2.5
  * * @since		07/02/2022
  *
  * * This eventsActivity.class displays whole events with sort.
  */
-public class eventsActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, AdapterView.OnItemClickListener {
+public class eventsActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
 
-    Spinner selectionSpinner;
-    ListView eventsList;
-
+    ListView eventsList, selectionLV;
+    // TODO: Need to think about all the options to display in the ListView eventsList object
     String[] selections = new String[]{"ירוק","כתום","אדום","אפור"}; // Includes all the status of the events
     String userSelection;
 
-
-    ArrayList<String> titleEvents, dateEvents, phonesList;
+    ArrayList<String> titleEvents, dateEvents, phonesList, namesList;
     ArrayList<Integer> employeesList;
 
     @Override
@@ -58,13 +55,13 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
         actionBar.setHomeButtonEnabled(true);
 
         eventsList = findViewById(R.id.eventsList);
-        selectionSpinner = findViewById(R.id.selectionSpinner);
+        selectionLV = findViewById(R.id.selectionLV);
 
-        selectionSpinner.setOnItemSelectedListener(this);
+        selectionLV.setOnItemClickListener(this);
         eventsList.setOnItemClickListener(this);
 
         ArrayAdapter<String> adp = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, selections);
-        selectionSpinner.setAdapter(adp);
+        selectionLV.setAdapter(adp);
 
         userSelection = "ירוק"; // To set as a default selection at start
 
@@ -72,6 +69,9 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
         dateEvents = new ArrayList<>();
         phonesList = new ArrayList<>();
         employeesList = new ArrayList<>();
+        namesList = new ArrayList<>();
+
+        readLiveEvents("greenEvent",0); // Show the default option
     }
 
     /**
@@ -115,61 +115,6 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
         ad.show();
     }
 
-    @Override
-    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        userSelection = selections[i];
-        switch (userSelection) {
-            case "ירוק":
-            {
-                Toast.makeText(this, "Green", Toast.LENGTH_SHORT).show();
-                readLiveEvents("greenEvent",0);
-            }
-            break;
-            case "כתום":
-            {
-                Toast.makeText(this, "ORANGE", Toast.LENGTH_SHORT).show();
-                readLiveEvents("orangeEvent",1);
-            }
-            break;
-            case "אדום":
-            {
-                Toast.makeText(this, "RED", Toast.LENGTH_SHORT).show();
-                readLiveEvents("redEvent",2);
-            }
-            break;
-            case "אפור":
-            {
-                refEnd_Event.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dS) {
-                        titleEvents.clear();
-                        dateEvents.clear();
-                        phonesList.clear();
-                        employeesList.clear();
-
-                        Event tempEvent;
-                        for(DataSnapshot data : dS.getChildren()) {
-                            tempEvent = data.getValue(Event.class);
-
-                            titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
-                            dateEvents.add(tempEvent.getDateOfEvent());
-                            phonesList.add(tempEvent.getCustomerPhone());
-                            employeesList.add(tempEvent.getEventEmployees());
-                        }
-                        CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, phonesList, employeesList, null,3);
-                        eventsList.setAdapter(customAdapterEvents);
-
-                    }
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                    }
-                });
-            }
-            break;
-
-            default: {}
-        }
-    }
 
     private void readLiveEvents(String status, int flagID) {
         reflive_Event.child(status).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -179,6 +124,7 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
                 dateEvents.clear();
                 phonesList.clear();
                 employeesList.clear();
+                namesList.clear();
 
                 Event tempEvent;
                 for(DataSnapshot data : dS.getChildren()) {
@@ -188,8 +134,9 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
                     dateEvents.add(tempEvent.getDateOfEvent());
                     phonesList.add(tempEvent.getCustomerPhone());
                     employeesList.add(tempEvent.getEventEmployees());
+                    namesList.add(tempEvent.getCustomerName());
                 }
-                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, phonesList, employeesList, null, flagID);
+                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList, flagID);
                 eventsList.setAdapter(customAdapterEvents);
 
             }
@@ -200,10 +147,69 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
     }
 
     @Override
-    public void onNothingSelected(AdapterView<?> adapterView) {
+    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        userSelection = selections[i];
+        switch (userSelection) {
+            case "ירוק": {
+                Toast.makeText(this, "Green", Toast.LENGTH_SHORT).show();
+                readLiveEvents("greenEvent", 0);
+            }
+            break;
+            case "כתום": {
+                Toast.makeText(this, "ORANGE", Toast.LENGTH_SHORT).show();
+                readLiveEvents("orangeEvent", 1);
+            }
+            break;
+            case "אדום": {
+                Toast.makeText(this, "RED", Toast.LENGTH_SHORT).show();
+                readLiveEvents("redEvent", 2);
+            }
+            break;
+            case "אפור": {
+                refEnd_Event.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dS) {
+                        titleEvents.clear();
+                        dateEvents.clear();
+                        phonesList.clear();
+                        employeesList.clear();
+                        namesList.clear();
+
+                        Event tempEvent;
+                        for (DataSnapshot data : dS.getChildren()) {
+                            tempEvent = data.getValue(Event.class);
+
+                            titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
+                            dateEvents.add(tempEvent.getDateOfEvent());
+                            phonesList.add(tempEvent.getCustomerPhone());
+                            employeesList.add(tempEvent.getEventEmployees());
+                            namesList.add(tempEvent.getEventName());
+                        }
+                        CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(), titleEvents, dateEvents, namesList, phonesList, employeesList, 3);
+                        eventsList.setAdapter(customAdapterEvents);
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                    }
+                });
+            }
+            break;
+
+            default: {
+            }
+
+//        if (view == selectionLV){
+//
+//            }
+//        } else {
+//
+//        }
+        }
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+    public void moveToPreviousAct(View view) {
+        super.onBackPressed();
     }
 }

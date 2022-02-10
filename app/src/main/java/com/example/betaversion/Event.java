@@ -17,7 +17,7 @@ public class Event {
     private int eventCost;
     private String eventInformation;
     private String eventContent;
-    private char eventCharacterize;
+    private String eventCharacterize;
     private String eventPayment;
     private int eventEmployees;
     private ArrayList<Material> eventEquipments;
@@ -49,7 +49,7 @@ public class Event {
      * @param eventMissions     the event missions
      * @param eventShows        the event shows
      */
-    public Event(String customerName, String customerPhone, String customerEmail, String dateOfEvent, String dateOfCreation, String eventName, String eventLocation, int eventCost, String eventInformation, String eventContent, char eventCharacterize, String eventPayment, int eventEmployees, ArrayList<Material> eventEquipments, ArrayList<Mission> eventMissions, ArrayList<Shows> eventShows){
+    public Event(String customerName, String customerPhone, String customerEmail, String dateOfEvent, String dateOfCreation, String eventName, String eventLocation, int eventCost, String eventInformation, String eventContent, String eventCharacterize, String eventPayment, int eventEmployees, ArrayList<Material> eventEquipments, ArrayList<Mission> eventMissions, ArrayList<Shows> eventShows){
         this.customerName = customerName;
         this.customerPhone = customerPhone;
         this.customerEmail = customerEmail;
@@ -236,7 +236,7 @@ public class Event {
      *
      * @return the event characterize
      */
-    public char getEventCharacterize() {
+    public String getEventCharacterize() {
         return eventCharacterize;
     }
 
@@ -245,7 +245,7 @@ public class Event {
      *
      * @param eventCharacterize the event characterize
      */
-    public void setEventCharacterize(char eventCharacterize) {
+    public void setEventCharacterize(String eventCharacterize) {
         this.eventCharacterize = eventCharacterize;
     }
 

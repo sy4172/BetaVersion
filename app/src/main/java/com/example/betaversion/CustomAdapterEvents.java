@@ -23,27 +23,25 @@ import java.util.Objects;
 
 public class CustomAdapterEvents extends BaseAdapter {
     Context context;
-    ArrayList<String> titleEvents, dateEvents, phonesList;
+    ArrayList<String> titleEvents, dateEvents, phonesList, namesList;
     ArrayList<Integer> employeesList;
-    ArrayList<Character> eventsCharacterizeList;
     LayoutInflater inflter;
     int flagID;
 
-    public CustomAdapterEvents(Context applicationContext,ArrayList<String> titleEvents, ArrayList<String> dateEvents, ArrayList<String> phonesList, ArrayList<Integer> employeesList, ArrayList<Character> eventsCharacterizeList, int flagID){
-        this.context = applicationContext;
+    public CustomAdapterEvents(Context applicationContext,ArrayList<String> titleEvents, ArrayList<String> dateEvents, ArrayList<String> namesList, ArrayList<String> phonesList, ArrayList<Integer> employeesList, int flagID){
+        this.context = context;
         this.titleEvents = titleEvents;
         this.dateEvents = dateEvents;
         this.phonesList = phonesList;
+        this.namesList = namesList;
         this.employeesList = employeesList;
-        this.eventsCharacterizeList = eventsCharacterizeList;
         this.flagID = flagID;
-
         inflter = (LayoutInflater.from(applicationContext));
     }
 
     @Override
     public int getCount() {
-        return 0;
+        return titleEvents.size();
     }
 
     @Override
@@ -56,7 +54,7 @@ public class CustomAdapterEvents extends BaseAdapter {
         return 0;
     }
 
-    @SuppressLint({"SetTextI18n", "ViewHolder", "InflateParams"})
+    @SuppressLint({"SetTextI18n"})
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         view = inflter.inflate(R.layout.custom_lv_close_events,null);
@@ -65,7 +63,7 @@ public class CustomAdapterEvents extends BaseAdapter {
         TextView dateOfEventTV = (TextView) view.findViewById(R.id.dateOfEventTV);
         TextView titleTV = (TextView) view.findViewById(R.id.titleTV);
         TextView eventEmployeesTV = (TextView) view.findViewById(R.id.eventEmployeesTV);
-        TextView customerPhoneTV = (TextView) view.findViewById(R.id.customerPhoneTV);
+        TextView customerDetailsTV = (TextView) view.findViewById(R.id.customerDetailsTV);
 
         DateFormat format = new SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH);
         Date tempSelectedDate  = null;
@@ -74,14 +72,17 @@ public class CustomAdapterEvents extends BaseAdapter {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        dateOfEventTV.setText(Objects.requireNonNull(tempSelectedDate).getDate()+"/"+tempSelectedDate.getMonth()+1+"/"+tempSelectedDate.getYear());
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        String strDate = dateFormat.format(Objects.requireNonNull(tempSelectedDate));
+        dateOfEventTV.setText(strDate);
         titleTV.setText(titleEvents.get(i));
-        eventEmployeesTV.setText(employeesList.get(i));
-        customerPhoneTV.setText(phonesList.get(i));
+        eventEmployeesTV.setText(String.valueOf(employeesList.get(i)));
+        customerDetailsTV.setText(phonesList.get(i)+" | "+ namesList.get(i));
 
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 0.2f);
-        lp.setMargins(10, 10, 10, 10);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 3.5f);
+        lp.setMargins(20, 5, 0, 0);
         flagIV.setLayoutParams(lp);
+        flagIV.setImageResource(R.drawable.ic_baseline_flag);
         if (flagID == 0){
             DrawableCompat.setTint(flagIV.getDrawable(), ContextCompat.getColor(view.getContext(), R.color.green_flag));
         }

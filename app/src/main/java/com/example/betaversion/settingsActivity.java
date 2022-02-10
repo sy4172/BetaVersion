@@ -2,10 +2,6 @@ package com.example.betaversion;
 
 import static com.example.betaversion.FBref.refBusinessEqu;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -13,11 +9,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.ContextMenu;
-import android.view.GestureDetector;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
@@ -28,7 +21,10 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -226,27 +222,6 @@ public class settingsActivity extends AppCompatActivity{
         super.onBackPressed();
     }
 
-    public void checkIfToExit(View view) {
-        AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle("לצאת ולא לשמור?");
-
-        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
-
-        adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                moveToPreviousAct();
-            }
-        });
-
-        AlertDialog ad = adb.create();
-        ad.show();
-    }
 
     /**
      * Move to create an event. when the FloatingActionButton is pressed.
