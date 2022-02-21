@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'com.google.gms.google-services'
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
 android {
@@ -39,8 +40,9 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
     implementation 'androidx.navigation:navigation-ui:2.3.5'
     implementation 'com.google.firebase:firebase-auth:21.0.1'
-    implementation 'com.google.android.gms:play-services-maps:18.0.0'
-    implementation 'com.google.android.gms:play-services-location:18.0.0'
+    implementation 'com.google.android.gms:play-services-maps:18.0.2'
+    implementation 'com.google.android.gms:play-services-location:19.0.1'
+    implementation 'com.google.android.libraries.maps:maps:3.1.0-beta'
 
     implementation 'com.google.firebase:firebase-database:20.0.3'
     implementation 'com.firebaseui:firebase-ui-auth:6.1.0'

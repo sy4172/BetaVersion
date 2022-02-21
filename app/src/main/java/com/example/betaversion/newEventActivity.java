@@ -3,6 +3,7 @@ package com.example.betaversion;
 import static com.example.betaversion.FBref.refBusinessEqu;
 import static com.example.betaversion.FBref.refGreen_Event;
 import static com.example.betaversion.FBref.refOrange_Event;
+import static com.example.betaversion.FBref.reflive_Event;
 import static com.example.betaversion.FBref.storageRef;
 
 import android.annotation.SuppressLint;
@@ -48,6 +49,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -83,20 +85,24 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
     ImageView flag;
     ChipGroup chipGroupShows, chipGroupMaterials;
     EditText nameCustomerET, emailCustomerET, phoneCustomerET, locationET, contentET;
+    FloatingActionButton fab;
 
     String customerName, customerPhone, customerEmail, eventLocation, eventContent, userSelection, eventStrDate;
-    int eventCost;
+    int eventCost, amountOfUsedMaterial;
     Date selectedDate, currentDate;
+    boolean editingMode, updateMode;
+    String previousEventDate, previousEventName, previousEventStatus;
 
     ArrayList<Shows> allShows, selectedShows;
-    ArrayList<Material> allMaterials, selectedMaterials;
-    ArrayList<String> showsKeyList, showsDesList, materialsKeyList, materialsUsedList;
+    ArrayList<Material> allMaterials;
+    ArrayList<Material> selectedMaterials;
+    ArrayList<String> showsKeyList, showsDesList, materialsKeyList, materialsUsedList, allEventsDates;
     ArrayList<Integer> showsDataList, materialsDataList;
 
     Spinner paymentSpinner;
-    String [] paymentSelection = new String[]{" ","שוטף +30","שוטף +60","שוטף +90"};
+    String [] paymentSelection; // Need to check according to Yakkov request
 
-    Event newEvent;
+    Event newEvent, updatedEvent;
     File rootPath;
 
     @Override
@@ -119,7 +125,9 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         chipGroupMaterials = findViewById(R.id.chipGroupMaterials);
         paymentSpinner = findViewById(R.id.paymentSpinner);
         totalEmployeeTV = findViewById(R.id.totalEmployeeTV);
+        fab = findViewById(R.id.fab);
 
+        paymentSelection = new String[]{"בחר אמצעי תשלום","שוטף +30","שוטף +60","שוטף +90"};
         ArrayAdapter<String> adp = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, paymentSelection);
         paymentSpinner.setAdapter(adp);
 
@@ -145,17 +153,64 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
         allShows = new ArrayList<>();
         showsKeyList = new ArrayList<>();
+        selectedShows = new ArrayList<>();
         showsDataList = new ArrayList<>();
         showsDesList = new ArrayList<>();
 
         allMaterials = new ArrayList<>();
         materialsKeyList = new ArrayList<>();
+        selectedMaterials = new ArrayList<>();
         materialsDataList = new ArrayList<>();
         materialsUsedList = new ArrayList<>();
 
+        editingMode = true;
+        updateMode = false;
+        amountOfUsedMaterial = -1;
+        userSelection = paymentSelection[0];
+
+        Intent gi = getIntent();
+        if (gi.getStringExtra("flag") != null){
+            String eventId = gi.getStringExtra("eventID");
+            String status = "";
+            editingMode = gi.getBooleanExtra("editingMode",false);
+            updateMode = gi.getBooleanExtra("updatingMode", false);
+            if (gi.getStringExtra("flag").equals("G")){
+                DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.green_flag));
+                status = "greenEvent";
+            }
+            else if (gi.getStringExtra("flag").equals("O")){
+                DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.orange_flag));
+                status = "orangeEvent";
+            }
+            else if (gi.getStringExtra("flag").equals("R")){
+                DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.red_flag));
+                status = "redEvent";
+            }
+            else{
+                DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.gray_700));
+                status = "endEvent";
+            }
+
+            if (updateMode) {
+                fab.setVisibility(View.VISIBLE);
+                editingMode = false;
+            } else if (!editingMode){
+                fab.setVisibility(View.GONE);
+                // make the location intent here
+            }
+            else{
+                fab.setVisibility(View.VISIBLE);
+            }
+
+
+            displayEvent(eventId, status);
+        }
+
         getAllShowsToDisplay();
         getAllMaterialsToDisplay();
+        getAllEventsToDisplay();
 
+        allEventsDates = new ArrayList<>();
         newEvent = new Event();
         selectedMaterials = new ArrayList<>();
         selectedShows = new ArrayList<>();
@@ -165,6 +220,108 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         if(!rootPath.exists()) {
             rootPath.mkdirs();
         }
+    }
+
+    private void displayEvent(String eventId, String status) {
+        reflive_Event.child(status).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dS) {
+
+                for (DataSnapshot data : dS.getChildren()) {
+                    Event tempEvent = data.getValue(Event.class);
+
+                    String tempEventId = Objects.requireNonNull(tempEvent).getDateOfEvent();
+                    if (eventId.equals(tempEventId)){
+                        eventTitleTV.setText(tempEvent.getEventName());
+                        nameCustomerET.setText(tempEvent.getCustomerName());
+                        emailCustomerET.setText(tempEvent.getCustomerEmail());
+                        phoneCustomerET.setText(tempEvent.getCustomerPhone());
+                        locationET.setText(tempEvent.getEventLocation());
+
+                        selectedShows = tempEvent.getEventShows();
+                        selectedMaterials = tempEvent.getEventEquipments();
+
+                        // Formatting the date to be visualizer
+                        String fullDatestr = tempEvent.getDateOfEvent();
+                        selectedDate.setYear(Integer.parseInt(fullDatestr.substring(0,4))-1900);
+                        fullDatestr = fullDatestr.substring(4);
+                        selectedDate.setMonth(Integer.parseInt(fullDatestr.substring(0,2))-1);
+                        fullDatestr = fullDatestr.substring(2);
+                        selectedDate.setDate(Integer.parseInt(fullDatestr.substring(0,2)));
+                        fullDatestr = fullDatestr.substring(2);
+                        selectedDate.setHours(Integer.parseInt(fullDatestr.substring(0,2)));
+                        fullDatestr = fullDatestr.substring(2);
+                        selectedDate.setMinutes(Integer.parseInt(fullDatestr.substring(0,2)));
+                        selectedDate.setSeconds(0);
+                        selectedDate.setTime(selectedDate.getTime());
+                        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                        String strDate = dateFormat.format(selectedDate);
+                        dateTV.setText(strDate);
+
+                        contentET.setText(tempEvent.getEventContent());
+                        totalEmployeeTV.setText(String.valueOf(tempEvent.getEventEmployees()));
+                        eventCost = tempEvent.getEventCost();
+                        eventCostTV.setText(String.valueOf(eventCost));
+
+                        int pos = 0;
+                        for (int i=0; i<paymentSelection.length; i++){
+                            if (paymentSelection[i].equals(tempEvent.getEventPayment())){
+                                pos = i;
+                            }
+                        }
+                        paymentSpinner.setSelection(pos);
+
+                        if (updateMode){
+                            previousEventDate = tempEvent.getDateOfEvent();
+                            previousEventName = tempEvent.getEventName();
+                            previousEventStatus = tempEvent.getEventCharacterize();
+                            updatedEvent = new Event(tempEvent.getCustomerName(), tempEvent.getCustomerPhone(), tempEvent.getCustomerEmail(), tempEvent.getDateOfEvent(), tempEvent.getDateOfCreation(), tempEvent.getEventName(), tempEvent.getEventLocation(), tempEvent.getEventCost(), tempEvent.getEventInformation(), tempEvent.getEventContent(), tempEvent.getEventCharacterize(), tempEvent.getEventPayment(), tempEvent.getEventEmployees(), tempEvent.getEventEquipments(), tempEvent.getEventMissions(), tempEvent.getEventShows());
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+    }
+
+    // TODO: Continue to reading from the FB
+    private void getAllEventsToDisplay() {
+        refGreen_Event.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dS) {
+                allEventsDates.clear();
+
+                for (DataSnapshot data : dS.getChildren()) {
+                    Event tempEvent = data.getValue(Event.class);
+
+                    allEventsDates.add(Objects.requireNonNull(tempEvent).getDateOfEvent());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+
+        refOrange_Event.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dS) {
+
+                for (DataSnapshot data : dS.getChildren()) {
+                    Event tempEvent = data.getValue(Event.class);
+
+                    allEventsDates.add(Objects.requireNonNull(tempEvent).getDateOfEvent());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     /**
@@ -190,43 +347,114 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                     showsDesList.add(tempShow.getDescription());
                 }
 
-                for (int i = 0; i < showsKeyList.size() - 1; i++) {
-                    Chip tempChip = new Chip(newEventActivity.this);
-                    tempChip.setText(showsKeyList.get(i));
-                    tempChip.setTextAppearance(R.style.ChipTextAppearance);
-                    tempChip.setChipIconResource(R.drawable.null1);
-                    tempChip.setChipBackgroundColorResource(R.color.brown_200);
-                    final boolean[] isToAdd = {true};
-                    int index = i;
+                if (editingMode){
+                    for (int i = 0; i < showsKeyList.size(); i++) {
+                        Chip tempChip = new Chip(newEventActivity.this);
+                        tempChip.setText(showsKeyList.get(i));
+                        tempChip.setTextAppearance(R.style.ChipTextAppearance);
+                        tempChip.setChipIconResource(R.drawable.null1);
+                        tempChip.setChipBackgroundColorResource(R.color.brown_200);
+                        final boolean[] isToAdd = {true};
+                        int index = i;
 
-                    // Adding the onClick method that will add the selected shows to the Event constructor
+                        // Adding the onClick method that will add the selected shows to the Event constructor
 
-                    tempChip.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            // the variable isToAdd became as an array due to the fact that it can't possible to use a general variable in an anonymous method
-                            if (isToAdd[0]){
-                                tempChip.setChipIconResource(R.drawable.ic_check);
-                                tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
-                                isToAdd[0] = false;
-                                selectedShows.add(allShows.get(index));
-                                eventCost += showsDataList.get(index);
-                                eventCostTV.setText(String.valueOf(eventCost));
-                            }
-                            else{
-                                tempChip.setChipIconResource(R.drawable.null1);
-                                isToAdd[0] = true;
-
-                                if (eventCost > 0){
-                                    eventCost -= showsDataList.get(index);
+                        tempChip.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                // the variable isToAdd became as an array due to the fact that it can't possible to use a general variable in an anonymous method
+                                if (isToAdd[0]){
+                                    tempChip.setChipIconResource(R.drawable.ic_check);
+                                    tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
+                                    isToAdd[0] = false;
+                                    selectedShows.add(allShows.get(index));
+                                    eventCost += showsDataList.get(index);
                                     eventCostTV.setText(String.valueOf(eventCost));
                                 }
+                                else{
+                                    tempChip.setChipIconResource(R.drawable.null1);
+                                    isToAdd[0] = true;
+
+                                    if (eventCost > 0){
+                                        eventCost -= showsDataList.get(index);
+                                        eventCostTV.setText(String.valueOf(eventCost));
+                                    }
+                                }
+                            }
+                        });
+                        chipGroupShows.addView(tempChip);
+                    }
+                }
+                else if (updateMode){
+                    for (int i = 0; i < showsKeyList.size(); i++) {
+                        Chip tempChip = new Chip(newEventActivity.this);
+                        tempChip.setText(showsKeyList.get(i));
+                        tempChip.setTextAppearance(R.style.ChipTextAppearance);
+                        for (int j = 0; j<selectedShows.size(); j++) {
+                            if (selectedShows.get(j).getShowTitle().equals((showsKeyList.get(i)))) {
+                                tempChip.setChipIconResource(R.drawable.ic_check);
+                                tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
+                            }
+                            else {
+                                tempChip.setChipIconResource(R.drawable.null1);
                             }
                         }
-                    });
+                        tempChip.setChipBackgroundColorResource(R.color.brown_200);
+                        boolean[] isToAdd = {true};
+                        int index = i;
 
+                        // Adding the onClick method that will add the selected shows to the Event constructor
 
-                    chipGroupShows.addView(tempChip);
+                        tempChip.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                // the variable isToAdd became as an array due to the fact that it can't possible to use a general variable in an anonymous method
+                                if (selectedShows.get(index).getShowTitle().equals(tempChip.getText()) && isToAdd[0]){
+                                    Toast.makeText(newEventActivity.this, "true", Toast.LENGTH_SHORT).show();
+                                    tempChip.setChipIconResource(R.drawable.null1);
+                                    isToAdd[0] = true;
+                                    selectedShows.remove(index);
+                                    if (eventCost > 0){
+                                        eventCost -= showsDataList.get(index);
+                                        eventCostTV.setText(String.valueOf(eventCost));
+                                    }
+                                }
+                                else if (isToAdd[0]){
+                                    tempChip.setChipIconResource(R.drawable.ic_check);
+                                    tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
+                                    isToAdd[0] = false;
+                                    selectedShows.add(allShows.get(index));
+                                    eventCost += showsDataList.get(index);
+                                    eventCostTV.setText(String.valueOf(eventCost));
+                                }
+                                else{
+                                    tempChip.setChipIconResource(R.drawable.null1);
+                                    isToAdd[0] = true;
+                                    selectedShows.remove(index);
+                                    if (eventCost > 0){
+                                        eventCost -= showsDataList.get(index);
+                                        eventCostTV.setText(String.valueOf(eventCost));
+                                    }
+                                }
+                            }
+                        });
+                        chipGroupShows.addView(tempChip);
+                    }
+                }
+                else {
+                    for (int i = 0; i < showsKeyList.size(); i++) {
+                        for (int j = 0; j<selectedShows.size(); j++){
+                            if (selectedShows.get(j).getShowTitle().equals((showsKeyList.get(i)))){
+                                Chip tempChip = new Chip(newEventActivity.this);
+                                tempChip.setText(showsKeyList.get(i));
+                                tempChip.setTextAppearance(R.style.ChipTextAppearance);
+                                tempChip.setChipIconResource(R.drawable.ic_check);
+                                tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
+                                tempChip.setChipBackgroundColorResource(R.color.brown_200);
+                                chipGroupShows.addView(tempChip);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -234,6 +462,40 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
+    }
+
+    private void getMaterialAmountAD(int index) {
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        adb.setTitle("כמה לקחת מ"+materialsKeyList.get(index));
+        final EditText amountET = new EditText(this);
+        adb.setView(amountET);
+
+        amountET.setText(materialsUsedList.get(index));
+        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+                amountOfUsedMaterial = -1;
+            }
+        });
+
+        adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                int selectedAmount = Integer.parseInt(amountET.getText().toString());
+                // Checks if the user selected a real amount of the CURRENT material
+                if (selectedAmount > (materialsDataList.get(index) - Integer.parseInt(materialsUsedList.get(index)))){
+                    adb.setMessage("אין אפשרות כזו");
+                }
+                else{
+                    amountOfUsedMaterial = selectedAmount;
+                    dialogInterface.dismiss();
+                }
+            }
+        });
+
+        AlertDialog ad = adb.create();
+        ad.show();
     }
 
     /**
@@ -258,36 +520,111 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                     materialsUsedList.add(String.valueOf(temp.getUsedAmount()));
                 }
 
-                for (int i = 0; i < materialsKeyList.size() - 1; i++) {
-                    Chip tempChip = new Chip(newEventActivity.this);
-                    tempChip.setText(materialsKeyList.get(i));
-                    tempChip.setTextAppearance(R.style.ChipTextAppearance);
-                    tempChip.setChipIconResource(R.drawable.null1);
-                    tempChip.setChipBackgroundColorResource(R.color.brown_200);
-                    final boolean[] isToAdd = {true};
-                    int index = i;
+                if (editingMode){
+                    for (int i = 0; i < materialsKeyList.size(); i++) {
+                        Chip tempChip = new Chip(newEventActivity.this);
+                        tempChip.setText(materialsKeyList.get(i));
+                        tempChip.setTextAppearance(R.style.ChipTextAppearance);
+                        tempChip.setChipIconResource(R.drawable.null1);
+                        tempChip.setChipBackgroundColorResource(R.color.brown_200);
+                        boolean[] isToAdd = {true};
+                        int index = i;
 
-                    // Adding the onClick method that will add the selected shows to the Event constructor
+                        // Adding the onClick method that will add the selected shows to the Event constructor
 
-                    tempChip.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            // the variable isToAdd became as an array due to the fact that it can't possible to use a general variable in an anonymous method
-                            if (isToAdd[0]){
+                        tempChip.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                // the variable isToAdd became as an array due to the fact that it can't possible to use a general variable in an anonymous method
+                                if (isToAdd[0]){
+                                    getMaterialAmountAD(index);
+                                    if (amountOfUsedMaterial != -1) {
+                                        tempChip.setChipIconResource(R.drawable.ic_check);
+                                        tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
+                                        isToAdd[0] = false;
+                                        Material tempMaterial = new Material(materialsKeyList.get(index), materialsDataList.get(index), amountOfUsedMaterial);
+                                        allMaterials.set(index, tempMaterial);
+                                        materialsUsedList.set(index, String.valueOf(amountOfUsedMaterial));
+                                        selectedMaterials.add(tempMaterial);
+                                    }
+                                }
+                                else{
+                                    tempChip.setChipIconResource(R.drawable.null1);
+                                    isToAdd[0] = true;
+                                }
+                            }
+                        });
+
+                        chipGroupMaterials.addView(tempChip);
+                    }
+                }
+                else if (updateMode){
+                    for (int i = 0; i < materialsKeyList.size(); i++) {
+                        Chip tempChip = new Chip(newEventActivity.this);
+                        tempChip.setText(materialsKeyList.get(i));
+                        tempChip.setTextAppearance(R.style.ChipTextAppearance);
+                        for (int j = 0; j < selectedMaterials.size(); j++) {
+                            if (selectedMaterials.get(j).getTypeOfMaterial().equals((materialsKeyList.get(i)))) {
                                 tempChip.setChipIconResource(R.drawable.ic_check);
                                 tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
-                                isToAdd[0] = false;
-                                selectedMaterials.add(allMaterials.get(index));
                             }
                             else{
                                 tempChip.setChipIconResource(R.drawable.null1);
-                                isToAdd[0] = true;
                             }
                         }
-                    });
+                        tempChip.setChipBackgroundColorResource(R.color.brown_200);
+                        boolean[] isToAdd = {true};
+                        int index = i;
 
+                        // Adding the onClick method that will add the selected materials to the Event constructor
 
-                    chipGroupMaterials.addView(tempChip);
+                        tempChip.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                // the variable isToAdd became as an array due to the fact that it can't possible to use a general variable in an anonymous method
+                                if (selectedMaterials.get(index).getTypeOfMaterial().equals(tempChip.getText()) && isToAdd[0]) {
+                                    tempChip.setChipIconResource(R.drawable.null1);
+                                    isToAdd[0] = true;
+                                    selectedMaterials.remove(index);
+                                }
+                                else if (isToAdd[0]){
+                                    // Adding a MATERIAL must be with the amount of it that will be used.
+                                    getMaterialAmountAD(index);
+                                    if (amountOfUsedMaterial != -1){
+                                        tempChip.setChipIconResource(R.drawable.ic_check);
+                                        tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
+                                        isToAdd[0] = false;
+                                        Material tempMaterial  = new Material(materialsKeyList.get(index),materialsDataList.get(index), amountOfUsedMaterial);
+                                        allMaterials.set(index, tempMaterial);
+                                        materialsUsedList.set(index, String.valueOf(amountOfUsedMaterial));
+                                        selectedMaterials.add(tempMaterial);
+                                        amountOfUsedMaterial = -1;
+                                    }
+                                }
+                                else{
+                                    tempChip.setChipIconResource(R.drawable.null1);
+                                    isToAdd[0] = true;
+                                }
+                            }
+                        });
+
+                        chipGroupMaterials.addView(tempChip);
+                    }
+                }
+                else {
+                    for (int i = 0; i < materialsKeyList.size(); i++) {
+                        for (int j = 0; j < selectedMaterials.size(); j++){
+                            if (selectedMaterials.get(j).getTypeOfMaterial().equals((materialsKeyList.get(i)))){
+                                Chip tempChip = new Chip(newEventActivity.this);
+                                tempChip.setText(materialsKeyList.get(i));
+                                tempChip.setTextAppearance(R.style.ChipTextAppearance);
+                                tempChip.setChipIconResource(R.drawable.ic_check);
+                                tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
+                                tempChip.setChipBackgroundColorResource(R.color.brown_200);
+                                chipGroupMaterials.addView(tempChip);
+                            }
+                        }
+                    }
                 }
             }
             @Override
@@ -296,58 +633,68 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         });
     }
 
+
     private void changeTitleEvent() {
-        AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle("כותרת האירוע");
-        final EditText titleET = new EditText(this);
-        adb.setView(titleET);
+        if (editingMode || updateMode){
+            AlertDialog.Builder adb = new AlertDialog.Builder(this);
+            adb.setTitle("כותרת האירוע");
+            final EditText titleET = new EditText(this);
+            adb.setView(titleET);
 
-        titleET.setText(eventTitleTV.getText());
+            titleET.setText(eventTitleTV.getText());
 
-        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
+            adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.cancel();
+                }
+            });
 
-        adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                String newTitle = titleET.getText().toString();
+            adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    String newTitle = titleET.getText().toString();
 
-                eventTitleTV.setText(newTitle);
-            }
-        });
+                    eventTitleTV.setText(newTitle);
+                }
+            });
 
-        AlertDialog ad = adb.create();
-        ad.show();
+            AlertDialog ad = adb.create();
+            ad.show();
+        } else{
+            Snackbar.make(layout,"לא ניתן במצב צפייה", 3000).show();
+        }
     }
 
     public void checkIfToExit(View view) {
-        AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        TextView titleTV = new TextView(this);
-        titleTV.setText("היציאה לא תשמור");
-        titleTV.setGravity(Gravity.RIGHT);
-        titleTV.setTextSize(18);
-        adb.setCustomTitle(titleTV);
+        if (editingMode || updateMode){
+            AlertDialog.Builder adb = new AlertDialog.Builder(this);
+            TextView titleTV = new TextView(this);
+            titleTV.setText("היציאה לא תשמור");
+            titleTV.setGravity(Gravity.RIGHT);
+            titleTV.setTextSize(18);
+            adb.setCustomTitle(titleTV);
 
-        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
+            adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.cancel();
+                }
+            });
 
-        adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                moveToPreviousAct();
-            }
-        });
+            adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    moveToPreviousAct();
+                }
+            });
 
-        AlertDialog ad = adb.create();
-        ad.show();
+            AlertDialog ad = adb.create();
+            ad.show();
+        }
+        else{
+            moveToPreviousAct();
+        }
     }
 
     private void moveToPreviousAct() {
@@ -356,29 +703,34 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
     @Override
     public void onBackPressed() {
-        AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        TextView titleTV = new TextView(this);
-        titleTV.setText("היציאה לא תשמור");
-        titleTV.setGravity(Gravity.RIGHT);
-        titleTV.setTextSize(18);
-        adb.setCustomTitle(titleTV);
+        if (editingMode || updateMode){
+            AlertDialog.Builder adb = new AlertDialog.Builder(this);
+            TextView titleTV = new TextView(this);
+            titleTV.setText("היציאה לא תשמור");
+            titleTV.setGravity(Gravity.RIGHT);
+            titleTV.setTextSize(18);
+            adb.setCustomTitle(titleTV);
 
-        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
+            adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.cancel();
+                }
+            });
 
-        adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                moveToPreviousAct();
-            }
-        });
+            adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    moveToPreviousAct();
+                }
+            });
 
-        AlertDialog ad = adb.create();
-        ad.show();
+            AlertDialog ad = adb.create();
+            ad.show();
+        }
+        else {
+            super.onBackPressed();
+        }
     }
 
     public void Logout(MenuItem item) {
@@ -418,22 +770,27 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
     }
 
     public void openDatePicker(View view) {
-        Calendar calendar = Calendar.getInstance();
-        final int year = calendar.get(Calendar.YEAR);
-        final int month = calendar.get(Calendar.MONTH);
-        final int day = calendar.get(Calendar.DAY_OF_MONTH);
-        DatePickerDialog dpd = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                Calendar c = Calendar.getInstance();
-                c.set(year, month++, dayOfMonth,0,0,0);
-                selectedDate = new Date(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH),0,0,0);
-                openTimePicker();
-            }
-        }, year, month, day);
+        if (editingMode || updateMode){
+            Calendar calendar = Calendar.getInstance();
+            final int year = calendar.get(Calendar.YEAR);
+            final int month = calendar.get(Calendar.MONTH);
+            final int day = calendar.get(Calendar.DAY_OF_MONTH);
+            DatePickerDialog dpd = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+                @SuppressLint("SetTextI18n")
+                @Override
+                public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                    Calendar c = Calendar.getInstance();
+                    c.set(year, month++, dayOfMonth,0,0,0);
+                    selectedDate = new Date(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH),0,0,0);
+                    openTimePicker();
+                }
+            }, year, month, day);
 
-        dpd.show();
+            dpd.show();
+        }
+        else{
+            Snackbar.make(layout,"לא ניתן במצב צפייה", 3000).show();
+        }
     }
 
     private void openTimePicker() {
@@ -482,8 +839,17 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
     public void createNewEvent(View view) {
         currentDate = new Date();
-        if (checkEvent()){
+        if (checkEvent() && !allEventsDates.contains(eventStrDate)){
             // Creates the event as a constructor
+
+            if (userSelection.equals(paymentSelection[0])){
+                // TODO: fixing the ERROR
+                //openADCheckPayment(false);
+            }
+            else {
+                newEvent.setEventCharacterize("G");
+            }
+
             newEvent.setEventName(eventTitleTV.getText().toString());
             newEvent.setCustomerName(customerName);
             newEvent.setCustomerPhone(customerPhone);
@@ -497,16 +863,15 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             newEvent.setDateOfCreation(strDate);
 
             newEvent.setEventContent(eventContent);
-            newEvent.setEventEmployees(eventCost);
+            newEvent.setEventCost(eventCost);
+            //newEvent.setEventEmployees();
             newEvent.setEventPayment(userSelection);
             newEvent.setEventShows(selectedShows);
             newEvent.setEventEquipments(selectedMaterials);
 
-            if (userSelection.equals(" ")) openADCheckPayment();
-            else  newEvent.setEventCharacterize("G");
 
-            File eventFile = creatingFile();
-            uploadFileToFB(eventFile);
+            File eventFile = creatingFile(newEvent);
+            uploadFileToFB(eventFile, newEvent);
 
             String childID = newEvent.getDateOfEvent();
             if (newEvent.getEventCharacterize().equals("G")){
@@ -514,12 +879,77 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             } else{
                 refOrange_Event.child(childID).setValue(newEvent);
             }
-            sendingFileToEmail(eventFile);
+            sendingFileToEmail(eventFile, newEvent);
+            //clearAllFields();
+        }
+        else if (allEventsDates.contains(eventStrDate) && editingMode){
+            Snackbar.make(layout,"תאריך תפוס", 3000).show();
+        }
+        else if (checkEvent() && updateMode){
+            // Removing the previous event
+            String previousEventPath = previousEventDate+previousEventName+".pdf";
+            removeEventFileFB(previousEventPath);
+            removeEventFileStorage(previousEventPath);
+            if (previousEventStatus.equals("G")){
+                refGreen_Event.child(previousEventDate).removeValue();
+            } else{
+                refOrange_Event.child(previousEventDate).removeValue();
+            }
+
+            // Redoing the all the process again with the changes
+            updatedEvent.setEventName(eventTitleTV.getText().toString());
+            updatedEvent.setCustomerName(customerName);
+            updatedEvent.setCustomerPhone(customerPhone);
+            updatedEvent.setCustomerEmail(customerEmail);
+            updatedEvent.setEventLocation(eventLocation);
+
+            updatedEvent.setDateOfEvent(eventStrDate);
+            // Casting the Date to String
+            DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+            String strDate = dateFormat.format(currentDate);
+            updatedEvent.setDateOfCreation(strDate);
+
+            updatedEvent.setEventContent(eventContent);
+            updatedEvent.setEventCost(eventCost);
+            //newEvent.setEventEmployees();
+            updatedEvent.setEventPayment(userSelection);
+            updatedEvent.setEventShows(selectedShows);
+            updatedEvent.setEventEquipments(selectedMaterials);
+
+            if (userSelection.equals(paymentSelection[0])) openADCheckPayment(true);
+            else  updatedEvent.setEventCharacterize("G");
+
+            File eventFile = creatingFile(updatedEvent);
+            uploadFileToFB(eventFile, updatedEvent);
+
+            if (updatedEvent.getEventCharacterize().equals("G")){
+                refGreen_Event.child(updatedEvent.getDateOfEvent()).setValue(updatedEvent);
+            } else{
+                refOrange_Event.child(updatedEvent.getDateOfEvent()).setValue(updatedEvent);
+            }
+            sendingFileToEmail(eventFile, updatedEvent);
+            Snackbar.make(layout,"התעדכן בהצלחה", 3000).show();
+            updateMode = false;
         }
     }
 
+    private void removeEventFileStorage(String previousEventPath) {
+        File fileDir = new File(rootPath + "/"+previousEventPath);
+        fileDir.delete();
+    }
+
+    private void removeEventFileFB(String previousEventPath) {
+        StorageReference deleteFile = storageRef.child("files/"+previousEventPath);
+        deleteFile.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+            }
+        });
+    }
+
+
     @SuppressLint("SetTextI18n")
-    private void uploadFileToFB(File eventFile) {
+    private void uploadFileToFB(File eventFile, Event event) {
         ProgressDialog progressDialog = new ProgressDialog(newEventActivity.this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 
@@ -532,7 +962,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
 //        progressDialog.setCustomTitle(title);
         progressDialog.setProgress(0);
-        progressDialog.setMessage("שומר בענן "+newEvent.getEventName());
+        progressDialog.setMessage("שומר בענן "+event.getEventName());
         progressDialog.setCancelable(false);
 
 
@@ -568,10 +998,10 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
     }
 
     @SuppressLint("LongLogTag")
-    private void sendingFileToEmail(File fileToSend) {
+    private void sendingFileToEmail(File fileToSend, Event event) {
         Uri uri = Uri.parse("mailto:" + "shahryani96@gmail.com").buildUpon()
-                .appendQueryParameter("to", newEvent.getCustomerEmail())
-                .appendQueryParameter("subject", "סיכום יצירת אירוע: "+newEvent.getEventName())
+                .appendQueryParameter("to", event.getCustomerEmail())
+                .appendQueryParameter("subject", "סיכום יצירת אירוע: "+event.getEventName())
                 .appendQueryParameter("body", "להלן קובץ אישור העסקה: ")
                 .build();
 
@@ -583,14 +1013,14 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         emailIntent.putExtra(Intent.EXTRA_STREAM, path);
 
         try {
-            startActivity(Intent.createChooser(emailIntent, "שלח באמצעות..."));
+            startActivity(emailIntent);
             Log.i("Finished sending email...", "");
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(this, "There is no email client installed.", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private File creatingFile() {
+    private File creatingFile(Event event) {
         if(!rootPath.exists()) {
             rootPath.mkdirs();
         }
@@ -617,9 +1047,10 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         titlePaint.setTextAlign(Paint.Align.RIGHT);
         titlePaint.setTextSize(15);
         paint.setTypeface(Typeface.create("Calibri",Typeface.NORMAL));
-        canvas.drawText( ""+newEvent.getCustomerName(), (float) (width*0.7), 320, titlePaint);
-        canvas.drawText(""+newEvent.getCustomerPhone(),(float) (width*0.7), 350, titlePaint);
-        canvas.drawText(""+newEvent.getCustomerEmail(),(float) (width*0.7), 380, titlePaint);
+        canvas.drawText( ""+event.getCustomerName(), (float) (width*0.7), 320, titlePaint);
+        canvas.drawText(""+event.getCustomerPhone(),(float) (width*0.7), 350, titlePaint);
+        canvas.drawText(""+event.getCustomerEmail(),(float) (width*0.7), 380, titlePaint);
+
 
         Bitmap priceBM = BitmapFactory.decodeResource(getResources(), R.drawable.pdf_prize);
         Bitmap scaledbmp2 = Bitmap.createScaledBitmap(priceBM,858,45,false);
@@ -629,13 +1060,12 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         prizePaint.setTextAlign(Paint.Align.CENTER);
         prizePaint.setTextSize(15);
         paint.setTypeface(Typeface.create("Calibri",Typeface.BOLD));
-        canvas.drawText( ""+newEvent.getEventCost(), (float) (width*0.6), (float) (height/5+122.5), prizePaint);
-
+        canvas.drawText( ""+event.getEventCost(), (float) (width*0.6), (float) (height/5+122.5), prizePaint);
         // Parsing the String of the date to a format String
         DateFormat format = new SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH);
         Date tempSelectedDate  = null;
         try {
-            tempSelectedDate = format.parse(newEvent.getDateOfCreation());
+            tempSelectedDate = format.parse(event.getDateOfCreation());
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -650,7 +1080,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
         pdfDocument.finishPage(page1);
 
-        File dataFile = new File(rootPath, System.currentTimeMillis()+newEvent.getEventName()+".pdf");
+        File dataFile = new File(rootPath, event.getDateOfEvent()+event.getEventName()+".pdf");;
 
         try {
             pdfDocument.writeTo(new FileOutputStream(dataFile));
@@ -662,7 +1092,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         return dataFile;
     }
 
-    private void openADCheckPayment() {
+    private void openADCheckPayment(boolean toUpdate) {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         final TextView titleTV = new TextView(this);
         titleTV.setText("תשלום לפני שמסיימים..");
@@ -673,7 +1103,11 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         adb.setNegativeButton("אוקיי", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                newEvent.setEventCharacterize("G");
+                if (toUpdate){
+                    updatedEvent.setEventCharacterize("G");
+                } else {
+                    newEvent.setEventCharacterize("G");
+                }
                 DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.green_flag));
                 dialogInterface.dismiss();
             }
@@ -682,7 +1116,11 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         adb.setPositiveButton("לא עכשיו", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                newEvent.setEventCharacterize("O");
+                if (toUpdate){
+                    updatedEvent.setEventCharacterize("O");
+                } else {
+                    newEvent.setEventCharacterize("O");
+                }
                 DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.orange_flag));
                 dialogInterface.dismiss();
             }

@@ -1,18 +1,25 @@
 package com.example.betaversion;
 
 import static com.example.betaversion.FBref.refEnd_Event;
+import static com.example.betaversion.FBref.refGreen_Event;
+import static com.example.betaversion.FBref.refOrange_Event;
 import static com.example.betaversion.FBref.reflive_Event;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,7 +31,13 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -34,15 +47,17 @@ import java.util.Objects;
  *
  * * This eventsActivity.class displays whole events with sort.
  */
-public class eventsActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
-
+public class eventsActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, View.OnCreateContextMenuListener {
 
     ListView eventsList, selectionLV;
+    TextView dateRangeTV;
     // TODO: Need to think about all the options to display in the ListView eventsList object
-    String[] selections = new String[]{"ירוק","כתום","אדום","אפור"}; // Includes all the status of the events
+    String[] selections = new String[]{"ירוק","כתום","אדום","אפור","לפי תאריך"}; // Includes all the status of the events
     String userSelection;
 
-    ArrayList<String> titleEvents, dateEvents, phonesList, namesList;
+    Date dateSt, dateEd;
+
+    ArrayList<String> titleEvents, dateEvents, phonesList, namesList, eventCharacterizeList, addressList;
     ArrayList<Integer> employeesList;
 
     @Override
@@ -56,9 +71,11 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
 
         eventsList = findViewById(R.id.eventsList);
         selectionLV = findViewById(R.id.selectionLV);
+        dateRangeTV = findViewById(R.id.dateRangeTV);
+
 
         selectionLV.setOnItemClickListener(this);
-        eventsList.setOnItemClickListener(this);
+        eventsList.setOnCreateContextMenuListener(this);
 
         ArrayAdapter<String> adp = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, selections);
         selectionLV.setAdapter(adp);
@@ -68,10 +85,57 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
         titleEvents = new ArrayList<>();
         dateEvents = new ArrayList<>();
         phonesList = new ArrayList<>();
+        eventCharacterizeList = new ArrayList<>();
         employeesList = new ArrayList<>();
         namesList = new ArrayList<>();
+        addressList = new ArrayList<>();
 
-        readLiveEvents("greenEvent",0); // Show the default option
+        readEvents("greenEvent"); // Show the default option
+
+        dateSt = new Date();
+        dateEd = new Date();
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        v.setOnCreateContextMenuListener(this);
+        menu.add("צפייה");
+        menu.add("ערוך");
+        menu.add("נווט");
+        menu.add("מחק");
+
+        super.onCreateContextMenu(menu, v, menuInfo);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo adpInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        String option = item.getTitle().toString();
+        int position = adpInfo.position;
+
+        if(option.equals("צפייה")){
+            Intent si = new Intent(this, newEventActivity.class);
+            si.putExtra("eventID",dateEvents.get(position));
+            si.putExtra("flag", eventCharacterizeList.get(position));
+            si.putExtra("editingMode",false);
+            startActivity(si);
+        }
+        else if (option.equals("ערוך")){
+            Intent si = new Intent(this, newEventActivity.class);
+            si.putExtra("eventID",dateEvents.get(position));
+            si.putExtra("flag", eventCharacterizeList.get(position));
+            si.putExtra("updatingMode",true);
+            startActivity(si);
+        }
+        else if (option.equals("נווט")){
+            Intent si = new Intent(this, MapActivity.class);
+            si.putExtra("address", addressList.get(position));
+            startActivity(si);
+        }
+        else if (option.equals("מחק")){
+        }
+
+        return super.onContextItemSelected(item);
     }
 
     /**
@@ -116,7 +180,7 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
     }
 
 
-    private void readLiveEvents(String status, int flagID) {
+    private void readEvents(String status) {
         reflive_Event.child(status).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
@@ -124,7 +188,9 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
                 dateEvents.clear();
                 phonesList.clear();
                 employeesList.clear();
+                eventCharacterizeList.clear();
                 namesList.clear();
+                addressList.clear();
 
                 Event tempEvent;
                 for(DataSnapshot data : dS.getChildren()) {
@@ -133,10 +199,12 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
                     titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
                     dateEvents.add(tempEvent.getDateOfEvent());
                     phonesList.add(tempEvent.getCustomerPhone());
+                    eventCharacterizeList.add(tempEvent.getEventCharacterize());
                     employeesList.add(tempEvent.getEventEmployees());
                     namesList.add(tempEvent.getCustomerName());
+                    addressList.add(tempEvent.getEventLocation());
                 }
-                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList, flagID);
+                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList, eventCharacterizeList);
                 eventsList.setAdapter(customAdapterEvents);
 
             }
@@ -149,20 +217,21 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         userSelection = selections[i];
+        dateRangeTV.setText("");
         switch (userSelection) {
             case "ירוק": {
                 Toast.makeText(this, "Green", Toast.LENGTH_SHORT).show();
-                readLiveEvents("greenEvent", 0);
+                readEvents("greenEvent");
             }
             break;
             case "כתום": {
                 Toast.makeText(this, "ORANGE", Toast.LENGTH_SHORT).show();
-                readLiveEvents("orangeEvent", 1);
+                readEvents("orangeEvent");
             }
             break;
             case "אדום": {
                 Toast.makeText(this, "RED", Toast.LENGTH_SHORT).show();
-                readLiveEvents("redEvent", 2);
+                readEvents("redEvent");
             }
             break;
             case "אפור": {
@@ -183,9 +252,10 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
                             dateEvents.add(tempEvent.getDateOfEvent());
                             phonesList.add(tempEvent.getCustomerPhone());
                             employeesList.add(tempEvent.getEventEmployees());
+                            eventCharacterizeList.add(tempEvent.getEventCharacterize());
                             namesList.add(tempEvent.getEventName());
                         }
-                        CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(), titleEvents, dateEvents, namesList, phonesList, employeesList, 3);
+                        CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(), titleEvents, dateEvents, namesList, phonesList, employeesList, eventCharacterizeList);
                         eventsList.setAdapter(customAdapterEvents);
 
                     }
@@ -194,6 +264,11 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
                     public void onCancelled(@NonNull DatabaseError databaseError) {
                     }
                 });
+            }
+            break;
+            case "לפי תאריך": {
+                openDateRangeAD();
+                readAllEventsByDate();
             }
             break;
 
@@ -207,6 +282,127 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
 //
 //        }
         }
+    }
+
+    private void openDateRangeAD() {
+        Calendar calendar = Calendar.getInstance();
+        final int year = calendar.get(Calendar.YEAR);
+        final int month = calendar.get(Calendar.MONTH);
+        final int day = calendar.get(Calendar.DAY_OF_MONTH);
+        DatePickerDialog dpd = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                Calendar c = Calendar.getInstance();
+                c.set(year, month++, dayOfMonth);
+                dateSt = new Date(c.get(Calendar.YEAR) - 1900, c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH),0,0,0);
+                openDateEndPicker();
+            }
+        }, year, month, day);
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("תאריך התחלה");
+
+        dpd.setCustomTitle(titleTV);
+        dpd.show();
+    }
+
+    private void openDateEndPicker() {
+        Calendar calendar = Calendar.getInstance();
+        final int year = calendar.get(Calendar.YEAR);
+        final int month = calendar.get(Calendar.MONTH);
+        final int day = calendar.get(Calendar.DAY_OF_MONTH);
+        DatePickerDialog dpd = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                Calendar c = Calendar.getInstance();
+                c.set(year, month++, dayOfMonth);
+                dateEd = new Date(c.get(Calendar.YEAR) - 1900, c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+
+                DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                String strDateEd = dateFormat.format(dateEd);
+                String strDateSt = dateFormat.format(dateSt);
+                dateRangeTV.setText("טווח תאריכים: "+strDateSt+" - "+strDateEd);
+            }
+        }, year, month, day);
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("תאריך סיום");
+
+        dpd.setCustomTitle(titleTV);
+        dpd.show();
+    }
+
+    private void readAllEventsByDate() {
+        refGreen_Event.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dS) {
+                titleEvents.clear();
+                dateEvents.clear();
+                phonesList.clear();
+                employeesList.clear();
+                namesList.clear();
+
+                Event tempEvent;
+                for(DataSnapshot data : dS.getChildren()) {
+                    tempEvent = data.getValue(Event.class);
+
+                    DateFormat format = new SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH);
+                    Date tempEventSelectedDate  = null;
+                    try {
+                        tempEventSelectedDate = format.parse(Objects.requireNonNull(tempEvent).getDateOfEvent());
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (Objects.requireNonNull(tempEventSelectedDate).after(dateSt) && tempEventSelectedDate.before(dateEd)){
+                        titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
+                        dateEvents.add(tempEvent.getDateOfEvent());
+                        phonesList.add(tempEvent.getCustomerPhone());
+                        employeesList.add(tempEvent.getEventEmployees());
+                        eventCharacterizeList.add(tempEvent.getEventCharacterize());
+                        namesList.add(tempEvent.getCustomerName());
+                    }
+                }
+                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList, eventCharacterizeList);
+                eventsList.setAdapter(customAdapterEvents);
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+
+        refOrange_Event.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dS) {
+                Event tempEvent;
+                for(DataSnapshot data : dS.getChildren()) {
+                    tempEvent = data.getValue(Event.class);
+
+                    DateFormat format = new SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH);
+                    Date tempEventSelectedDate  = null;
+                    try {
+                        tempEventSelectedDate = format.parse(Objects.requireNonNull(tempEvent).getDateOfEvent());
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (Objects.requireNonNull(tempEventSelectedDate).after(dateSt) && tempEventSelectedDate.before(dateEd)){
+                        titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
+                        dateEvents.add(tempEvent.getDateOfEvent());
+                        phonesList.add(tempEvent.getCustomerPhone());
+                        employeesList.add(tempEvent.getEventEmployees());
+                        eventCharacterizeList.add(tempEvent.getEventCharacterize());
+                        namesList.add(tempEvent.getCustomerName());
+                    }
+                }
+                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList, eventCharacterizeList);
+                eventsList.setAdapter(customAdapterEvents);
+
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
     }
 
     public void moveToPreviousAct(View view) {

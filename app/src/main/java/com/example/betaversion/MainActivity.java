@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     BottomNavigationView bottomNavigationView;
 
     ListView closeEventsLV, remaindersLV, missionsLV;
-    ArrayList<String> titleEvents, dateEvents, phonesList, namesList;
+    ArrayList<String> titleEvents, dateEvents, phonesList, namesList, eventCharacterizeList;
     ArrayList<Integer> employeesList;
 
     ArrayList<String> remindersTitleList, remindersContextList;
@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         dateEvents = new ArrayList<>();
         phonesList = new ArrayList<>();
         employeesList = new ArrayList<>();
+        eventCharacterizeList = new ArrayList<>();
         namesList = new ArrayList<>();
 
         readAllRemainders();
@@ -113,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 phonesList.clear();
                 employeesList.clear();
                 namesList.clear();
+                eventCharacterizeList.clear();
 
                 for(DataSnapshot data : dS.getChildren()) {
                     Event tempEvent = data.getValue(Event.class);
@@ -121,10 +123,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     dateEvents.add(tempEvent.getDateOfEvent());
                     phonesList.add(tempEvent.getCustomerPhone());
                     employeesList.add(tempEvent.getEventEmployees());
+                    eventCharacterizeList.add(tempEvent.getEventCharacterize());
                     namesList.add(tempEvent.getCustomerName());
                 }
 
-                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,0);
+                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList);
                 closeEventsLV.setAdapter(customAdapterEvents);
             }
             @Override

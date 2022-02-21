@@ -4,11 +4,112 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".MapActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="0dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            style="@style/Widget.MaterialComponents.Toolbar.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/orange_500"
+            app:logo="@drawable/logo_white"
+            android:clickable="true"
+            android:onClick="moveToPreviousAct"
+            app:navigationIcon="@drawable/ic_back"
+            app:menu="@menu/layout_top_bar" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="4"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="7dp"
+                android:fontFamily="@font/rubik_bold"
+                android:text="כתובת אירוע"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/addressTV"
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_marginTop="3dp"
+                android:layout_marginRight="7dp"
+                android:layout_marginBottom="3dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/rubik_regular" />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/orange_700"
+            android:contentDescription="TODO"
+            android:onClick="displayAddress"
+            app:srcCompat="@android:drawable/ic_dialog_map"
+            app:tint="@color/white" />
+
+    </LinearLayout>
 
     <com.google.android.gms.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0px"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_weight="9"
         tools:ignore="SpeakableTextPresentCheck" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:layout_marginRight="7dp"
+                android:fontFamily="@font/rubik_bold"
+                android:text="מיקום נוכחי"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/locationTV"
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_marginTop="3dp"
+                android:layout_marginRight="7dp"
+                android:layout_marginBottom="3dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/rubik_regular" />
+        </LinearLayout>
+    </LinearLayout>
+
 </LinearLayout>

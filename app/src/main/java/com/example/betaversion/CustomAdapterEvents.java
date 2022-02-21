@@ -23,19 +23,18 @@ import java.util.Objects;
 
 public class CustomAdapterEvents extends BaseAdapter {
     Context context;
-    ArrayList<String> titleEvents, dateEvents, phonesList, namesList;
+    ArrayList<String> titleEvents, dateEvents, phonesList, namesList, eventCharacterizeList;
     ArrayList<Integer> employeesList;
     LayoutInflater inflter;
-    int flagID;
 
-    public CustomAdapterEvents(Context applicationContext,ArrayList<String> titleEvents, ArrayList<String> dateEvents, ArrayList<String> namesList, ArrayList<String> phonesList, ArrayList<Integer> employeesList, int flagID){
+    public CustomAdapterEvents(Context applicationContext,ArrayList<String> titleEvents, ArrayList<String> dateEvents, ArrayList<String> namesList, ArrayList<String> phonesList, ArrayList<Integer> employeesList, ArrayList<String> eventCharacterizeList){
         this.context = context;
         this.titleEvents = titleEvents;
         this.dateEvents = dateEvents;
         this.phonesList = phonesList;
         this.namesList = namesList;
         this.employeesList = employeesList;
-        this.flagID = flagID;
+        this.eventCharacterizeList = eventCharacterizeList;
         inflter = (LayoutInflater.from(applicationContext));
     }
 
@@ -83,13 +82,14 @@ public class CustomAdapterEvents extends BaseAdapter {
         lp.setMargins(20, 5, 0, 0);
         flagIV.setLayoutParams(lp);
         flagIV.setImageResource(R.drawable.ic_baseline_flag);
-        if (flagID == 0){
+        String flagID = eventCharacterizeList.get(i);
+        if (flagID.equals("G")){
             DrawableCompat.setTint(flagIV.getDrawable(), ContextCompat.getColor(view.getContext(), R.color.green_flag));
         }
-        else if (flagID == 1){
+        else if (flagID.equals("O")){
             DrawableCompat.setTint(flagIV.getDrawable(), ContextCompat.getColor(view.getContext(), R.color.orange_flag));
         }
-        else if (flagID == 2){
+        else if (flagID.equals("R")){
             DrawableCompat.setTint(flagIV.getDrawable(), ContextCompat.getColor(view.getContext(), R.color.red_flag));
         }
         else{

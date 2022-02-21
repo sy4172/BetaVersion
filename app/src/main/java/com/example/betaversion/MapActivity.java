@@ -1,13 +1,11 @@
 package com.example.betaversion;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -16,7 +14,16 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -28,12 +35,18 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.CancellationTokenSource;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    TextView addressTV, locationTV;
     String address;
 
     MapView mapView;
@@ -53,7 +66,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        ActionBar actionBar = getSupportActionBar();
+        Objects.requireNonNull(actionBar).hide();
+
         mapView = findViewById(R.id.mapView);
+        addressTV = findViewById(R.id.addressTV);
+        locationTV = findViewById(R.id.locationTV);
 
         Intent gi = getIntent();
         address = gi.getStringExtra("address");
@@ -78,10 +96,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        Bundle mapViewBundle = outState.getBundle(MAP_VIEW_BUNDLE_KEY);
+        if (mapViewBundle == null) {
+            mapViewBundle = new Bundle();
+            outState.putBundle(MAP_VIEW_BUNDLE_KEY, mapViewBundle);
+        }
+
+        mapView.onSaveInstanceState(mapViewBundle);
+    }
+
     private void turnGPSOn() {
         try
         {
-            String provider = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+            String provider = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_MODE);
 
             if(!provider.contains("gps")){ //if gps is disabled
                 Intent intent = new Intent();
@@ -97,15 +128,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void turnGPSOff(){
-        String provider = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+       try {
+           String provider = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_MODE);
 
-        if(provider.contains("gps")){ //if gps is enabled
-            final Intent poke = new Intent();
-            poke.setClassName("com.android.settings", "com.android.settings.widget.SettingsAppWidgetProvider");
-            poke.addCategory(Intent.CATEGORY_ALTERNATIVE);
-            poke.setData(Uri.parse("3"));
-            sendBroadcast(poke);
-        }
+           if(provider.contains("gps")){ //if gps is enabled
+               final Intent poke = new Intent();
+               poke.setClassName("com.android.settings", "com.android.settings.widget.SettingsAppWidgetProvider");
+               poke.addCategory(Intent.CATEGORY_ALTERNATIVE);
+               poke.setData(Uri.parse("3"));
+               sendBroadcast(poke);
+           }
+       } catch (Exception e){
+           e.printStackTrace();
+       }
     }
 
     @Override
@@ -128,13 +163,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
     @Override
     protected void onPause() {
-        mapView.onPause();
         super.onPause();
+        mapView.onPause();
     }
     @Override
     protected void onDestroy() {
-        mapView.onDestroy();
         super.onDestroy();
+        mapView.onDestroy();
         turnGPSOff();
     }
     @Override
@@ -176,19 +211,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             latitude = location.getLatitude();
                             longitude = location.getLongitude();
 
+                            Locale.setDefault(Locale.forLanguageTag("he"));
                             List<Address> addresses = geocoder.getFromLocation(latitude,longitude,1);
 
                             LatLng cl = new LatLng(latitude, longitude);
 
                             MarkerOptions markerOptions = new MarkerOptions();
+                            //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(Color.BLUE));
                             markerOptions.position(cl);
                             gmap.addMarker(markerOptions);
 
                             float zoomLevel = 17.0f; //This goes up to 21
                             gmap.moveCamera(CameraUpdateFactory.newLatLngZoom(cl, zoomLevel));
 
-                            Toast.makeText(MapActivity.this, "Address: "+ addresses.get(0).getAddressLine(0), Toast.LENGTH_SHORT).show();
-                            //addressTV.setText("Address: "+ addresses.get(0).getAddressLine(0));
+                            locationTV.setText(addresses.get(0).getAddressLine(0));
                         }
 
                     } catch (IOException e) {
@@ -219,5 +255,86 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         gmap.moveCamera(CameraUpdateFactory.newLatLngZoom(isr, zoomLevel));
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+    }
+
+    @SuppressLint("MissingPermission")
+    public void displayAddress(View view) {
+        if (ActivityCompat.checkSelfPermission(MapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                Location location = task.getResult();
+                if (location != null) {
+                    Geocoder geocoder = new Geocoder(MapActivity.this);
+                    try {
+                        Locale.setDefault(Locale.forLanguageTag("he"));
+                        List<Address> addressList = geocoder.getFromLocationName(address, 6);
+                        Address user_address = addressList.get(0);
+
+                        LatLng latLng = new LatLng(user_address.getLatitude(), user_address.getLongitude());
+
+                        gmap.clear();
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.position(latLng);
+                        gmap.addMarker(markerOptions);
+
+                        float zoomLevel = 17.0f; //This goes up to 21
+                        gmap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel));
+
+                        addressTV.setText(user_address.getAddressLine(0));
+                    } catch (Exception e) {
+                        Toast.makeText(MapActivity.this, "Error Address!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
+    }
+
+    public void moveToPreviousAct(View view) {
+        super.onBackPressed();
+    }
+
+    /**
+     * Logout method works when the button in the up toolBar was clicked, this method disconnects the current user in the system of the FireBase authentication.
+     *
+     * @param item the item at the topBar
+     */
+    public void Logout(MenuItem item) {
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        adb.setTitle("Are you sure?");
+        SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
+        Variable.setEmailVer(settings.getString("email",""));
+        adb.setMessage(Variable.getEmailVer().substring(0,Variable.emailVer.indexOf("@"))+" will logged out");
+
+        adb.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+
+        adb.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                FirebaseAuth.getInstance().signOut();
+                Intent si = new Intent(MapActivity.this, LoginActivity.class);
+
+                // Changing the preferences to default
+                SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("email", "");
+                editor.putBoolean("stayConnect",false);
+                editor.apply();
+
+                startActivity(si);
+                finish();
+            }
+        });
+
+        AlertDialog ad = adb.create();
+        ad.show();
     }
 }
