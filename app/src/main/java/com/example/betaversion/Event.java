@@ -20,12 +20,12 @@ public class Event {
     private String eventCharacterize;
     private String eventPayment;
     private int eventEmployees;
-    private ArrayList<Material> eventEquipments;
+    private ArrayList<Boolean> eventEquipments;
     private ArrayList<Mission> eventMissions;
-    private ArrayList<Shows> eventShows;
+    private ArrayList<Boolean> eventShows;
 
     /**
-     * Instantiates a new Event.
+     * Instantiates a new empty Event.
      */
     public Event (){}
 
@@ -49,7 +49,7 @@ public class Event {
      * @param eventMissions     the event missions
      * @param eventShows        the event shows
      */
-    public Event(String customerName, String customerPhone, String customerEmail, String dateOfEvent, String dateOfCreation, String eventName, String eventLocation, int eventCost, String eventInformation, String eventContent, String eventCharacterize, String eventPayment, int eventEmployees, ArrayList<Material> eventEquipments, ArrayList<Mission> eventMissions, ArrayList<Shows> eventShows){
+    public Event(String customerName, String customerPhone, String customerEmail, String dateOfEvent, String dateOfCreation, String eventName, String eventLocation, int eventCost, String eventInformation, String eventContent, String eventCharacterize, String eventPayment, int eventEmployees, ArrayList<Boolean> eventEquipments, ArrayList<Mission> eventMissions, ArrayList<Boolean> eventShows){
         this.customerName = customerName;
         this.customerPhone = customerPhone;
         this.customerEmail = customerEmail;
@@ -290,7 +290,7 @@ public class Event {
      *
      * @return the event equipments
      */
-    public ArrayList<Material> getEventEquipments() {
+    public ArrayList<Boolean> getEventEquipments() {
         return eventEquipments;
     }
 
@@ -299,7 +299,7 @@ public class Event {
      *
      * @param eventEquipments the event equipments
      */
-    public void setEventEquipments(ArrayList<Material> eventEquipments) {
+    public void setEventEquipments(ArrayList<Boolean> eventEquipments) {
         this.eventEquipments = eventEquipments;
     }
 
@@ -344,7 +344,7 @@ public class Event {
      *
      * @return the event shows
      */
-    public ArrayList<Shows> getEventShows() {
+    public ArrayList<Boolean> getEventShows() {
         return eventShows;
     }
 
@@ -353,7 +353,7 @@ public class Event {
      *
      * @param eventShows the event shows
      */
-    public void setEventShows(ArrayList<Shows> eventShows) {
+    public void setEventShows(ArrayList<Boolean> eventShows) {
         this.eventShows = eventShows;
     }
 }

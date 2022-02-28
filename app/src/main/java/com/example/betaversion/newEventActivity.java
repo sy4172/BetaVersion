@@ -6,6 +6,7 @@ import static com.example.betaversion.FBref.refOrange_Event;
 import static com.example.betaversion.FBref.reflive_Event;
 import static com.example.betaversion.FBref.storageRef;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -14,6 +15,7 @@ import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,8 +24,13 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.pdf.PdfDocument;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -42,16 +49,22 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.collect.Lists;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -68,8 +81,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * * @author    Shahar Yani
@@ -93,9 +109,10 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
     boolean editingMode, updateMode;
     String previousEventDate, previousEventName, previousEventStatus;
 
-    ArrayList<Shows> allShows, selectedShows;
+    ArrayList<Shows> allShows;
     ArrayList<Material> allMaterials;
-    ArrayList<Material> selectedMaterials;
+    ArrayList<Boolean> selectedMaterials;
+    ArrayList<Boolean> selectedShows;
     ArrayList<String> showsKeyList, showsDesList, materialsKeyList, materialsUsedList, allEventsDates;
     ArrayList<Integer> showsDataList, materialsDataList;
 
@@ -137,11 +154,10 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         Objects.requireNonNull(actionBar).hide();
         actionBar.setHomeButtonEnabled(true);
 
-        eventTitleTV.setOnLongClickListener(new View.OnLongClickListener() {
+        eventTitleTV.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onLongClick(View view) {
+            public void onClick(View view) {
                 changeTitleEvent();
-                return false;
             }
         });
 
@@ -153,13 +169,11 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
         allShows = new ArrayList<>();
         showsKeyList = new ArrayList<>();
-        selectedShows = new ArrayList<>();
         showsDataList = new ArrayList<>();
         showsDesList = new ArrayList<>();
 
         allMaterials = new ArrayList<>();
         materialsKeyList = new ArrayList<>();
-        selectedMaterials = new ArrayList<>();
         materialsDataList = new ArrayList<>();
         materialsUsedList = new ArrayList<>();
 
@@ -212,8 +226,6 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
         allEventsDates = new ArrayList<>();
         newEvent = new Event();
-        selectedMaterials = new ArrayList<>();
-        selectedShows = new ArrayList<>();
 
         rootPath = new File(this.getExternalFilesDir("/"), "myPDFS");
 
@@ -264,7 +276,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                         eventCostTV.setText(String.valueOf(eventCost));
 
                         int pos = 0;
-                        for (int i=0; i<paymentSelection.length; i++){
+                        for (int i=0; i < paymentSelection.length; i++){
                             if (paymentSelection[i].equals(tempEvent.getEventPayment())){
                                 pos = i;
                             }
@@ -275,6 +287,8 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                             previousEventDate = tempEvent.getDateOfEvent();
                             previousEventName = tempEvent.getEventName();
                             previousEventStatus = tempEvent.getEventCharacterize();
+                            selectedMaterials = tempEvent.getEventEquipments();
+                            selectedShows = tempEvent.getEventShows();
                             updatedEvent = new Event(tempEvent.getCustomerName(), tempEvent.getCustomerPhone(), tempEvent.getCustomerEmail(), tempEvent.getDateOfEvent(), tempEvent.getDateOfCreation(), tempEvent.getEventName(), tempEvent.getEventLocation(), tempEvent.getEventCost(), tempEvent.getEventInformation(), tempEvent.getEventContent(), tempEvent.getEventCharacterize(), tempEvent.getEventPayment(), tempEvent.getEventEmployees(), tempEvent.getEventEquipments(), tempEvent.getEventMissions(), tempEvent.getEventShows());
                         }
                     }
@@ -329,6 +343,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
      *
      */
     private void getAllShowsToDisplay() {
+        selectedShows = new ArrayList<>();
         refBusinessEqu.child("showsList").addListenerForSingleValueEvent(new ValueEventListener() {
             @SuppressLint("SetTextI18n")
             @Override
@@ -345,6 +360,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                     showsKeyList.add(Objects.requireNonNull(tempShow).getShowTitle());
                     showsDataList.add(tempShow.getCost());
                     showsDesList.add(tempShow.getDescription());
+                    selectedShows.add(false);
                 }
 
                 if (editingMode){
@@ -367,7 +383,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                                     tempChip.setChipIconResource(R.drawable.ic_check);
                                     tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
                                     isToAdd[0] = false;
-                                    selectedShows.add(allShows.get(index));
+                                    selectedShows.set(index, true);
                                     eventCost += showsDataList.get(index);
                                     eventCostTV.setText(String.valueOf(eventCost));
                                 }
@@ -377,6 +393,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
                                     if (eventCost > 0){
                                         eventCost -= showsDataList.get(index);
+                                        selectedShows.set(index, false);
                                         eventCostTV.setText(String.valueOf(eventCost));
                                     }
                                 }
@@ -390,14 +407,12 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                         Chip tempChip = new Chip(newEventActivity.this);
                         tempChip.setText(showsKeyList.get(i));
                         tempChip.setTextAppearance(R.style.ChipTextAppearance);
-                        for (int j = 0; j<selectedShows.size(); j++) {
-                            if (selectedShows.get(j).getShowTitle().equals((showsKeyList.get(i)))) {
-                                tempChip.setChipIconResource(R.drawable.ic_check);
-                                tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
-                            }
-                            else {
-                                tempChip.setChipIconResource(R.drawable.null1);
-                            }
+
+                        if (selectedShows.get(i)){
+                            tempChip.setChipIconResource(R.drawable.ic_check);
+                            tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
+                        } else {
+                            tempChip.setChipIconResource(R.drawable.null1);
                         }
                         tempChip.setChipBackgroundColorResource(R.color.brown_200);
                         boolean[] isToAdd = {true};
@@ -409,11 +424,11 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                             @Override
                             public void onClick(View view) {
                                 // the variable isToAdd became as an array due to the fact that it can't possible to use a general variable in an anonymous method
-                                if (selectedShows.get(index).getShowTitle().equals(tempChip.getText()) && isToAdd[0]){
+                                if (selectedShows.get(index) && isToAdd[0] && updateMode){
                                     Toast.makeText(newEventActivity.this, "true", Toast.LENGTH_SHORT).show();
                                     tempChip.setChipIconResource(R.drawable.null1);
                                     isToAdd[0] = true;
-                                    selectedShows.remove(index);
+                                    selectedShows.set(index, false);
                                     if (eventCost > 0){
                                         eventCost -= showsDataList.get(index);
                                         eventCostTV.setText(String.valueOf(eventCost));
@@ -423,14 +438,14 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                                     tempChip.setChipIconResource(R.drawable.ic_check);
                                     tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
                                     isToAdd[0] = false;
-                                    selectedShows.add(allShows.get(index));
+                                    selectedShows.set(index, true);
                                     eventCost += showsDataList.get(index);
                                     eventCostTV.setText(String.valueOf(eventCost));
                                 }
                                 else{
                                     tempChip.setChipIconResource(R.drawable.null1);
                                     isToAdd[0] = true;
-                                    selectedShows.remove(index);
+                                    selectedShows.set(index, false);
                                     if (eventCost > 0){
                                         eventCost -= showsDataList.get(index);
                                         eventCostTV.setText(String.valueOf(eventCost));
@@ -443,16 +458,14 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                 }
                 else {
                     for (int i = 0; i < showsKeyList.size(); i++) {
-                        for (int j = 0; j<selectedShows.size(); j++){
-                            if (selectedShows.get(j).getShowTitle().equals((showsKeyList.get(i)))){
-                                Chip tempChip = new Chip(newEventActivity.this);
-                                tempChip.setText(showsKeyList.get(i));
-                                tempChip.setTextAppearance(R.style.ChipTextAppearance);
-                                tempChip.setChipIconResource(R.drawable.ic_check);
-                                tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
-                                tempChip.setChipBackgroundColorResource(R.color.brown_200);
-                                chipGroupShows.addView(tempChip);
-                            }
+                        if (selectedShows.get(i)){
+                            Chip tempChip = new Chip(newEventActivity.this);
+                            tempChip.setText(showsKeyList.get(i));
+                            tempChip.setTextAppearance(R.style.ChipTextAppearance);
+                            tempChip.setChipIconResource(R.drawable.ic_check);
+                            tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
+                            tempChip.setChipBackgroundColorResource(R.color.brown_200);
+                            chipGroupShows.addView(tempChip);
                         }
                     }
                 }
@@ -464,36 +477,30 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         });
     }
 
-    private void getMaterialAmountAD(int index) {
+    private void getMaterialAmountAD( int index) {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         adb.setTitle("כמה לקחת מ"+materialsKeyList.get(index));
         final EditText amountET = new EditText(this);
+        amountET.setInputType(InputType.TYPE_CLASS_NUMBER);
+        int maxLength = 6;
+        amountET.setFilters(new InputFilter[] {new InputFilter.LengthFilter(maxLength)});
         adb.setView(amountET);
 
         amountET.setText(materialsUsedList.get(index));
         adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
                 amountOfUsedMaterial = -1;
+                dialogInterface.dismiss();
             }
         });
 
         adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                int selectedAmount = Integer.parseInt(amountET.getText().toString());
-                // Checks if the user selected a real amount of the CURRENT material
-                if (selectedAmount > (materialsDataList.get(index) - Integer.parseInt(materialsUsedList.get(index)))){
-                    adb.setMessage("אין אפשרות כזו");
-                }
-                else{
-                    amountOfUsedMaterial = selectedAmount;
-                    dialogInterface.dismiss();
-                }
+                amountOfUsedMaterial = Integer.parseInt(amountET.getText().toString());
             }
         });
-
         AlertDialog ad = adb.create();
         ad.show();
     }
@@ -503,6 +510,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
      *
      */
     private void getAllMaterialsToDisplay() {
+        selectedMaterials = new ArrayList<>();
         refBusinessEqu.child("materials").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
@@ -518,6 +526,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                     materialsKeyList.add(Objects.requireNonNull(temp).getTypeOfMaterial());
                     materialsDataList.add(temp.getTotalAmount());
                     materialsUsedList.add(String.valueOf(temp.getUsedAmount()));
+                    selectedMaterials.add(false);
                 }
 
                 if (editingMode){
@@ -530,26 +539,30 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                         boolean[] isToAdd = {true};
                         int index = i;
 
-                        // Adding the onClick method that will add the selected shows to the Event constructor
+                        // Adding the onClick method that will add the selected materials to the Event constructor
 
                         tempChip.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 // the variable isToAdd became as an array due to the fact that it can't possible to use a general variable in an anonymous method
-                                if (isToAdd[0]){
+                                if (isToAdd[0] && editingMode){
                                     getMaterialAmountAD(index);
-                                    if (amountOfUsedMaterial != -1) {
+                                    Toast.makeText(newEventActivity.this, amountOfUsedMaterial+"", Toast.LENGTH_SHORT).show();
+                                    // Checks if the user selected a real amount of the CURRENT material
+                                    if (amountOfUsedMaterial > 0 && amountOfUsedMaterial < (materialsDataList.get(index) - Integer.parseInt(materialsUsedList.get(index)))) {
                                         tempChip.setChipIconResource(R.drawable.ic_check);
                                         tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
                                         isToAdd[0] = false;
                                         Material tempMaterial = new Material(materialsKeyList.get(index), materialsDataList.get(index), amountOfUsedMaterial);
                                         allMaterials.set(index, tempMaterial);
                                         materialsUsedList.set(index, String.valueOf(amountOfUsedMaterial));
-                                        selectedMaterials.add(tempMaterial);
+                                        selectedMaterials.set(index, true);
+                                        amountOfUsedMaterial = -1;
                                     }
                                 }
-                                else{
+                                else if (editingMode){
                                     tempChip.setChipIconResource(R.drawable.null1);
+                                    selectedMaterials.set(index, false);
                                     isToAdd[0] = true;
                                 }
                             }
@@ -563,16 +576,15 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                         Chip tempChip = new Chip(newEventActivity.this);
                         tempChip.setText(materialsKeyList.get(i));
                         tempChip.setTextAppearance(R.style.ChipTextAppearance);
-                        for (int j = 0; j < selectedMaterials.size(); j++) {
-                            if (selectedMaterials.get(j).getTypeOfMaterial().equals((materialsKeyList.get(i)))) {
-                                tempChip.setChipIconResource(R.drawable.ic_check);
-                                tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
-                            }
-                            else{
-                                tempChip.setChipIconResource(R.drawable.null1);
-                            }
+                        if (selectedMaterials.get(i)){
+                            tempChip.setChipIconResource(R.drawable.ic_check);
+                            tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
+                        } else {
+                            tempChip.setChipIconResource(R.drawable.null1);
+
                         }
                         tempChip.setChipBackgroundColorResource(R.color.brown_200);
+
                         boolean[] isToAdd = {true};
                         int index = i;
 
@@ -582,22 +594,23 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                             @Override
                             public void onClick(View view) {
                                 // the variable isToAdd became as an array due to the fact that it can't possible to use a general variable in an anonymous method
-                                if (selectedMaterials.get(index).getTypeOfMaterial().equals(tempChip.getText()) && isToAdd[0]) {
+                                if (selectedMaterials.get(index) && isToAdd[0] && updateMode) {
                                     tempChip.setChipIconResource(R.drawable.null1);
                                     isToAdd[0] = true;
-                                    selectedMaterials.remove(index);
+                                    selectedMaterials.set(index, false);
                                 }
                                 else if (isToAdd[0]){
                                     // Adding a MATERIAL must be with the amount of it that will be used.
                                     getMaterialAmountAD(index);
-                                    if (amountOfUsedMaterial != -1){
+                                    // Checks if the user selected a real amount of the CURRENT material
+                                    if (amountOfUsedMaterial > 0 && amountOfUsedMaterial > (materialsDataList.get(index) - Integer.parseInt(materialsUsedList.get(index)))){
                                         tempChip.setChipIconResource(R.drawable.ic_check);
                                         tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
                                         isToAdd[0] = false;
                                         Material tempMaterial  = new Material(materialsKeyList.get(index),materialsDataList.get(index), amountOfUsedMaterial);
                                         allMaterials.set(index, tempMaterial);
                                         materialsUsedList.set(index, String.valueOf(amountOfUsedMaterial));
-                                        selectedMaterials.add(tempMaterial);
+                                        selectedMaterials.set(index, true);
                                         amountOfUsedMaterial = -1;
                                     }
                                 }
@@ -613,16 +626,14 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                 }
                 else {
                     for (int i = 0; i < materialsKeyList.size(); i++) {
-                        for (int j = 0; j < selectedMaterials.size(); j++){
-                            if (selectedMaterials.get(j).getTypeOfMaterial().equals((materialsKeyList.get(i)))){
-                                Chip tempChip = new Chip(newEventActivity.this);
-                                tempChip.setText(materialsKeyList.get(i));
-                                tempChip.setTextAppearance(R.style.ChipTextAppearance);
-                                tempChip.setChipIconResource(R.drawable.ic_check);
-                                tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
-                                tempChip.setChipBackgroundColorResource(R.color.brown_200);
-                                chipGroupMaterials.addView(tempChip);
-                            }
+                        if (selectedMaterials.get(i)){
+                            Chip tempChip = new Chip(newEventActivity.this);
+                            tempChip.setText(materialsKeyList.get(i));
+                            tempChip.setTextAppearance(R.style.ChipTextAppearance);
+                            tempChip.setChipIconResource(R.drawable.ic_check);
+                            tempChip.setChipIconTint(ColorStateList.valueOf(Color.WHITE));
+                            tempChip.setChipBackgroundColorResource(R.color.brown_200);
+                            chipGroupMaterials.addView(tempChip);
                         }
                     }
                 }
@@ -639,6 +650,8 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             AlertDialog.Builder adb = new AlertDialog.Builder(this);
             adb.setTitle("כותרת האירוע");
             final EditText titleET = new EditText(this);
+            // Limiting the length of the Title String
+            // TODO
             adb.setView(titleET);
 
             titleET.setText(eventTitleTV.getText());
@@ -654,8 +667,10 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     String newTitle = titleET.getText().toString();
-
-                    eventTitleTV.setText(newTitle);
+                    dialogInterface.dismiss();
+                    if (newTitle.isEmpty()){
+                        Snackbar.make(layout,"כתורת אירוע לא תהיה ריקה",3000).show();
+                    } else eventTitleTV.setText(newTitle);
                 }
             });
 
@@ -880,7 +895,8 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                 refOrange_Event.child(childID).setValue(newEvent);
             }
             sendingFileToEmail(eventFile, newEvent);
-            //clearAllFields();
+            Snackbar.make(layout,eventTitleTV.getText().toString()+" נוצר בהצלחה", 3000).show();
+            clearAllFields();
         }
         else if (allEventsDates.contains(eventStrDate) && editingMode){
             Snackbar.make(layout,"תאריך תפוס", 3000).show();
@@ -888,8 +904,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         else if (checkEvent() && updateMode){
             // Removing the previous event
             String previousEventPath = previousEventDate+previousEventName+".pdf";
-            removeEventFileFB(previousEventPath);
-            removeEventFileStorage(previousEventPath);
+            removeEventFile(previousEventPath);
             if (previousEventStatus.equals("G")){
                 refGreen_Event.child(previousEventDate).removeValue();
             } else{
@@ -913,8 +928,8 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             updatedEvent.setEventCost(eventCost);
             //newEvent.setEventEmployees();
             updatedEvent.setEventPayment(userSelection);
-            updatedEvent.setEventShows(selectedShows);
-            updatedEvent.setEventEquipments(selectedMaterials);
+            updatedEvent.setEventShows(Lists.newArrayList(selectedShows));
+            updatedEvent.setEventEquipments(Lists.newArrayList(selectedMaterials));
 
             if (userSelection.equals(paymentSelection[0])) openADCheckPayment(true);
             else  updatedEvent.setEventCharacterize("G");
@@ -933,12 +948,38 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         }
     }
 
-    private void removeEventFileStorage(String previousEventPath) {
-        File fileDir = new File(rootPath + "/"+previousEventPath);
-        fileDir.delete();
+    private void clearAllFields() {
+        newEvent = null;
+        updatedEvent = null;
+        eventTitleTV.setText("כותרת אירוע");
+        nameCustomerET.setText("");
+        emailCustomerET.setText("");
+        phoneCustomerET.setText("");
+        locationET.setText("");
+
+        selectedDate = null;
+        dateTV.setText("dd/mm/yyyy hh:mm");
+        contentET.setText("");
+        eventCost = 0;
+        eventCostTV.setText(eventCost+"");
+        paymentSpinner.setSelection(0); // Return to the default selection
+
+        for (int i = 0; i < selectedShows.size(); i++) {
+            if (selectedShows.get(i)){
+                selectedShows.set(i, false);
+            }
+        }
+
+        for (int i = 0; i < selectedMaterials.size(); i++) {
+            if (selectedMaterials.get(i)){
+                selectedMaterials.set(i, false);
+            }
+        }
     }
 
-    private void removeEventFileFB(String previousEventPath) {
+    private void removeEventFile(String previousEventPath) {
+        File fileDir = new File(rootPath + "/"+previousEventPath);
+        fileDir.delete();
         StorageReference deleteFile = storageRef.child("files/"+previousEventPath);
         deleteFile.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -1077,6 +1118,8 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         Bitmap endBM = BitmapFactory.decodeResource(getResources(), R.drawable.pdf_end);
         Bitmap scaledbmp3 = Bitmap.createScaledBitmap(endBM,1191,618,false);
         canvas.drawBitmap(scaledbmp3, (width-1191)/2,height-618,paint);
+        // Printing the total price after taxes
+        canvas.drawText(""+ (int) Math.floor(eventCost*1.17), (float) (width*0.25), height-590, prizePaint);
 
         pdfDocument.finishPage(page1);
 
@@ -1169,16 +1212,15 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             flag = false;
             Snackbar.make(layout, "שדה לא יהיה ריק", 3000).show();
         }
-        else if (!customerEmail.contains("@") || !customerEmail.endsWith(".com") || customerEmail.contains(" ")){
+
+        // Checks if the email is valid and verified
+        Matcher matcher =  Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE).matcher(customerEmail);
+        if (!matcher.find()){
             flag = false;
-            Snackbar.make(layout, "כתובת האימייל לא חוקית", 3000).show();
-        }
-        else if (customerEmail.substring(customerEmail.indexOf("@"),customerEmail.indexOf(".com") - 1).isEmpty()){
-            flag = false;
-            Snackbar.make(layout, "כתובת האימייל לא חוקית", 3000).show();
+            Snackbar.make(layout, "כתובת אימייל לא חוקית", 3000).show();
         }
 
-        else if (customerPhone.length() < 9 || customerPhone.length() > 10){
+        if (customerPhone.length() < 9 || customerPhone.length() > 10){
             flag = false;
             Snackbar.make(layout, "מספר הטלפון לא חוקי", 3000).show();
         }
@@ -1195,16 +1237,45 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             }
         }
 
-        else if  (selectedMaterials.isEmpty()){
+        else if (!(Lists.newArrayList(selectedShows)).contains(true)){
             flag = false;
             Snackbar.make(layout,"נא לבחור ציוד לאירוע", 3000).show();
         }
-        else if (selectedMaterials.isEmpty()){
+        else if (!(Lists.newArrayList(selectedShows)).contains(true)){
             flag = false;
             Snackbar.make(layout,"נא לבחור מופע/ים לאירוע", 3000).show();
         }
 
-        return  flag;
+        return flag && checkLocation();
     }
 
+    @SuppressLint("MissingPermission")
+    private boolean checkLocation() {
+        boolean[] locationFlag = {true};
+        FusedLocationProviderClient fusedLocationProviderClient;
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+        if (ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                @SuppressLint("SetTextI18n")
+                @Override
+                public void onComplete(@NonNull Task<Location> task) {
+                    Location location = task.getResult();
+                    if (location != null) {
+                        Geocoder geocoder = new Geocoder(newEventActivity.this);
+                        try {
+                            List<Address> addressList = geocoder.getFromLocationName(eventLocation, 6);
+                        } catch (Exception e) {
+                            locationFlag[0] = false;
+                            Snackbar.make(layout, "אין כתובת כזו", 3000).show();
+                        }
+                    }
+                }
+            });
+        } else {
+            locationFlag[0] = false;
+            Snackbar.make(layout, "אין הרשאות מיקום", 3000).show();
+        }
+        return locationFlag[0];
+    }
 }
