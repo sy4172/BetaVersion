@@ -1,6 +1,7 @@
 package com.example.betaversion;
 
 import static com.example.betaversion.FBref.refGreen_Event;
+import static com.example.betaversion.FBref.refOrange_Event;
 import static com.example.betaversion.FBref.refReminders;
 
 import android.annotation.SuppressLint;
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     BottomNavigationView bottomNavigationView;
 
-    ListView closeEventsLV, remaindersLV, missionsLV;
+    ListView beforeApprovalLV, closeEventsLV, remaindersLV, missionsLV;
     ArrayList<String> titleEvents, dateEvents, phonesList, namesList, eventCharacterizeList;
     ArrayList<Integer> employeesList;
 
@@ -62,18 +63,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         actionBar.setHomeButtonEnabled(true);
 
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        beforeApprovalLV = findViewById(R.id.beforeApprovalLV);
         closeEventsLV = findViewById(R.id.closeEventsLV);
         remaindersLV = findViewById(R.id.remaindersLV);
         missionsLV = findViewById(R.id.missionsLV);
 
         bottomNavigationView.setSelectedItemId(R.id.empty); // clear the selection of the bottomNavigationView object
 
+        beforeApprovalLV.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         closeEventsLV.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         remaindersLV.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         missionsLV.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
         bottomNavigationView.setOnNavigationItemReselectedListener(this);
+        beforeApprovalLV.setOnItemClickListener(this);
         closeEventsLV.setOnItemClickListener(this);
         missionsLV.setOnItemClickListener(this);
         remaindersLV.setOnItemClickListener(this);
@@ -94,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         readAllRemainders();
         readAllCloseEvents();
+        readAllBeforeApproval();
     }
 
     @Override
@@ -102,10 +107,43 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         bottomNavigationView.setSelectedItemId(R.id.empty);
         readAllRemainders();
         readAllCloseEvents();
+        readAllBeforeApproval();
+    }
+
+    private void readAllBeforeApproval() {
+        Query query = refOrange_Event.limitToFirst(1);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dS) {
+                titleEvents.clear();
+                dateEvents.clear();
+                phonesList.clear();
+                employeesList.clear();
+                namesList.clear();
+                eventCharacterizeList.clear();
+
+                for(DataSnapshot data : dS.getChildren()) {
+                    Event tempEvent = data.getValue(Event.class);
+
+                    titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
+                    dateEvents.add(tempEvent.getDateOfEvent());
+                    phonesList.add(tempEvent.getCustomerPhone());
+                    employeesList.add(tempEvent.getEventEmployees());
+                    eventCharacterizeList.add(tempEvent.getEventCharacterize());
+                    namesList.add(tempEvent.getCustomerName());
+                }
+
+                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList);
+                closeEventsLV.setAdapter(customAdapterEvents);
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
     }
 
     private void readAllCloseEvents() {
-        Query query = refGreen_Event.limitToFirst(2);
+        Query query = refGreen_Event.limitToFirst(1);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
@@ -137,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void readAllRemainders() {
-        Query query = refReminders.limitToFirst(2);
+        Query query = refReminders.limitToFirst(1);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
@@ -157,6 +195,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     remindersLastDateToRemindList.add(temp.getLastDateToRemind());
                 }
 
+                // checkDate();
                 CustomAdapterReminder customAdapterReminder = new CustomAdapterReminder(getApplicationContext(), remindersTitleList, remindersContextList, remindersAudioContentList, isTextList, remindersLastDateToRemindList);
                 remaindersLV.setAdapter(customAdapterReminder);
             }
@@ -168,7 +207,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        if (view == missionsLV){
+        if (view  == beforeApprovalLV){
+//            Intent si = new Intent(this, events.class);
+//            si.putExtra("Index", i);
+//            startActivity(si);
+        }
+        else if (view == missionsLV){
 //            Intent si = new Intent(this, newMissionsActivity.class);
 //            si.putExtra("Index", i);
 //            startActivity(si);
@@ -208,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             si = new Intent(this, eventsActivity.class);
             startActivity(si);
         }
-        else if (id == R.id.newMissions){
+        else if (id == R.id.missions){
             Toast.makeText(this, "New Missions", Toast.LENGTH_SHORT).show();
 //            si = new Intent(this, newMissionsActivity.class);
 //            startActivity(si);
@@ -238,16 +282,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             startActivity(si);
         }
         else if (id == R.id.events){
-            Toast.makeText(this, "All Events", Toast.LENGTH_SHORT).show();
-//                si = new Intent(this,eventsActivity.class);
-//                startActivity(si);
-//                finish();
+            si = new Intent(this,eventsActivity.class);
+            startActivity(si);
         }
-        else if (id == R.id.newMissions){
-            Toast.makeText(this, "New Missions", Toast.LENGTH_SHORT).show();
-//                si = new Intent(this,newMissionsActivity.class);
-//                startActivity(si);
-//                finish();
+        else if (id == R.id.missions){
+//            Toast.makeText(this, "missions", Toast.LENGTH_SHORT).show();
+//            si = new Intent(this,missionsActivity.class);
+//            startActivity(si);
         }
     }
 

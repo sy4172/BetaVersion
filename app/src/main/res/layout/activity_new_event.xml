@@ -19,9 +19,7 @@
             android:clickable="true"
             android:onClick="checkIfToExit"
             app:menu="@menu/layout_top_bar"
-            app:navigationIcon="@drawable/ic_back"
-            app:title="אירוע חדש"
-            app:titleCentered="true" />
+            app:navigationIcon="@drawable/ic_back" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
@@ -208,7 +206,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/rubik_medium"
-                    android:text="הציוד לאירוע"
+                    android:text="המופעים שיהיו באירוע"
                     android:textAlignment="viewEnd"
                     android:textSize="18sp" />
 
@@ -217,13 +215,11 @@
                     android:layout_height="wrap_content">
 
                     <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupMaterials"
+                        android:id="@+id/chipGroupShows"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent">
-
-                    </com.google.android.material.chip.ChipGroup>
+                        android:layout_height="wrap_content"
+                        app:singleLine="true" />
                 </HorizontalScrollView>
-
             </LinearLayout>
 
             <Space
@@ -268,7 +264,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/rubik_medium"
-                    android:text="המופעים שיהיו באירוע"
+                    android:text="הציוד לאירוע"
                     android:textAlignment="viewEnd"
                     android:textSize="18sp" />
 
@@ -277,11 +273,13 @@
                     android:layout_height="wrap_content">
 
                     <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupShows"
+                        android:id="@+id/chipGroupMaterials"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:singleLine="true" />
+                        android:layout_height="match_parent">
+
+                    </com.google.android.material.chip.ChipGroup>
                 </HorizontalScrollView>
+
             </LinearLayout>
 
             <Space
@@ -299,6 +297,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="5"
+                    android:onClick="editEmployees"
                     android:fontFamily="@font/rubik_regular"
                     android:gravity="center|right"
                     android:text="0"
@@ -330,6 +329,7 @@
                     android:layout_weight="5"
                     android:fontFamily="@font/rubik_regular"
                     android:gravity="center|right"
+                    android:onClick="editPrize"
                     android:text="0"
                     android:textSize="16sp" />
 

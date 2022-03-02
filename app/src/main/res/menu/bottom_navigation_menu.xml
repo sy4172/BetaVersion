@@ -16,9 +16,8 @@
         app:showAsAction="always" />
 
     <item
-        android:enabled="false"
-        android:title=""
         android:id="@+id/empty"
+        android:title=""
         app:showAsAction="always" />
 
     <item
@@ -28,7 +27,7 @@
         android:title="אירועים"
         app:showAsAction="always" />
     <item
-        android:id="@+id/newMissions"
+        android:id="@+id/missions"
         android:enabled="true"
         android:icon="@drawable/list"
         android:title="משימות"

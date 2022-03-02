@@ -11,6 +11,7 @@ import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -52,7 +53,7 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
     ListView eventsList, selectionLV;
     TextView dateRangeTV;
     // TODO: Need to think about all the options to display in the ListView eventsList object
-    String[] selections = new String[]{"ירוק","כתום","אדום","אפור","לפי תאריך"}; // Includes all the status of the events
+    String[] selections = new String[]{"ירוק","כתום","אדום","אירועים שעברו","לפי תאריך"}; // Includes all the status of the events
     String userSelection;
 
     Date dateSt, dateEd;
@@ -81,6 +82,7 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
         selectionLV.setAdapter(adp);
 
         userSelection = "ירוק"; // To set as a default selection at start
+        dateRangeTV.setVisibility(View.GONE);
 
         titleEvents = new ArrayList<>();
         dateEvents = new ArrayList<>();
@@ -234,7 +236,7 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
                 readEvents("redEvent");
             }
             break;
-            case "אפור": {
+            case "אירועים שעברו": {
                 refEnd_Event.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dS) {
@@ -269,21 +271,18 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
             case "לפי תאריך": {
                 openDateRangeAD();
                 readAllEventsByDate();
+                if (dateRangeTV.getText().toString().isEmpty()){
+                    dateRangeTV.setVisibility(View.GONE);
+                } else dateRangeTV.setVisibility(View.VISIBLE);
             }
             break;
 
             default: {
             }
-
-//        if (view == selectionLV){
-//
-//            }
-//        } else {
-//
-//        }
         }
     }
 
+    @SuppressLint("ResourceAsColor")
     private void openDateRangeAD() {
         Calendar calendar = Calendar.getInstance();
         final int year = calendar.get(Calendar.YEAR);
@@ -301,11 +300,14 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
         }, year, month, day);
         final TextView titleTV = new TextView(this);
         titleTV.setText("תאריך התחלה");
+        titleTV.setTextColor(Color.WHITE);
+        titleTV.setBackgroundColor(R.color.orange_500);
 
         dpd.setCustomTitle(titleTV);
         dpd.show();
     }
 
+    @SuppressLint("ResourceAsColor")
     private void openDateEndPicker() {
         Calendar calendar = Calendar.getInstance();
         final int year = calendar.get(Calendar.YEAR);
@@ -327,6 +329,8 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
         }, year, month, day);
         final TextView titleTV = new TextView(this);
         titleTV.setText("תאריך סיום");
+        titleTV.setTextColor(Color.WHITE);
+        titleTV.setBackgroundColor(R.color.orange_500);
 
         dpd.setCustomTitle(titleTV);
         dpd.show();

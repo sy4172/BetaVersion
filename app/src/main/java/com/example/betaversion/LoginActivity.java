@@ -103,6 +103,7 @@ public class LoginActivity extends AppCompatActivity {
      * if there is no connection - returns False. Otherwise, returns Ture;
      *
      */
+    @SuppressLint("MissingPermission")
     private boolean checkInternetConnection() {
         boolean connected = true;
         try {
@@ -152,7 +153,6 @@ public class LoginActivity extends AppCompatActivity {
     public void login() {
         String email = emailET.getText().toString();
         String password = passwordET.getText().toString();
-        String phone = phoneET.getText().toString();
 
         if (TextUtils.isEmpty(email)){
             emailET.setError("שדה לא יהיה ריק");
@@ -236,7 +236,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
         else{
-            User tempUser = new User(passwordET.getText().toString(),emailET.getText().toString());
+            User tempUser = new User(passwordET.getText().toString(),emailET.getText().toString(), phoneET.getText().toString());
             mAuth.createUserWithEmailAndPassword(tempUser.getEmail(), tempUser.getPassword() )
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override

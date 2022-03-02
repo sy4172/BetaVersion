@@ -104,7 +104,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
     FloatingActionButton fab;
 
     String customerName, customerPhone, customerEmail, eventLocation, eventContent, userSelection, eventStrDate;
-    int eventCost, amountOfUsedMaterial;
+    int eventCost, amountOfUsedMaterial, eventEmployee;
     Date selectedDate, currentDate;
     boolean editingMode, updateMode;
     String previousEventDate, previousEventName, previousEventStatus;
@@ -161,11 +161,12 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             }
         });
 
+
         selectedDate = new Date();
         currentDate = Calendar.getInstance().getTime();
 
         // For setting the flag color to green
-        DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.green_flag));
+        DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.orange_flag));
 
         allShows = new ArrayList<>();
         showsKeyList = new ArrayList<>();
@@ -180,6 +181,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         editingMode = true;
         updateMode = false;
         amountOfUsedMaterial = -1;
+        eventEmployee = -1;
         userSelection = paymentSelection[0];
 
         Intent gi = getIntent();
@@ -712,6 +714,70 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         }
     }
 
+    public void editEmployees(View view) {
+        if (editingMode || updateMode){
+            AlertDialog.Builder adb = new AlertDialog.Builder(this);
+            TextView titleTV = new TextView(this);
+            titleTV.setText("עובדים");
+            titleTV.setGravity(Gravity.RIGHT);
+            titleTV.setTextSize(18);
+            adb.setCustomTitle(titleTV);
+            final EditText employeeET = new EditText(this);
+            adb.setView(employeeET);
+            employeeET.setText(totalEmployeeTV.getText().toString());
+
+            adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.cancel();
+                    eventEmployee = -1;
+                }
+            });
+
+            adb.setPositiveButton("שמור", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    eventEmployee = Integer.parseInt(employeeET.getText().toString());
+                }
+            });
+
+            AlertDialog ad = adb.create();
+            ad.show();
+        } else Snackbar.make(layout, "לא ניתן במצב צפייה", 3000).show();
+    }
+
+    public void editPrize(View view) {
+        if (editingMode || updateMode){
+            AlertDialog.Builder adb = new AlertDialog.Builder(this);
+            TextView titleTV = new TextView(this);
+            titleTV.setText("מחיר");
+            titleTV.setGravity(Gravity.RIGHT);
+            titleTV.setTextSize(18);
+            adb.setCustomTitle(titleTV);
+            final EditText costET = new EditText(this);
+            adb.setView(costET);
+            costET.setText(eventCostTV.getText().toString());
+
+            adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.cancel();
+                    eventCost = -1;
+                }
+            });
+
+            adb.setPositiveButton("שמור", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    eventCost = Integer.parseInt(costET.getText().toString());
+                }
+            });
+
+            AlertDialog ad = adb.create();
+            ad.show();
+        } else Snackbar.make(layout, "לא ניתן במצב צפייה", 3000).show();
+    }
+
     private void moveToPreviousAct() {
         super.onBackPressed();
     }
@@ -1237,13 +1303,21 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             }
         }
 
-        else if (!(Lists.newArrayList(selectedShows)).contains(true)){
+        else if (!selectedMaterials.contains(true)){
             flag = false;
             Snackbar.make(layout,"נא לבחור ציוד לאירוע", 3000).show();
         }
-        else if (!(Lists.newArrayList(selectedShows)).contains(true)){
+        else if (!selectedShows.contains(true)){
             flag = false;
             Snackbar.make(layout,"נא לבחור מופע/ים לאירוע", 3000).show();
+        }
+        int showsAmount = 0;
+        for (int i = 0; i < selectedShows.size(); i++) {
+            if (selectedShows.get(i)) showsAmount ++;
+        }
+        if (showsAmount > 2){
+            flag = false;
+            Snackbar.make(layout,"לא ניתן יותר משני מופעים", 3000).show();
         }
 
         return flag && checkLocation();
@@ -1252,30 +1326,53 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
     @SuppressLint("MissingPermission")
     private boolean checkLocation() {
         boolean[] locationFlag = {true};
+        if (ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {}
         FusedLocationProviderClient fusedLocationProviderClient;
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-        if (ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
-                @SuppressLint("SetTextI18n")
-                @Override
-                public void onComplete(@NonNull Task<Location> task) {
-                    Location location = task.getResult();
-                    if (location != null) {
-                        Geocoder geocoder = new Geocoder(newEventActivity.this);
-                        try {
-                            List<Address> addressList = geocoder.getFromLocationName(eventLocation, 6);
-                        } catch (Exception e) {
-                            locationFlag[0] = false;
-                            Snackbar.make(layout, "אין כתובת כזו", 3000).show();
-                        }
+
+        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                Location location = task.getResult();
+                if (location != null) {
+                    Geocoder geocoder = new Geocoder(newEventActivity.this);
+                    try {
+                        List<Address> addressList = geocoder.getFromLocationName(eventLocation, 6);
+                        Address user_address = addressList.get(0);
+
+                        //LatLng latLng = new LatLng(user_address.getLatitude(), user_address.getLongitude());
+                    } catch (Exception e) {
+                        locationFlag[0] = false;
+                        Snackbar.make(layout, "אין כתובת כזו", 3000).show();
                     }
                 }
-            });
-        } else {
-            locationFlag[0] = false;
-            Snackbar.make(layout, "אין הרשאות מיקום", 3000).show();
-        }
+            }
+        });
+
+//        if (ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//            fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+//                @SuppressLint("SetTextI18n")
+//                @Override
+//                public void onComplete(@NonNull Task<Location> task) {
+//                    Location location = task.getResult();
+//                    if (location != null) {
+//                        Geocoder geocoder = new Geocoder(newEventActivity.this);
+//                        try {
+//                            List<Address> addressList = geocoder.getFromLocationName(eventLocation, 6);
+//                        } catch (Exception e) {
+//                            locationFlag[0] = false;
+//                            Snackbar.make(layout, "אין כתובת כזו", 3000).show();
+//                        }
+//                    }
+//                }
+//            });
+//        } else {
+//            locationFlag[0] = false;
+//            Snackbar.make(layout, "אין הרשאות מיקום", 3000).show();
+//        }
+
         return locationFlag[0];
     }
 }

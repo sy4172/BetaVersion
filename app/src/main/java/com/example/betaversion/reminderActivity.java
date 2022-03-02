@@ -131,11 +131,9 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
         actionBar.setHomeButtonEnabled(true);
 
         // Creates a channel of notification in the system
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("remainderCH", "AfikForReminders", NotificationManager.IMPORTANCE_DEFAULT);
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
-        }
+        NotificationChannel channel = new NotificationChannel("remainderCH", "AfikForReminders", NotificationManager.IMPORTANCE_DEFAULT);
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        manager.createNotificationChannel(channel);
 
         rootPath = new File(this.getExternalFilesDir("/"), "myRECORDS");
         if(!rootPath.exists()) {
@@ -144,13 +142,12 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
         dataFile = null;
         mediaPlayer = new MediaPlayer();
 
-        Intent gi = getIntent();
+//        Intent gi = getIntent();
 //        if (gi != null){
 //            if(gi.getStringExtra("audioContent").isEmpty()) {
 //                Toast.makeText(this, getIntent().getStringExtra("audioContent"), Toast.LENGTH_SHORT).show();
 //            }
 //        }
-
 
         bottomNavigationView.setSelectedItemId(R.id.remainder); // set the selection of the bottomNavigationView object to the current activity
         creationMode = isRecording = false;
@@ -415,10 +412,10 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
 
 
             Calendar c = Calendar.getInstance();
-            c.add(Calendar.DATE, 1);
-            c.set(Calendar.HOUR_OF_DAY, 8);
-            c.set(Calendar.MINUTE, 0);
-            c.set(Calendar.SECOND, 0);
+//            c.add(Calendar.DATE, 1);
+//            c.set(Calendar.HOUR_OF_DAY, 8);
+//            c.set(Calendar.MINUTE, 0);
+            c.add(Calendar.SECOND, 5);
 
             PendingIntent pendingIntent = PendingIntent.getBroadcast(reminderActivity.this,i ,notificationIntent, 0) ;
             AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE) ;
@@ -974,7 +971,7 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
 //                startActivity(si);
 //                finish();
         }
-        else if (id == R.id.newMissions){
+        else if (id == R.id.missions){
             Toast.makeText(this, "New Missions", Toast.LENGTH_SHORT).show();
 //            si = new Intent(this, newMissionsActivity.class);
 //            startActivity(si);
@@ -1004,7 +1001,7 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
             si = new Intent(this,eventsActivity.class);
             startActivity(si);
         }
-        else if (id == R.id.newMissions){
+        else if (id == R.id.missions){
             Toast.makeText(this, "New Missions", Toast.LENGTH_SHORT).show();
 //                si = new Intent(this,newMissionsActivity.class);
 //                startActivity(si);
