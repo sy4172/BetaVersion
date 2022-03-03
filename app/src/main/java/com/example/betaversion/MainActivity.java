@@ -14,7 +14,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -111,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void readAllBeforeApproval() {
-        Query query = refOrange_Event.limitToFirst(1);
+        Query query = refOrange_Event.limitToFirst(2);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
@@ -143,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void readAllCloseEvents() {
-        Query query = refGreen_Event.limitToFirst(1);
+        Query query = refGreen_Event.limitToFirst(2);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
@@ -175,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void readAllRemainders() {
-        Query query = refReminders.limitToFirst(1);
+        Query query = refReminders.limitToFirst(2);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
@@ -213,9 +212,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //            startActivity(si);
         }
         else if (view == missionsLV){
-//            Intent si = new Intent(this, newMissionsActivity.class);
-//            si.putExtra("Index", i);
-//            startActivity(si);
+            Intent si = new Intent(this, missionsActivity.class);
+            si.putExtra("Index", i);
+            startActivity(si);
         }
         else if (view == closeEventsLV){
             Intent si = new Intent(this, eventsActivity.class);
@@ -248,15 +247,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             startActivity(si);
         }
         else if (id == R.id.events){
-            // לכל item יהיה ניווט, צפייה, ועדכון
             si = new Intent(this, eventsActivity.class);
             startActivity(si);
         }
         else if (id == R.id.missions){
-            Toast.makeText(this, "New Missions", Toast.LENGTH_SHORT).show();
-//            si = new Intent(this, newMissionsActivity.class);
-//            startActivity(si);
-//            finish();
+            si = new Intent(this, missionsActivity.class);
+            startActivity(si);
         }
         else{
             return false;
@@ -286,9 +282,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             startActivity(si);
         }
         else if (id == R.id.missions){
-//            Toast.makeText(this, "missions", Toast.LENGTH_SHORT).show();
-//            si = new Intent(this,missionsActivity.class);
-//            startActivity(si);
+            si = new Intent(MainActivity.this,missionsActivity.class);
+            startActivity(si);
         }
     }
 

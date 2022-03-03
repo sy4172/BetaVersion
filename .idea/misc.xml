@@ -52,11 +52,13 @@
         <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/activity_login.xml" value="0.1" />
         <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/activity_main.xml" value="0.22" />
         <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/activity_map.xml" value="0.22" />
+        <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/activity_missions.xml" value="0.21" />
         <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/activity_new_event.xml" value="0.25" />
         <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/activity_reminder.xml" value="0.17074275362318841" />
         <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/activity_settings.xml" value="0.17074275362318841" />
         <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/custom_lv_close_events.xml" value="0.25" />
         <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/custom_lv_flag_colors.xml" value="0.17074275362318841" />
+        <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/custom_lv_missions.xml" value="0.14402173913043478" />
         <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/custom_lv_remider.xml" value="0.22" />
         <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/custom_lv_settings.xml" value="0.25" />
         <entry key="..\:/AndroidProj/betaVersion/app/src/main/res/layout/text_layout_reminder.xml" value="0.25" />

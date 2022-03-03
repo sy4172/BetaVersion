@@ -924,11 +924,10 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             // Creates the event as a constructor
 
             if (userSelection.equals(paymentSelection[0])){
-                // TODO: fixing the ERROR
-                //openADCheckPayment(false);
+                openADCheckPayment(false);
             }
             else {
-                newEvent.setEventCharacterize("G");
+                newEvent.setEventCharacterize("O");
             }
 
             newEvent.setEventName(eventTitleTV.getText().toString());
@@ -1209,20 +1208,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         titleTV.setTextSize(20);
         adb.setCustomTitle(titleTV);
 
-        adb.setNegativeButton("אוקיי", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if (toUpdate){
-                    updatedEvent.setEventCharacterize("G");
-                } else {
-                    newEvent.setEventCharacterize("G");
-                }
-                DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.green_flag));
-                dialogInterface.dismiss();
-            }
-        });
-
-        adb.setPositiveButton("לא עכשיו", new DialogInterface.OnClickListener() {
+        adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 if (toUpdate){
@@ -1326,52 +1312,32 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
     @SuppressLint("MissingPermission")
     private boolean checkLocation() {
         boolean[] locationFlag = {true};
-        if (ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {}
-        FusedLocationProviderClient fusedLocationProviderClient;
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        if (ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            FusedLocationProviderClient fusedLocationProviderClient;
+            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
 
-        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onComplete(@NonNull Task<Location> task) {
-                Location location = task.getResult();
-                if (location != null) {
-                    Geocoder geocoder = new Geocoder(newEventActivity.this);
-                    try {
-                        List<Address> addressList = geocoder.getFromLocationName(eventLocation, 6);
-                        Address user_address = addressList.get(0);
-
-                        //LatLng latLng = new LatLng(user_address.getLatitude(), user_address.getLongitude());
-                    } catch (Exception e) {
-                        locationFlag[0] = false;
-                        Snackbar.make(layout, "אין כתובת כזו", 3000).show();
+            fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                @SuppressLint("SetTextI18n")
+                @Override
+                public void onComplete(@NonNull Task<Location> task) {
+                    Location location = task.getResult();
+                    if (location != null) {
+                        Geocoder geocoder = new Geocoder(newEventActivity.this);
+                        try {
+                            List<Address> addressList = geocoder.getFromLocationName(eventLocation, 6);
+                            //LatLng latLng = new LatLng(user_address.getLatitude(), user_address.getLongitude());
+                        } catch (Exception e) {
+                            locationFlag[0] = false;
+                            Snackbar.make(layout, "אין כתובת כזו", 3000).show();
+                        }
                     }
                 }
-            }
-        });
-
-//        if (ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//            fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
-//                @SuppressLint("SetTextI18n")
-//                @Override
-//                public void onComplete(@NonNull Task<Location> task) {
-//                    Location location = task.getResult();
-//                    if (location != null) {
-//                        Geocoder geocoder = new Geocoder(newEventActivity.this);
-//                        try {
-//                            List<Address> addressList = geocoder.getFromLocationName(eventLocation, 6);
-//                        } catch (Exception e) {
-//                            locationFlag[0] = false;
-//                            Snackbar.make(layout, "אין כתובת כזו", 3000).show();
-//                        }
-//                    }
-//                }
-//            });
-//        } else {
-//            locationFlag[0] = false;
-//            Snackbar.make(layout, "אין הרשאות מיקום", 3000).show();
-//        }
+            });
+        }  else {
+            locationFlag[0] = false;
+            Snackbar.make(layout, "אין הרשאות מיקום", 3000).show();
+       }
 
         return locationFlag[0];
     }
