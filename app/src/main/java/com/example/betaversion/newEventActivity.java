@@ -76,13 +76,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -895,8 +893,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                         }
                         else if (selectedDate.after(new Date())){
                             selectedDate.setTime(selectedDate.getTime());
-                            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-                            String strDate = dateFormat.format(selectedDate);
+                            String strDate = DateConvertor.dateToString(selectedDate, "dd/MM/yyyy HH:mm");
                             dateTV.setText(strDate);
                         }
                         else{
@@ -938,8 +935,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
             newEvent.setDateOfEvent(eventStrDate);
             // Casting the Date to String
-            DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
-            String strDate = dateFormat.format(currentDate);
+            String strDate = DateConvertor.dateToString(currentDate,"yyyyMMddHHmm");
             newEvent.setDateOfCreation(strDate);
 
             newEvent.setEventContent(eventContent);
@@ -985,8 +981,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
             updatedEvent.setDateOfEvent(eventStrDate);
             // Casting the Date to String
-            DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
-            String strDate = dateFormat.format(currentDate);
+            String strDate = DateConvertor.dateToString(currentDate, "yyyyMMddHHmm");
             updatedEvent.setDateOfCreation(strDate);
 
             updatedEvent.setEventContent(eventContent);
@@ -1167,16 +1162,10 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         prizePaint.setTextSize(15);
         paint.setTypeface(Typeface.create("Calibri",Typeface.BOLD));
         canvas.drawText( ""+event.getEventCost(), (float) (width*0.6), (float) (height/5+122.5), prizePaint);
+
         // Parsing the String of the date to a format String
-        DateFormat format = new SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH);
-        Date tempSelectedDate  = null;
-        try {
-            tempSelectedDate = format.parse(event.getDateOfCreation());
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        String strDate = dateFormat.format(Objects.requireNonNull(tempSelectedDate));
+        Date tempSelectedDate = DateConvertor.stringToDate(event.getDateOfCreation(), "yyyyMMddHHmm");
+        String strDate = DateConvertor.dateToString(tempSelectedDate, "dd/MM/yyyy");
         canvas.drawText(""+strDate,(float) (width*0.43), (float) (height/5+122.5), prizePaint);
 
         // END OF DOCUMENT
@@ -1234,8 +1223,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         eventContent = contentET.getText().toString();
 
         if (selectedDate != null){
-            DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
-            eventStrDate = dateFormat.format(selectedDate);
+            eventStrDate = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmm");
             selectedDate = null;
         } else if (!dateTV.getText().toString().equals("dd/mm/yyyy hh:mm")){
             String tempDate = dateTV.getText().toString();

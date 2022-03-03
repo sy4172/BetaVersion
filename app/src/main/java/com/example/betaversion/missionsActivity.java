@@ -41,9 +41,10 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
     BottomNavigationView bottomNavigationView;
     ListView closeEventsLV;
 
-    ArrayList<String> titleEvents, dateEvents, phonesList, namesList, eventCharacterizeList;
+    ArrayList<String> titleEvents, dateEvents, phonesList, namesList, eventCharacterizeList, missionTitlesList, missionContentsList, missionLastDatesList;
     ArrayList<Integer> employeesList;
     ArrayList<Mission> missionsList;
+    ArrayList<Boolean> missionStatusList;
     TextView eventIdTV;
 
     @Override
@@ -74,13 +75,18 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
         namesList = new ArrayList<>();
         missionsList = new ArrayList<>();
 
-        eventIdTV.setText("בחר את האירוע כדי להמשיך");
+        missionTitlesList = new ArrayList<>();
+        missionStatusList = new ArrayList<>();
+        missionContentsList = new ArrayList<>();
+        missionLastDatesList = new ArrayList<>();
+
+
+        eventIdTV.setText("בחר את אירוע כדי להמשיך");
         readAllCloseEvents();
     }
 
     private void readAllCloseEvents() {
-        Query query = refGreen_Event.limitToFirst(2);
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
+        refGreen_Event.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
                 titleEvents.clear();
@@ -261,13 +267,28 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
                         missionsList = tempEvent.getEventMissions();
                     }
                 }
+                getAllProperties();
 
-                CustomAdapterMissions customAdapterEvents = new CustomAdapterMissions(getApplicationContext());
-                closeEventsLV.setAdapter(customAdapterEvents);
+                CustomAdapterMissions customAdapterMissions = new CustomAdapterMissions(getApplicationContext(), missionTitlesList, missionStatusList, missionContentsList, missionLastDatesList);
+                closeEventsLV.setAdapter(customAdapterMissions);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
+    }
+
+    private void getAllProperties() {
+        missionTitlesList.clear();
+        missionStatusList.clear();
+        missionContentsList.clear();
+        missionLastDatesList.clear();
+
+        for (int i = 0; i < missionsList.size(); i++) {
+            missionTitlesList.add(missionsList.get(i).getTitle());
+            missionStatusList.add(missionsList.get(i).isText());
+            missionContentsList.add(missionsList.get(i).getTextContent());
+            missionLastDatesList.add(missionsList.get(i).getLastDateToRemind());
+        }
     }
 }

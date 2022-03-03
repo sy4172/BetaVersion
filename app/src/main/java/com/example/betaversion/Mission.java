@@ -2,8 +2,6 @@ package com.example.betaversion;
 
 import android.media.MediaPlayer;
 
-import java.util.Date;
-
 /**
  * The type Mission for creating mission for preparing to each event.
  * @version  	2.0
@@ -13,9 +11,9 @@ public class Mission {
     private boolean isText;
     private String textContent;
     private MediaPlayer audioContent;
-    private Date dateOfChange;
+    private String dateOfChange;
     private int frequency; // According to a Spinner object.
-    private Date lastDateToRemind;
+    private String lastDateToRemind;
 
     /**
      * Instantiates a new Mission for the RT Firebase Database.
@@ -33,7 +31,7 @@ public class Mission {
      * @param frequency        the frequency
      * @param lastDateToRemind the last date to remind
      */
-    public Mission(String title, boolean isText, String textContent, MediaPlayer audioContent, Date dateOfChange, int frequency, Date lastDateToRemind){
+    public Mission(String title, boolean isText, String textContent, MediaPlayer audioContent, String dateOfChange, int frequency, String lastDateToRemind){
         this.title = title;
         this.isText = isText;
         this.textContent = textContent;
@@ -121,7 +119,7 @@ public class Mission {
      *
      * @return the date of change
      */
-    public Date getDateOfChange() {
+    public String getDateOfChange() {
         return dateOfChange;
     }
 
@@ -130,7 +128,7 @@ public class Mission {
      *
      * @param dateOfChange the date of change
      */
-    public void setDateOfChange(Date dateOfChange) {
+    public void setDateOfChange(String dateOfChange) {
         this.dateOfChange = dateOfChange;
     }
 
@@ -157,7 +155,7 @@ public class Mission {
      *
      * @return the last date to remind
      */
-    public Date getLastDateToRemind() {
+    public String getLastDateToRemind() {
         return lastDateToRemind;
     }
 
@@ -166,7 +164,7 @@ public class Mission {
      *
      * @param lastDateToRemind the last date to remind
      */
-    public void setLastDateToRemind(Date lastDateToRemind) {
+    public void setLastDateToRemind(String lastDateToRemind) {
         this.lastDateToRemind = lastDateToRemind;
     }
 }

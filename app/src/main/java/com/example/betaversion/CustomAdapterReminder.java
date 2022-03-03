@@ -13,12 +13,8 @@ import android.widget.TextView;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Objects;
 
 public class CustomAdapterReminder extends BaseAdapter{
@@ -67,13 +63,8 @@ public class CustomAdapterReminder extends BaseAdapter{
 
         titleTV.setText(remindsTitleList.get(i));
         // cast the String to date
-        DateFormat format = new SimpleDateFormat("yyyyMMddHHmmyyyyMMddHHmmss", Locale.ENGLISH);
-        Date tempSelectedDate  = null;
-        try {
-            tempSelectedDate = format.parse(lastDateToRemindList.get(i));
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        Date tempSelectedDate = DateConvertor.stringToDate(lastDateToRemindList.get(i), "yyyyMMddHHmmyyyyMMddHHmmss");
+
         lastDateTV.setText(Objects.requireNonNull(tempSelectedDate).getDate()+"/"+tempSelectedDate.getMonth()+1+"/"+tempSelectedDate.getYear());
 
         if (!isText.get(i)) {

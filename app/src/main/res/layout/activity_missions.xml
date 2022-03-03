@@ -57,7 +57,7 @@
                     android:layout_marginRight="10dp"
                     android:layout_weight="1"
                     android:fontFamily="@font/rubik_semibold"
-                    android:text="כל המשימות הקרובים"
+                    android:text="כל המשימות הקרובות"
                     android:textSize="20dp" />
 
                 <TextView

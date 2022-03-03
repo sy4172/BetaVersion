@@ -396,13 +396,7 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
             Intent notificationIntent = new Intent(reminderActivity.this, notificationPublisher.class) ;
 
             // Cast from String to Date
-            DateFormat format = new SimpleDateFormat("yyyyMMddHHmmyyyyMMddHHmmss", Locale.ENGLISH);
-            Date selectedDate = null;
-            try {
-                selectedDate = format.parse(remindersLastDateToRemindList.get(i));
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            Date selectedDate = DateConvertor.stringToDate(remindersLastDateToRemindList.get(i), "yyyyMMddHHmmyyyyMMddHHmmss");
 
             notificationIntent.putExtra("Content",remindersContextList.get(i)) ;
             notificationIntent.putExtra("SubText","(קיים עד "+ Objects.requireNonNull(selectedDate).getDate()+"/"+ selectedDate.getMonth()+"/"+ selectedDate.getYear()+")");
@@ -793,7 +787,7 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
                     else {
                         // Cast the selected Date to String
                         DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmyyyyMMddHHmmss");
-                        String strDate = dateFormat.format(selectedDate);
+                        String strDate = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmmyyyyMMddHHmmss");
                         strDate += dateFormat.format(currentDate);
 
                         tempReminder.setLastDateToRemind(strDate);

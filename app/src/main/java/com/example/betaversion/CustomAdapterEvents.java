@@ -19,7 +19,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Objects;
 
 public class CustomAdapterEvents extends BaseAdapter {
     Context context;
@@ -71,9 +70,9 @@ public class CustomAdapterEvents extends BaseAdapter {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-        String strDate = dateFormat.format(Objects.requireNonNull(tempSelectedDate));
+        String strDate = DateConvertor.dateToString(tempSelectedDate,"dd/MM/yyyy HH:mm");
         dateOfEventTV.setText(strDate);
+
         titleTV.setText(titleEvents.get(i));
         eventEmployeesTV.setText(String.valueOf(employeesList.get(i)));
         customerDetailsTV.setText(phonesList.get(i)+" | "+ namesList.get(i));
