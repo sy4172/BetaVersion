@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -50,6 +51,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     ArrayList<String> remindersLastDateToRemindList;
     ArrayList<Boolean> isTextList;
 
+    ArrayList<String> missionTitlesList, missionLastDatesList, missionContentsList;
+    ArrayList<Boolean> missionStatusList;
+    ArrayList<Integer> frequencyList;
+
+    CustomAdapterMissions customAdapterMissions;
+    CustomAdapterEvents customAdapterEvents;
 
     @SuppressLint("WrongConstant")
     @Override
@@ -95,16 +102,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         eventCharacterizeList = new ArrayList<>();
         namesList = new ArrayList<>();
 
-        readAllRemainders();
-        readAllCloseEvents();
-        readAllBeforeApproval();
-    }
+        missionTitlesList = new ArrayList<>();
+        missionContentsList = new ArrayList<>();
+        missionStatusList = new ArrayList<>();
+        missionLastDatesList = new ArrayList<>();
+        frequencyList = new ArrayList<>();
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        bottomNavigationView.setSelectedItemId(R.id.empty);
-        readAllRemainders();
+        //readAllRemainders();
         readAllCloseEvents();
         readAllBeforeApproval();
     }
@@ -132,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     namesList.add(tempEvent.getCustomerName());
                 }
 
-                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList);
+                customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList);
                 closeEventsLV.setAdapter(customAdapterEvents);
             }
             @Override
@@ -163,9 +167,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     eventCharacterizeList.add(tempEvent.getEventCharacterize());
                     namesList.add(tempEvent.getCustomerName());
                 }
-
-                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList);
+                customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList);
                 closeEventsLV.setAdapter(customAdapterEvents);
+
+                readAllMissions();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -202,6 +207,42 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
+    }
+
+    private void readAllMissions() {
+        Toast.makeText(this, dateEvents.size()+"", Toast.LENGTH_SHORT).show();
+        if (dateEvents.size() != 0){
+            for (int i = 0; i < dateEvents.size(); i++) {
+                if (eventCharacterizeList.get(i).equals("G")){
+                    refGreen_Event.child(dateEvents.get(i)).child("eventMissions").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dS) {
+                            missionTitlesList.clear();
+                            missionStatusList.clear();
+                            missionContentsList.clear();
+                            missionLastDatesList.clear();
+                            frequencyList.clear();
+
+                            for(DataSnapshot data : dS.getChildren()) {
+                                Mission tempMission = data.getValue(Mission.class);
+
+                                missionTitlesList.add(Objects.requireNonNull(tempMission).getTitle());
+                                missionStatusList.add(tempMission.isText());
+                                missionContentsList.add(tempMission.getTextContent());
+                                missionLastDatesList.add(tempMission.getLastDateToRemind());
+                                frequencyList.add(tempMission.getFrequency());
+                            }
+
+                            customAdapterMissions = new CustomAdapterMissions(getApplicationContext(), titleEvents, missionTitlesList, missionStatusList, missionContentsList, missionLastDatesList, frequencyList);
+                            missionsLV.setAdapter(customAdapterMissions);
+                        }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                        }
+                    });
+                }
+            }
+        }
     }
 
     @Override
@@ -323,6 +364,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         ad.show();
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        bottomNavigationView.setSelectedItemId(R.id.empty);
+        //readAllRemainders();
+//        readAllCloseEvents();
+//        readAllBeforeApproval();
+    }
+
     public void moveToPreviousAct(View view) {
         super.onBackPressed();
     }
@@ -333,5 +383,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void moveToEventsActivity(View view) {
         startActivity(new Intent(this, eventsActivity.class));
+    }
+
+    public void moveToMissionsActivity(View view) {
+        startActivity(new Intent(this, missionsActivity.class));
     }
 }

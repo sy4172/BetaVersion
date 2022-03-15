@@ -1,16 +1,20 @@
 package com.example.betaversion;
 
-import android.media.MediaPlayer;
+import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.RequiresApi;
 
 /**
  * The type Mission for creating mission for preparing to each event.
  * @version  	2.0
  */
-public class Mission {
+public class Mission implements Parcelable {
     private String title;
     private boolean isText;
     private String textContent;
-    private MediaPlayer audioContent;
+    private String audioContentPath;
     private String dateOfChange;
     private int frequency; // According to a Spinner object.
     private String lastDateToRemind;
@@ -22,25 +26,23 @@ public class Mission {
 
     /**
      * Instantiates a new Mission.
-     *
-     * @param title            the title
+     *  @param title            the title
      * @param isText           the is text
      * @param textContent      the text content
-     * @param audioContent     the audio content
-     * @param dateOfChange     the date of change
+     * @param audioContentPath     the audio content path
+     * @param dateOfChange          the date of the change
      * @param frequency        the frequency
      * @param lastDateToRemind the last date to remind
      */
-    public Mission(String title, boolean isText, String textContent, MediaPlayer audioContent, String dateOfChange, int frequency, String lastDateToRemind){
+    public Mission(String title, boolean isText, String textContent, String audioContentPath, String dateOfChange, int frequency, String lastDateToRemind){
         this.title = title;
         this.isText = isText;
         this.textContent = textContent;
-        this.audioContent = audioContent;
+        this.audioContentPath = audioContentPath;
         this.dateOfChange = dateOfChange;
         this.frequency = frequency;
         this.lastDateToRemind = lastDateToRemind;
     }
-
 
     /**
      * Gets title.
@@ -101,8 +103,8 @@ public class Mission {
      *
      * @return the audio content
      */
-    public MediaPlayer getAudioContent() {
-        return audioContent;
+    public String getAudioContent() {
+        return audioContentPath;
     }
 
     /**
@@ -110,8 +112,8 @@ public class Mission {
      *
      * @param audioContent the audio content
      */
-    public void setAudioContent(MediaPlayer audioContent) {
-        this.audioContent = audioContent;
+    public void setAudioContent(String audioContent) {
+        this.audioContentPath = audioContent;
     }
 
     /**
@@ -166,5 +168,47 @@ public class Mission {
      */
     public void setLastDateToRemind(String lastDateToRemind) {
         this.lastDateToRemind = lastDateToRemind;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    protected Mission(Parcel in) {
+        title = in.readString();
+        isText = in.readBoolean();
+        textContent = in.readString();
+        audioContentPath = in.readString();
+        dateOfChange = in.readString();
+        frequency = in.readInt();
+        lastDateToRemind = in.readString();
+    }
+
+    public static final Creator<Mission> CREATOR = new Creator<Mission>() {
+        @RequiresApi(api = Build.VERSION_CODES.Q)
+        @Override
+        public Mission createFromParcel(Parcel in) {
+            return new Mission(in);
+        }
+
+        @Override
+        public Mission[] newArray(int size) {
+            return new Mission[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcelOut, int i) {
+        parcelOut.writeString(title);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            parcelOut.writeBoolean(isText);
+        }
+        parcelOut.writeString(textContent);
+        parcelOut.writeString(audioContentPath);
+        parcelOut.writeString(dateOfChange);
+        parcelOut.writeInt(frequency);
+        parcelOut.writeString(lastDateToRemind);
     }
 }

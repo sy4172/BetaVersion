@@ -22,6 +22,10 @@
         tools:ignore="AllowBackup"
         tools:targetApi="m">
         <activity
+            android:name=".newMissionActivity"
+            android:windowSoftInputMode="adjustPan"
+            android:exported="false" />
+        <activity
             android:name=".missionsActivity"
             android:exported="false" />
 

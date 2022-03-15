@@ -1,6 +1,7 @@
 package com.example.betaversion;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * The type Event for creating new event in the system of the business.
@@ -21,7 +22,7 @@ public class Event {
     private String eventPayment;
     private int eventEmployees;
     private ArrayList<Boolean> eventEquipments;
-    private ArrayList<Mission> eventMissions;
+    private HashMap<String, Mission> eventMissions;
     private ArrayList<Boolean> eventShows;
 
     /**
@@ -49,7 +50,7 @@ public class Event {
      * @param eventMissions     the event missions
      * @param eventShows        the event shows
      */
-    public Event(String customerName, String customerPhone, String customerEmail, String dateOfEvent, String dateOfCreation, String eventName, String eventLocation, int eventCost, String eventInformation, String eventContent, String eventCharacterize, String eventPayment, int eventEmployees, ArrayList<Boolean> eventEquipments, ArrayList<Mission> eventMissions, ArrayList<Boolean> eventShows){
+    public Event(String customerName, String customerPhone, String customerEmail, String dateOfEvent, String dateOfCreation, String eventName, String eventLocation, int eventCost, String eventInformation, String eventContent, String eventCharacterize, String eventPayment, int eventEmployees, ArrayList<Boolean> eventEquipments, HashMap<String, Mission> eventMissions, ArrayList<Boolean> eventShows){
         this.customerName = customerName;
         this.customerPhone = customerPhone;
         this.customerEmail = customerEmail;
@@ -308,7 +309,7 @@ public class Event {
      *
      * @return the event missions
      */
-    public ArrayList<Mission> getEventMissions() {
+    public HashMap<String, Mission> getEventMissions() {
         return eventMissions;
     }
 
@@ -317,7 +318,7 @@ public class Event {
      *
      * @param eventMissions the event missions
      */
-    public void setEventMissions(ArrayList<Mission> eventMissions) {
+    public void setEventMissions(HashMap<String, Mission> eventMissions) {
         this.eventMissions = eventMissions;
     }
 

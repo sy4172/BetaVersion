@@ -135,7 +135,7 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
         NotificationManager manager = getSystemService(NotificationManager.class);
         manager.createNotificationChannel(channel);
 
-        rootPath = new File(this.getExternalFilesDir("/"), "myRECORDS");
+        rootPath = new File(this.getExternalFilesDir("/"), "myRemindersRECOREDS");
         if(!rootPath.exists()) {
             rootPath.mkdirs();
         }
@@ -802,7 +802,7 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
 
                             refReminders.child(strDate).setValue(tempReminder);
 
-                            remindersKeyList.add(String.valueOf(strDate));
+                            remindersKeyList.add(strDate);
                             remindersTitleList.add((tempReminder).getTitle());
                             remindersContextList.add(tempReminder.getTextContent());
                             remindersAudioContentList.add(tempReminder.getAudioContent());
@@ -903,7 +903,7 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
     public void saveTheTextReminder(View view) {
         textLayout = findViewById(R.id.textLayout);
         titleReminderET = findViewById(R.id.titleReminderET);
-        contextReminderET = findViewById(R.id.contextReminderET);
+        contextReminderET = findViewById(R.id.contextMissionET);
 
         String tempTitle = titleReminderET.getText().toString();
         String tempContext = contextReminderET.getText().toString();

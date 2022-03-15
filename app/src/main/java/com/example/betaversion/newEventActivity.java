@@ -125,7 +125,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_event);
 
-        layout = findViewById(R.id.layout);
+        layout = findViewById(R.id.missionlayout);
         eventTitleTV = findViewById(R.id.eventTitleTV);
         flag = findViewById(R.id.flag);
         nameCustomerET = findViewById(R.id.nameCustomerET);
@@ -932,6 +932,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             newEvent.setCustomerPhone(customerPhone);
             newEvent.setCustomerEmail(customerEmail);
             newEvent.setEventLocation(eventLocation);
+            newEvent.setEventMissions(null);
 
             newEvent.setDateOfEvent(eventStrDate);
             // Casting the Date to String

@@ -2,20 +2,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="5dp"
+        android:layout_weight="1"
         android:orientation="horizontal">
 
         <TextView
             android:id="@+id/missionTitle"
             android:layout_width="0px"
             android:layout_height="wrap_content"
+            android:layout_gravity="right"
             android:layout_weight="4"
-            android:text="TextView" />
+            android:fontFamily="@font/rubik_semibold"
+            android:text="TextView"
+            android:textSize="18sp" />
 
         <ImageView
             android:id="@+id/missionStatusIV"
@@ -29,12 +35,21 @@
         android:id="@+id/missionContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:layout_marginRight="5dp"
+        android:layout_weight="1"
+        android:fontFamily="@font/rubik_regular"
+        android:text="TextView"
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/lastDateMission"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="10dp"
+        android:layout_weight="1"
+        android:fontFamily="@font/rubik_light"
+        android:text="TextView"
+        android:textSize="16sp" />
 
 </LinearLayout>

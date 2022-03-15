@@ -12,6 +12,7 @@ import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -23,10 +24,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -39,13 +40,18 @@ import java.util.Objects;
 public class missionsActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener {
 
     BottomNavigationView bottomNavigationView;
-    ListView closeEventsLV;
+    ListView generalLV;
+    ImageView backToStart;
 
-    ArrayList<String> titleEvents, dateEvents, phonesList, namesList, eventCharacterizeList, missionTitlesList, missionContentsList, missionLastDatesList;
-    ArrayList<Integer> employeesList;
-    ArrayList<Mission> missionsList;
+    ArrayList<String> titleEvents, dateEvents, phonesList, namesList, eventCharacterizeList, missionTitlesList, missionContentsList, missionLastDatesList, missionsKeysList;
+    HashMap<String, Mission> allMissions;
+    ArrayList<Integer> employeesList, frequencyList;
     ArrayList<Boolean> missionStatusList;
     TextView eventIdTV;
+    boolean toMissionsMenu;
+
+    CustomAdapterMissions customAdapterMissions;
+    CustomAdapterEvents customAdapterEvents;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,15 +63,18 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
         actionBar.setHomeButtonEnabled(true);
 
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        closeEventsLV = findViewById(R.id.closeEventsLV);
+        generalLV = findViewById(R.id.generalLV);
         eventIdTV = findViewById(R.id.eventIdTV);
+        backToStart = findViewById(R.id.backToStart);
 
+        backToStart.setVisibility(View.INVISIBLE);
+        bottomNavigationView.setSelectedItemId(R.id.missions);
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
         bottomNavigationView.setOnNavigationItemReselectedListener(this);
 
         bottomNavigationView.setSelectedItemId(R.id.missions);
-        closeEventsLV.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        closeEventsLV.setOnCreateContextMenuListener(this);
+        generalLV.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        generalLV.setOnCreateContextMenuListener(this);
 
         titleEvents = new ArrayList<>();
         dateEvents = new ArrayList<>();
@@ -73,16 +82,25 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
         employeesList = new ArrayList<>();
         eventCharacterizeList = new ArrayList<>();
         namesList = new ArrayList<>();
-        missionsList = new ArrayList<>();
 
+        allMissions = new HashMap<>();
         missionTitlesList = new ArrayList<>();
         missionStatusList = new ArrayList<>();
         missionContentsList = new ArrayList<>();
         missionLastDatesList = new ArrayList<>();
+        frequencyList = new ArrayList<>();
+        missionsKeysList = new ArrayList<>();
 
+        eventIdTV.setText("בחר אירוע כדי להמשיך");
 
-        eventIdTV.setText("בחר את אירוע כדי להמשיך");
         readAllCloseEvents();
+    }
+
+    public void displayAllEvents(View view) {
+        readAllCloseEvents();
+        toMissionsMenu = false;
+        backToStart.setVisibility(View.INVISIBLE);
+        eventIdTV.setText("בחר אירוע כדי להמשיך");
     }
 
     private void readAllCloseEvents() {
@@ -107,8 +125,44 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
                     namesList.add(tempEvent.getCustomerName());
                 }
 
-                CustomAdapterEvents customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList);
-                closeEventsLV.setAdapter(customAdapterEvents);
+                customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList);
+                generalLV.setAdapter(customAdapterEvents);
+                toMissionsMenu = false;
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void readAllMissionsEvent(String eventID){
+        refGreen_Event.child(eventID).child("eventMissions").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dS) {
+                missionTitlesList.clear();
+                missionStatusList.clear();
+                missionContentsList.clear();
+                missionLastDatesList.clear();
+                allMissions.clear();
+                frequencyList.clear();
+                missionsKeysList.clear();
+
+                for(DataSnapshot data : dS.getChildren()) {
+                    Mission tempMission = data.getValue(Mission.class);
+
+                    missionTitlesList.add(Objects.requireNonNull(tempMission).getTitle());
+                    missionStatusList.add(tempMission.isText());
+                    missionContentsList.add(tempMission.getTextContent());
+                    missionLastDatesList.add(tempMission.getLastDateToRemind());
+                    frequencyList.add(tempMission.getFrequency());
+                    allMissions.put(dS.getKey(),tempMission);
+                    missionsKeysList.add(dS.getKey());
+                }
+
+                customAdapterMissions = new CustomAdapterMissions(getApplicationContext(),titleEvents ,missionTitlesList, missionStatusList, missionContentsList, missionLastDatesList, frequencyList);
+                generalLV.setAdapter(customAdapterMissions);
+                toMissionsMenu = true;
+                backToStart.setVisibility(View.VISIBLE);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -164,6 +218,7 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
     protected void onResume() {
         super.onResume();
         bottomNavigationView.setSelectedItemId(R.id.missions);
+
         readAllCloseEvents();
     }
 
@@ -214,8 +269,14 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         v.setOnCreateContextMenuListener(this);
 
-        menu.add("צור אירוע");
-        menu.add("משימות");
+        if (toMissionsMenu){
+            menu.add("צפה");
+            menu.add("עדכן");
+            menu.add("מחק");
+        } else {
+            menu.add("צור משימה");
+            menu.add("משימות");
+        }
 
         super.onCreateContextMenu(menu, v, menuInfo);
     }
@@ -227,68 +288,45 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
         String option = item.getTitle().toString();
         int position = adpInfo.position;
 
-        if(option.equals("צור אירוע")){
-            //Intent si = new Intent(this, newMissionsActivity.class);
-
-            // The parameters
-
-            //startActivity(si);
-        } else if (option.equals("משימות")){
-            readAllMissionsEvent(titleEvents.get(position));
+        if(option.equals("צור משימה")){
+            Intent si = new Intent(this, newMissionActivity.class);
+            si.putExtra("eventTitle", titleEvents.get(position));
+            si.putExtra("eventID", dateEvents.get(position));
+            si.putExtra("updateMode", true);
+            startActivity(si);
+        }
+        else if (option.equals("משימות")){
+            readAllMissionsEvent(dateEvents.get(position));
             eventIdTV.setText("עבור האירוע: "+titleEvents.get(position));
         }
+        else if (option.equals("צפה")){
+            Intent si = new Intent(this, newMissionActivity.class);
+            si.putExtra("eventTitle", titleEvents.get(position));
+            si.putExtra("eventID", dateEvents.get(position));
+            si.putExtra("missionMode", missionStatusList.get(position));
+            si.putExtra("updateMode", false);
+            si.putExtra("mission", allMissions.get(missionsKeysList.get(position)));
+            startActivity(si);
+        }
+        else if (option.equals("עדכן")){
+            Intent si = new Intent(this, newMissionActivity.class);
+            si.putExtra("eventTitle", titleEvents.get(position));
+            si.putExtra("eventID", dateEvents.get(position));
+            si.putExtra("mission",allMissions.get(dateEvents.get(position)+titleEvents.get(position)));
+            si.putExtra("missionMode", missionStatusList.get(position));
+            si.putExtra("updateMode", true);
+            startActivity(si);
+        }
+        else if (option.equals("מחק")){
+            Intent si = new Intent(this, newMissionActivity.class);
+            si.putExtra("eventTitle", titleEvents.get(position));
+            si.putExtra("eventID", dateEvents.get(position));
+            si.putExtra("missionMode", missionStatusList.get(position));
+            si.putExtra("updateMode", false);
+            startActivity(si);
+        }
+
 
         return super.onContextItemSelected(item);
-    }
-
-    public void readAllMissionsEvent(String eventID){
-        Query query = refGreen_Event.limitToFirst(2);
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dS) {
-                titleEvents.clear();
-                dateEvents.clear();
-                phonesList.clear();
-                employeesList.clear();
-                namesList.clear();
-                eventCharacterizeList.clear();
-                missionsList.clear();
-
-                for(DataSnapshot data : dS.getChildren()) {
-                    Event tempEvent = data.getValue(Event.class);
-
-                    if (Objects.requireNonNull(tempEvent).getEventName().equals(eventID)){
-                        titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
-                        dateEvents.add(tempEvent.getDateOfEvent());
-                        phonesList.add(tempEvent.getCustomerPhone());
-                        employeesList.add(tempEvent.getEventEmployees());
-                        eventCharacterizeList.add(tempEvent.getEventCharacterize());
-                        namesList.add(tempEvent.getCustomerName());
-                        missionsList = tempEvent.getEventMissions();
-                    }
-                }
-                getAllProperties();
-
-                CustomAdapterMissions customAdapterMissions = new CustomAdapterMissions(getApplicationContext(), missionTitlesList, missionStatusList, missionContentsList, missionLastDatesList);
-                closeEventsLV.setAdapter(customAdapterMissions);
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
-        });
-    }
-
-    private void getAllProperties() {
-        missionTitlesList.clear();
-        missionStatusList.clear();
-        missionContentsList.clear();
-        missionLastDatesList.clear();
-
-        for (int i = 0; i < missionsList.size(); i++) {
-            missionTitlesList.add(missionsList.get(i).getTitle());
-            missionStatusList.add(missionsList.get(i).isText());
-            missionContentsList.add(missionsList.get(i).getTextContent());
-            missionLastDatesList.add(missionsList.get(i).getLastDateToRemind());
-        }
     }
 }

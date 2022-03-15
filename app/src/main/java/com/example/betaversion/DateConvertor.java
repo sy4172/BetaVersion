@@ -23,7 +23,7 @@ public class DateConvertor {
      * @return the string
      */
     public static String dateToString (Date selectedDate, String strFormat){
-        DateFormat dateFormat = new SimpleDateFormat(strFormat);
+        DateFormat dateFormat = new SimpleDateFormat(strFormat, Locale.ENGLISH);
         String dateStr = dateFormat.format(selectedDate);
 
         return dateStr;
@@ -38,7 +38,7 @@ public class DateConvertor {
      */
     public static Date stringToDate (String strDate, String strFormat){
         Date selectedDate = null;
-        DateFormat dateFormat = new SimpleDateFormat(strFormat,Locale.ENGLISH);
+        DateFormat dateFormat = new SimpleDateFormat(strFormat, Locale.ENGLISH);
         try {
             selectedDate = dateFormat.parse(strDate);
         } catch (ParseException e) {
