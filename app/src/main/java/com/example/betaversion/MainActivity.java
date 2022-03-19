@@ -14,7 +14,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -210,7 +209,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void readAllMissions() {
-        Toast.makeText(this, dateEvents.size()+"", Toast.LENGTH_SHORT).show();
         if (dateEvents.size() != 0){
             for (int i = 0; i < dateEvents.size(); i++) {
                 if (eventCharacterizeList.get(i).equals("G")){
@@ -369,8 +367,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onBackPressed();
         bottomNavigationView.setSelectedItemId(R.id.empty);
         //readAllRemainders();
-//        readAllCloseEvents();
-//        readAllBeforeApproval();
+        readAllCloseEvents();
+        readAllBeforeApproval();
     }
 
     public void moveToPreviousAct(View view) {

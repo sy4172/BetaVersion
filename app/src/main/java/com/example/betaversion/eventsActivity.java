@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -26,7 +27,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -53,7 +56,7 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
     ListView eventsList, selectionLV;
     TextView dateRangeTV;
     // TODO: Need to think about all the options to display in the ListView eventsList object
-    String[] selections = new String[]{"ירוק","כתום","אדום","אירועים שעברו","לפי תאריך"}; // Includes all the status of the events
+    String[] selections = new String[]{"ירוק","כתום","אדום","אירועים שעברו","לפי תאריכים"}; // Includes all the status of the events
     String userSelection;
 
     Date dateSt, dateEd;
@@ -93,7 +96,6 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
         addressList = new ArrayList<>();
 
         readEvents("greenEvent"); // Show the default option
-
         dateSt = new Date();
         dateEd = new Date();
     }
@@ -268,7 +270,7 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
                 });
             }
             break;
-            case "לפי תאריך": {
+            case "לפי תאריכים": {
                 openDateRangeAD();
                 readAllEventsByDate();
                 if (dateRangeTV.getText().toString().isEmpty()){
@@ -301,9 +303,14 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
         final TextView titleTV = new TextView(this);
         titleTV.setText("תאריך התחלה");
         titleTV.setTextColor(Color.WHITE);
-        titleTV.setBackgroundColor(R.color.orange_500);
+        titleTV.setBackgroundResource(R.color.orange_500);
+        titleTV.setPadding(0,10,10,0);
+        Typeface typeface = ResourcesCompat.getFont(this, R.font.rubik_semibold);
+        titleTV.setTextSize(25);
+        titleTV.setTypeface(typeface);
 
         dpd.setCustomTitle(titleTV);
+        dpd.setCancelable(false);
         dpd.show();
     }
 
@@ -320,20 +327,44 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
                 Calendar c = Calendar.getInstance();
                 c.set(year, month++, dayOfMonth);
                 dateEd = new Date(c.get(Calendar.YEAR) - 1900, c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
-
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
                 String strDateEd = dateFormat.format(dateEd);
                 String strDateSt = dateFormat.format(dateSt);
-                dateRangeTV.setText("טווח תאריכים: "+strDateSt+" - "+strDateEd);
+                dateRangeTV.setVisibility(View.VISIBLE);
+                if (checkDates()) dateRangeTV.setText("טווח תאריכים: "+strDateEd+" - "+strDateSt);
             }
         }, year, month, day);
         final TextView titleTV = new TextView(this);
         titleTV.setText("תאריך סיום");
         titleTV.setTextColor(Color.WHITE);
-        titleTV.setBackgroundColor(R.color.orange_500);
+        titleTV.setBackgroundResource(R.color.orange_500);
+        titleTV.setPadding(0,10,10,0);
+        Typeface typeface = ResourcesCompat.getFont(this, R.font.rubik_semibold);
+        titleTV.setTextSize(25);
+        titleTV.setTypeface(typeface);
 
         dpd.setCustomTitle(titleTV);
+        dpd.setCancelable(false);
         dpd.show();
+    }
+
+    private boolean checkDates() {
+        boolean flag = true;
+        if (new Date().compareTo(dateSt) > 0){ // NOT WORK TODO: Select all the dates for now to the future
+            Snackbar.make(dateRangeTV, "אין לבחור תאריך שעבר", 3000).show();
+            flag = false;
+        }
+        else if (dateSt.equals(dateEd)){
+            Snackbar.make(dateRangeTV, "תאריכים זהים", 3000).show();
+            flag = false;
+        } else if (dateEd.before(dateSt)){
+            Snackbar.make(dateRangeTV, "טווח לא אפשרי", 3000).show();
+            flag = false;
+        } else if (dateSt.after(dateEd)){
+            Snackbar.make(dateRangeTV, "טווח לא אפשרי", 3000).show();
+            flag = false;
+        }
+        return flag;
     }
 
     private void readAllEventsByDate() {
@@ -358,7 +389,7 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
                         e.printStackTrace();
                     }
 
-                    if (Objects.requireNonNull(tempEventSelectedDate).after(dateSt) && tempEventSelectedDate.before(dateEd)){
+                    if (dateSt.compareTo(tempEventSelectedDate) <= 0 || dateEd.compareTo(tempEventSelectedDate) >= 0){
                         titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
                         dateEvents.add(tempEvent.getDateOfEvent());
                         phonesList.add(tempEvent.getCustomerPhone());

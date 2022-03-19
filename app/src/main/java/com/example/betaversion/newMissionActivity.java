@@ -97,6 +97,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
             rootPath.mkdirs();
         }
         dataFile = null;
+        isPlaying = true;
         mediaPlayer = new MediaPlayer();
 
         ArrayAdapter<String> adp = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, frequencyOptions);
@@ -244,12 +245,12 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
     public void playRecord(View view) {
         if (!isRecording){
             playIV = findViewById(R.id.playIV);
+            playIV.setImageResource(R.drawable.ic_pause);
             if (isPlaying){
                 stopAudio();
-                isPlaying = false;
-            } else{
                 playIV.setImageResource(R.drawable.ic_play_arrow);
-                isPlaying = true;
+            } else{
+                playIV.setImageResource(R.drawable.ic_pause);
                 playAudio();
             }
             seekBar = findViewById(R.id.seekBar);
@@ -262,7 +263,13 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
                     if(mediaPlayer != null){
                         int mCurrentPosition = mediaPlayer.getCurrentPosition() / 1000;
                         seekBar.setProgress(mCurrentPosition);
-                    }
+
+                        if(mediaPlayer.getCurrentPosition() == fileDuration){
+                            playIV.setImageResource(R.drawable.ic_play_arrow);
+                        }
+                        else {
+                            playIV.setImageResource(R.drawable.ic_pause);
+                        }                    }
                     mHandler.postDelayed(this, 1000);
                 }
             });
@@ -274,6 +281,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
                     if(mediaPlayer != null){
                         int mCurrentPosition = mediaPlayer.getCurrentPosition() / 1000;
                         seekBar.setProgress(mCurrentPosition);
+                        playIV.setImageResource(R.drawable.ic_play_arrow);
                     }
                 }
 
@@ -282,6 +290,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
                     if(mediaPlayer != null){
                         int mCurrentPosition = mediaPlayer.getCurrentPosition() / 1000;
                         seekBar.setProgress(mCurrentPosition);
+                        playIV.setImageResource(R.drawable.ic_pause);
                     }
                 }
 
@@ -289,6 +298,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                     if(mediaPlayer != null && fromUser){
                         mediaPlayer.seekTo(progress * 1000);
+                        playIV.setImageResource(R.drawable.ic_play_arrow);
                     }
                 }
             });
@@ -303,7 +313,6 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
         if (dataFile != null) {
             mediaPlayer = new MediaPlayer();
             try {
-                playIV.setImageResource(R.drawable.ic_pause);
                 mediaPlayer.setDataSource(dataFile.getAbsolutePath());
                 mediaPlayer.prepare();
                 fileDuration = mediaPlayer.getDuration();
@@ -316,7 +325,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
         }
         else{
             if (creationMode){
-                setContentView(R.layout.record_layout_reminder);
+                setContentView(R.layout.record_layout_mission);
                 eventTitle = findViewById(R.id.eventTitle);
                 Snackbar.make(eventTitle,"אין תוכן להשמעה. הקלט כדי לשמוע", 1000).show();
             }
@@ -326,6 +335,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
     private void stopAudio() {
         mediaPlayer.stop();
         isPlaying = false;
+        playIV.setImageResource(R.drawable.ic_pause);
     }
 
     public void createTextedMission(View view) {
@@ -366,7 +376,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
                     finalDateTV = findViewById(R.id.finalDateTV);
                     finalDateTV.setText(dateStr);
 
-                    finalDateStr = DateConvertor.dateToString(selectedDate, "yyyymmdd"); // The format in the FB
+                    finalDateStr = DateConvertor.dateToString(selectedDate, "yyyyMMdd"); // The format in the FB
                 }
             }, year, month, day);
 
