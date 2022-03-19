@@ -1,6 +1,7 @@
 package com.example.betaversion;
 
 import static com.example.betaversion.FBref.refGreen_Event;
+import static com.example.betaversion.FBref.storageRef;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -9,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,6 +29,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.IOException;
@@ -423,7 +426,10 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
                 context = contextMissionET.getText().toString();
                 dateOfChange = DateConvertor.dateToString(new Date(), "yyyyMMddHHmmss");
 
-                tempMission = new Mission(title, true, "<קטע קול>",mediaSaverFile.getAbsolutePath(),dateOfChange, frequency, finalDateStr);
+                // Save the recorded mission in the FireBase Storage and gets the url of the location.
+                String urlOfRecord = uploadRecordingFB();
+
+                tempMission = new Mission(title, true, "<קטע קול>",urlOfRecord,dateOfChange, frequency, finalDateStr);
                 // Save the tempMission in the current place of the selected event in the RealTime DataBaseFirebase
                 String missionID = finalDateStr+dateOfChange;
                 allMissions.put(missionID,tempMission);
@@ -433,6 +439,15 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
                 Snackbar.make(finalDateTV,"המשימה נוצרה", 3000).show();
             }
         }
+    }
+
+    private String uploadRecordingFB() {
+        String url;
+        Uri file = Uri.fromFile(mediaSaverFile);
+        StorageReference recordRef = storageRef.child("/records/Missions"+file.getLastPathSegment());
+        recordRef.putFile(file);
+        url = recordRef.getPath();
+        return url;
     }
 
     private boolean checkInputs() {

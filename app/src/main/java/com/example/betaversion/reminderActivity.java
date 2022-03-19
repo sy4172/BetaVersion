@@ -856,14 +856,14 @@ public class reminderActivity extends AppCompatActivity implements AdapterView.O
     private String uploadTheRecording() {
         String url;
         Uri file = Uri.fromFile(mediaSaverFile);
-        StorageReference recordRef = storageRef.child("records/"+file.getLastPathSegment());
+        StorageReference recordRef = storageRef.child("/records/Reminders"+file.getLastPathSegment());
         recordRef.putFile(file);
         url = recordRef.getPath();
         return url;
     }
 
     private void removeTheRecord(String titleToSearch) {
-        StorageReference deleteFile = storageRef.child("records/"+titleToSearch+".3gp");
+        StorageReference deleteFile = storageRef.child("/records/Reminders"+titleToSearch+".3gp");
         deleteFile.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
