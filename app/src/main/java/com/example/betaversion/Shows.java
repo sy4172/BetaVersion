@@ -8,7 +8,7 @@ public class Shows {
     private String showTitle;
     private String description;
     private int cost;
-
+    private int employees;
 
     /**
      * Instantiates a new Shows for the RT Firebase Database.
@@ -22,10 +22,11 @@ public class Shows {
      * @param description the description
      * @param cost        the cost
      */
-    public Shows(String showTitle, String description, int cost) {
+    public Shows(String showTitle, String description, int cost, int employees) {
         this.showTitle = showTitle;
         this.description = description;
         this.cost = cost;
+        this.employees = employees;
     }
 
     /**
@@ -80,5 +81,13 @@ public class Shows {
      */
     public void setCost(int cost) {
         this.cost = cost;
+    }
+
+    public int getEmployees() {
+        return employees;
+    }
+
+    public void setEmployees(int employees) {
+        this.employees = employees;
     }
 }

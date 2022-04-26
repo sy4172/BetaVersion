@@ -132,7 +132,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            finalDateTV.setText(DateConvertor.dateToString(tempDate, "dd/mm/yyyy"));
+            finalDateTV.setText(DateConvertor.dateToString(tempDate, "dd/MM/yyyy"));
 
         } else if (!updateMode) {
             setContentView(R.layout.record_layout_mission);
@@ -154,6 +154,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
 
         setContentView(R.layout.record_layout_mission);
         eventTitle = findViewById(R.id.eventTitle);
+        frequencySpinner = findViewById(R.id.frequencySpinner);
 
         Intent gi = getIntent();
 
@@ -161,6 +162,8 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
         line2 = gi.getStringExtra("eventTitle");
         eventID = gi.getStringExtra("eventID");
         eventTitle.setText(line1 + System.lineSeparator() + line2);
+        ArrayAdapter<String> adp = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, frequencyOptions);
+        frequencySpinner.setAdapter(adp);
     }
 
     public void startRecord(View view) {
@@ -375,9 +378,21 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
                     Calendar c = Calendar.getInstance();
                     c.set(year, month++, dayOfMonth);
                     selectedDate = new Date(c.get(Calendar.YEAR) - 1900, c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
-                    String dateStr = DateConvertor.dateToString(selectedDate, "dd/MM/yyyy");
-                    finalDateTV = findViewById(R.id.finalDateTV);
-                    finalDateTV.setText(dateStr);
+                    String dateStr;
+                    if (selectedDate.getTime() == new Date().getTime()){
+                        Snackbar.make(eventTitle,"תאריך לא רלוונטי", 3000).show();
+                        finalDateTV = findViewById(R.id.finalDateTV);
+                        finalDateTV.setText("dd/MM/yyyy");
+                    }
+                    else if (selectedDate.after(new Date())){
+                        selectedDate.setTime(selectedDate.getTime());
+                        dateStr = DateConvertor.dateToString(selectedDate, "dd/MM/yyyy");
+                        finalDateTV = findViewById(R.id.finalDateTV);
+                        finalDateTV.setText(dateStr);
+                    }
+                    else{
+                        Snackbar.make(eventTitle,"תאריך לא רלוונטי", 3000).show();
+                    }
 
                     finalDateStr = DateConvertor.dateToString(selectedDate, "yyyyMMdd"); // The format in the FB
                 }
@@ -478,19 +493,24 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
     public void onNothingSelected(AdapterView<?> adapterView) { }
 
     public void moveToMainOfMission(View view) {
-        setContentView(R.layout.activity_new_mission);
+        if (updateMode){
+           Intent si = new Intent(this, missionsActivity.class);
+           startActivity(si);
+        } else {
+            setContentView(R.layout.activity_new_mission);
 
-        ActionBar actionBar = getSupportActionBar();
-        Objects.requireNonNull(actionBar).hide();
-        actionBar.setHomeButtonEnabled(true);
+            ActionBar actionBar = getSupportActionBar();
+            Objects.requireNonNull(actionBar).hide();
+            actionBar.setHomeButtonEnabled(true);
 
-        eventTitle = findViewById(R.id.eventTitle);
+            eventTitle = findViewById(R.id.eventTitle);
 
-        Intent gi = getIntent();
+            Intent gi = getIntent();
 
-        line1 = "הגדרת משימות לאירוע";
-        line2 = gi.getStringExtra("eventTitle");
-        eventID = gi.getStringExtra("eventID");
-        eventTitle.setText(line1 + System.lineSeparator() + line2);
+            line1 = "הגדרת משימות לאירוע";
+            line2 = gi.getStringExtra("eventTitle");
+            eventID = gi.getStringExtra("eventID");
+            eventTitle.setText(line1 + System.lineSeparator() + line2);
+        }
     }
 }

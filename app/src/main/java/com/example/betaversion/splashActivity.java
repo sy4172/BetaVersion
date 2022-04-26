@@ -1,15 +1,15 @@
 package com.example.betaversion;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+
 public class splashActivity extends AppCompatActivity {
 
-    private static final long SPLASH_DISPLAY_LENGTH = 2000;
+    private static final long SPLASH_DISPLAY_LENGTH = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

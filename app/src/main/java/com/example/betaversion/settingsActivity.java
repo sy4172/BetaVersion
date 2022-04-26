@@ -1,6 +1,7 @@
 package com.example.betaversion;
 
 import static com.example.betaversion.FBref.refBusinessEqu;
+import static com.example.betaversion.FBref.refGreen_Event;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -9,7 +10,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.text.InputType;
 import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
@@ -17,13 +21,13 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -36,32 +40,38 @@ import java.util.Objects;
 
 /**
  * * @author    Shahar Yani
- * * @version  	6.0
+ * * @version  	10.1
  * * @since		11/12/2021
  *
  * * This settingsActivity.class displays the settings control on the business and all the properties.
  */
 public class settingsActivity extends AppCompatActivity{
 
-    ListView generalLV; // the ListView that display the Mateails & Shows objects
+    ListView generalLV; // the ListView that display the Materials & Shows objects
+    TextView efficiencyTV, availableTV, totalTV, showsTV, materialsTV;
 
-    TextView efficiencyTV, availableTV, totalTV;
-    Switch selectionSwitch;
+    // ArrayLists for Shows
+    ArrayList<String> showTitlesList,descriptionsList;
+    ArrayList<Integer> costsList, employeesList;
 
-    ArrayList<String> keysList, materialsKeyList, showsKeyList, showsDesList, materialsUsedList;
-    ArrayList<Integer> dataList, materialsDataList, showsDataList;
+    // ArrayLists for Materials
+    ArrayList<String> materialsTitleList;
+    ArrayList<Integer> materialsTotalList,materialsUsedList;
+
+    // ArrayLists for General Data of the BusinessEqu
+    ArrayList<String> keysList;
+    ArrayList<Integer> dataList;
+    int efficiency;
 
     ArrayList<Material> allMaterials; // Summarize all the Material objects that were created
     ArrayList<Shows> allShows;// Summarize all the Shows objects that were created
 
+    CustomAdapterMaterials customAdapterMaterial;
+    CustomAdapterShows customAdapterShows;
 
-    CustomAdapterSettings customAdapterSettings2; // For the materialsLV
-    CustomAdapterSettings customAdapterSettings3; // For the showsLV
-
-    String option; // The Option that selected.
-
+    String option; // The Option that selected. (Material OR Show)
     BusinessEqu businessEqu; // the general object to all the settings properties in order to upload the FireBase DataBase
-
+    User user;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -73,12 +83,12 @@ public class settingsActivity extends AppCompatActivity{
         totalTV = findViewById(R.id.totalTV);
         availableTV = findViewById(R.id.availableTV);
         efficiencyTV = findViewById(R.id.efficiencyTV);
-        selectionSwitch = findViewById(R.id.selectionSwitch);
+        materialsTV = findViewById(R.id.materialsTV);
+        showsTV = findViewById(R.id.showsTV);
 
         ActionBar actionBar = getSupportActionBar();
         Objects.requireNonNull(actionBar).hide();
         actionBar.setHomeButtonEnabled(true);
-
 
         generalLV.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         generalLV.setOnCreateContextMenuListener(this);
@@ -86,64 +96,78 @@ public class settingsActivity extends AppCompatActivity{
         keysList = new ArrayList<>();
         dataList = new ArrayList<>();
 
-        materialsKeyList = new ArrayList<>();
-        materialsDataList = new ArrayList<>();
+        materialsTitleList = new ArrayList<>();
+        materialsTotalList = new ArrayList<>();
         materialsUsedList = new ArrayList<>();
 
-        showsKeyList = new ArrayList<>();
-        showsDataList = new ArrayList<>();
-        showsDesList = new ArrayList<>();
+        showTitlesList = new ArrayList<>();
+        descriptionsList = new ArrayList<>();
+        costsList = new ArrayList<>();
+        employeesList = new ArrayList<>();
 
         allMaterials = new ArrayList<>();
         allShows = new ArrayList<>();
 
         businessEqu = new BusinessEqu();
-
         option = " ";
-
         getAllSysData();
+
+        // Displaying a guide message to the user
         SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
-        if (!settings.getBoolean("understoodClick",false)){
-            Snackbar.make(generalLV, "גע על הערך של העובדים ברוטו כדי לשנות", 5000).setAction("הבנתי", new View.OnClickListener() {
+        if (!settings.getBoolean("understoodClickTape",false)){
+            Snackbar.make(generalLV, "בחר את סוג המידע (ציוד / אירוע)", 4000).setAction("הבנתי", new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     // Writing to the SharedPreferences file
                     SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
                     SharedPreferences.Editor editor = settings.edit();
-                    editor.putBoolean("understoodClick",true);
+                    editor.putBoolean("understoodClickTape",true);
                     editor.apply();
                 }
             }).show();
         }
-
-        // Initializes the listView object to the default to present the materials array
-        option = "ציוד";
-        getAllMaterials();
-        customAdapterSettings2 = new CustomAdapterSettings(this, materialsKeyList, materialsDataList, materialsUsedList, false);
-        customAdapterSettings2.notifyDataSetChanged();
-        generalLV.setAdapter(customAdapterSettings2);
+        // Displaying a guide message to the user after 7 seconds
+        new Handler().postDelayed(new Runnable(){
+            @Override
+            public void run() {
+                SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
+                if (!settings.getBoolean("understoodClickEM",false)){
+                    Snackbar.make(generalLV, "גע על הערך של העובדים ברוטו כדי לשנות", 5000).setAction("הבנתי", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            // Writing to the SharedPreferences file
+                            SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
+                            SharedPreferences.Editor editor = settings.edit();
+                            editor.putBoolean("understoodClickEM",true);
+                            editor.apply();
+                        }
+                    }).show();
+                }
+            }
+        }, 7000);
     }
 
     /**
      * getAllShows method gets all the Shows objects that were created to display on the TextView objects from the FireBase DataBase.
-     *
      */
     private void getAllShows() {
         refBusinessEqu.child("showsList").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
-                showsKeyList.clear();
-                showsDataList.clear();
-                showsDesList.clear();
+                showTitlesList.clear();
+                descriptionsList.clear();
+                costsList.clear();
+                employeesList.clear();
                 allShows.clear();
 
                 for(DataSnapshot data : dS.getChildren()) {
                     Shows tempShow = data.getValue(Shows.class);
                     allShows.add(tempShow);
 
-                    showsKeyList.add(Objects.requireNonNull(tempShow).getShowTitle());
-                    showsDataList.add(tempShow.getCost());
-                    showsDesList.add(tempShow.getDescription());
+                    showTitlesList.add(Objects.requireNonNull(tempShow).getShowTitle());
+                    descriptionsList.add(tempShow.getDescription());
+                    costsList.add(tempShow.getCost());
+                    employeesList.add(tempShow.getEmployees());
                 }
             }
             @Override
@@ -154,14 +178,13 @@ public class settingsActivity extends AppCompatActivity{
 
     /**
      * getAllMaterials method gets all the Materials objects that were created to display on the TextView objects from the FireBase DataBase.
-     *
      */
     private void getAllMaterials() {
         refBusinessEqu.child("materials").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
-                materialsKeyList.clear();
-                materialsDataList.clear();
+                materialsTitleList.clear();
+                materialsTotalList.clear();
                 materialsUsedList.clear();
                 allMaterials.clear();
 
@@ -169,10 +192,12 @@ public class settingsActivity extends AppCompatActivity{
                     Material temp = data.getValue(Material.class);
                     allMaterials.add(temp);
 
-                    materialsKeyList.add(Objects.requireNonNull(temp).getTypeOfMaterial());
-                    materialsDataList.add(temp.getTotalAmount());
-                    materialsUsedList.add(String.valueOf(temp.getUsedAmount()));
+                    materialsTitleList.add(Objects.requireNonNull(temp).getTypeOfMaterial());
+                    materialsTotalList.add(temp.getTotalAmount());
+                    materialsUsedList.add(temp.getUsedAmount());
                 }
+                efficiency = setEfficiency();
+                efficiencyTV.setText(""+efficiency+"%");
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -182,7 +207,6 @@ public class settingsActivity extends AppCompatActivity{
 
     /**
      * getAllSysData method gets all the main properties to display on the TextView objects from the FireBase DataBase.
-     *
      */
     private void getAllSysData() {
         refBusinessEqu.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -195,16 +219,11 @@ public class settingsActivity extends AppCompatActivity{
                 for(int i = 0; i < 1; i ++) {
                     keysList.add("סה\"כ עובדים");
                     dataList.add(dS.child("totalEmployees").getValue(Integer.class));
-
                     keysList.add("סה\"כ עובדים זמינים");
                     dataList.add(dS.child("availableEmployees").getValue(Integer.class));
-
-                    keysList.add("נצילות החומרים");
-                    dataList.add(dS.child("efficiency").getValue(Integer.class));
                 }
-                efficiencyTV.setText(dataList.get(2)+"%");
-                if (dataList.get(2) > 85) efficiencyTV.setTextColor(Color.RED);
-                else efficiencyTV.setTextColor(Color.GRAY);
+
+                efficiencyTV.setText(efficiency+"%");
                 availableTV.setText(dataList.get(1)+"");
                 totalTV.setText(dataList.get(0)+"");
             }
@@ -215,67 +234,57 @@ public class settingsActivity extends AppCompatActivity{
     }
 
     /**
-     * Move to previous act. when the back button is pressed.
-     *
+     * setEfficiency method is calculating the CURRENT efficiency of the uesd of all materials.
+     * @return the efficiency in percentage format
      */
-    public void moveToPreviousAct() {
-        super.onBackPressed();
-    }
+    private int setEfficiency() {
+        double usedAmount, totalAmount, efficiency;
+        usedAmount = totalAmount = 0;
 
-
-    /**
-     * Move to create an event. when the FloatingActionButton is pressed.
-     *
-     * @param view the FloatingActionButton
-     */
-    public void moveToCreateAnEvent(View view) {
-        Toast.makeText(this, "New Event", Toast.LENGTH_SHORT).show();
-        Intent si = new Intent(this, newEventActivity.class);
-        startActivity(si);
-    }
-
-
-    /**
-     * Logout method for logout from the user.
-     */
-    public void Logout(MenuItem item) {
-        AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle("להתנתק?");
-        SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
-        Variable.setEmailVer(settings.getString("email",""));
-        adb.setMessage(Variable.getEmailVer().substring(0,Variable.emailVer.indexOf("@"))+" יצא מהמערכת");
-
-        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
+        if (!materialsTotalList.isEmpty()){
+            for (int i = 0; i < materialsTotalList.size(); i++) {
+                usedAmount += (double) materialsUsedList.get(i);
+                totalAmount += (double) materialsTotalList.get(i);
             }
-        });
 
-        adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                FirebaseAuth.getInstance().signOut();
-                Intent si = new Intent(settingsActivity.this, LoginActivity.class);
+            efficiency = (usedAmount/totalAmount)*100; // To percentage format
 
-                // Changing the preferences to default
-                SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putString("email", "");
-                editor.putBoolean("stayConnect",false);
-                editor.apply();
+            if (efficiency > 85) efficiencyTV.setTextColor(Color.rgb(178, 34, 34));
+            else if (efficiency < 85 && efficiency > 50) efficiencyTV.setTextColor(Color.rgb(115, 115, 115));
+            else efficiencyTV.setTextColor(Color.rgb(0, 128, 0));
 
-                startActivity(si);
-                finish();
-            }
-        });
-
-        AlertDialog ad = adb.create();
-        ad.show();
+            return (int) Math.abs(Math.round(efficiency)); // Returns the absolute value of the percentage
+        } else return 0;
     }
 
     /**
-     * Create new material to save in the business system.
+     * Create new item according the selection.
+     *
+     * @param view the button object
+     */
+    public void createNewItem(View view) {
+        if (option.equals("מופעים"))
+        {
+            createNewShow();
+            customAdapterShows = new CustomAdapterShows(getApplicationContext(), showTitlesList, descriptionsList, costsList, employeesList);
+            customAdapterShows.notifyDataSetChanged();
+            generalLV.setAdapter(customAdapterShows);
+
+        }
+        else if (option.equals("ציוד"))
+        {
+            createNewMaterial();
+            customAdapterMaterial  = new CustomAdapterMaterials(this, materialsTitleList, materialsTotalList, materialsUsedList);
+            customAdapterMaterial.notifyDataSetChanged();
+            generalLV.setAdapter(customAdapterMaterial);
+        }
+        else{
+            Snackbar.make(generalLV, "לא נבחרה אפשרות", 5000).show();
+        }
+    }
+
+    /**
+     * Create new material to save in the business system and to the FireBase DataBase.
      */
     public void createNewMaterial() {
         getAllShows();
@@ -283,19 +292,36 @@ public class settingsActivity extends AppCompatActivity{
 
         businessEqu.setTotalEmployees(dataList.get(0));
         businessEqu.setAvailableEmployees(dataList.get(1));
-        businessEqu.setEfficiency(dataList.get(2));
+        businessEqu.setEfficiency(efficiency);
         businessEqu.setShowsList(allShows);
 
         Material temp = new Material();
 
         LinearLayout AdScreen = new LinearLayout(this);
         AdScreen.setOrientation(LinearLayout.VERTICAL);
+        AdScreen.setPadding(15,0,15,0);
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle("חומר חדש");
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("ציוד חדש");
+        titleTV.setTextColor(Color.rgb(143, 90, 31));
+        titleTV.setTextSize(25);
+        titleTV.setPadding(0,15,30,15);
+        titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
+        adb.setCustomTitle(titleTV);
         final EditText typeET = new EditText(this);
         typeET.setHint("סוג");
+        typeET.setTextSize(18);
+        typeET.setGravity(Gravity.RIGHT);
+        typeET.setPadding(0,15,30,30);
+        typeET.setTypeface(ResourcesCompat.getFont(typeET.getContext(), R.font.rubik_medium));
         final EditText totalAmountET = new EditText(this);
-        totalAmountET.setHint("סה\"כ החומר");
+        totalAmountET.setHint("סה\"כ כמות הציוד");
+        totalAmountET.setTextSize(18);
+        totalAmountET.setGravity(Gravity.RIGHT);
+        totalAmountET.setPadding(0,15,30,30);
+        totalAmountET.setTypeface(ResourcesCompat.getFont(totalAmountET.getContext(), R.font.rubik_medium));
+        totalAmountET.setInputType(InputType.TYPE_CLASS_NUMBER);
+
         AdScreen.addView(typeET);
         AdScreen.addView(totalAmountET);
         adb.setView(AdScreen);
@@ -303,17 +329,90 @@ public class settingsActivity extends AppCompatActivity{
         adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                temp.setTypeOfMaterial(typeET.getText().toString());
-                temp.setTotalAmount(Integer.parseInt(totalAmountET.getText().toString()));
-                temp.setUsedAmount(0);
-                
-                allMaterials.add(temp);
-                businessEqu.setMaterials(allMaterials);
-                refBusinessEqu.setValue(businessEqu);
+                if (!totalAmountET.getText().toString().isEmpty()){
+                    if (checkMaterialInput(false,typeET.getText().toString(), Integer.parseInt(totalAmountET.getText().toString()))){
+                        temp.setTypeOfMaterial(typeET.getText().toString());
+                        temp.setTotalAmount(Integer.parseInt(totalAmountET.getText().toString()));
+                        temp.setUsedAmount(0);
 
-                materialsKeyList.add(temp.getTypeOfMaterial());
-                materialsDataList.add(temp.getTotalAmount());
-                materialsUsedList.add(String.valueOf(temp.getUsedAmount()));
+                        allMaterials.add(temp);
+                        businessEqu.setMaterials(allMaterials);
+                        refBusinessEqu.setValue(businessEqu);
+
+                        materialsTitleList.add(temp.getTypeOfMaterial());
+                        materialsTotalList.add(temp.getTotalAmount());
+                        materialsUsedList.add(temp.getUsedAmount());
+                    } else dialogInterface.dismiss();
+                }
+            }
+        });
+        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+
+        AlertDialog ad = adb.create();
+        ad.show();
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void updateAMaterial(int pos) {
+        getAllMaterials();
+        Material temp = new Material(allMaterials.get(pos).getTypeOfMaterial(), allMaterials.get(pos).getTotalAmount(), allMaterials.get(pos).getUsedAmount());
+
+        LinearLayout AdScreen = new LinearLayout(this);
+        AdScreen.setOrientation(LinearLayout.VERTICAL);
+        AdScreen.setPadding(15,0,15,0);
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("עדכן את החומר - "+allMaterials.get(pos).getTypeOfMaterial());
+        titleTV.setTextColor(Color.rgb(143, 90, 31));
+        titleTV.setTextSize(25);
+        titleTV.setPadding(0,15,30,15);
+        titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
+        adb.setCustomTitle(titleTV);
+
+        final EditText typeET = new EditText(this);
+        typeET.setHint("סוג");
+        typeET.setTextSize(18);
+        typeET.setGravity(Gravity.RIGHT);
+        typeET.setPadding(0,15,30,30);
+        typeET.setTypeface(ResourcesCompat.getFont(typeET.getContext(), R.font.rubik_medium));
+        final EditText totalAmountET = new EditText(this);
+        totalAmountET.setHint("סה\"כ החומר");
+        totalAmountET.setTextSize(18);
+        totalAmountET.setGravity(Gravity.RIGHT);
+        totalAmountET.setPadding(0,15,30,30);
+        totalAmountET.setTypeface(ResourcesCompat.getFont(totalAmountET.getContext(), R.font.rubik_medium));
+        totalAmountET.setInputType(InputType.TYPE_CLASS_NUMBER);
+        AdScreen.addView(typeET);
+        AdScreen.addView(totalAmountET);
+        adb.setView(AdScreen);
+
+        typeET.setText(materialsTitleList.get(pos));
+        totalAmountET.setText(""+materialsTotalList.get(pos));
+
+        adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (!totalAmountET.getText().toString().isEmpty()){
+                    if (checkMaterialInput(true, typeET.getText().toString(), Integer.parseInt(totalAmountET.getText().toString()))){
+                        temp.setTypeOfMaterial(typeET.getText().toString());
+                        temp.setTotalAmount(Integer.parseInt(totalAmountET.getText().toString()));
+
+                        allMaterials.set(pos,temp);
+                        refBusinessEqu.child("materials").setValue(allMaterials);
+
+                        materialsTitleList.set(pos, temp.getTypeOfMaterial());
+                        materialsTotalList.set(pos, temp.getTotalAmount());
+
+                        customAdapterMaterial = new CustomAdapterMaterials(settingsActivity.this, materialsTitleList, materialsTotalList, materialsUsedList);
+                        customAdapterMaterial.notifyDataSetChanged();
+                        generalLV.setAdapter(customAdapterMaterial);
+                    } else dialogInterface.dismiss();
+                }
             }
         });
         adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
@@ -328,7 +427,49 @@ public class settingsActivity extends AppCompatActivity{
     }
 
     /**
-     * Create new show to save in the business system.
+     * Display materials in generalLV ListView object.
+     *
+     * @param view the materialsTV TextView object is being clicked.
+     */
+    public void displayMaterials(View view) {
+        option = "ציוד";
+        getAllMaterials();
+        customAdapterMaterial = new CustomAdapterMaterials(this, materialsTitleList, materialsTotalList, materialsUsedList);
+        customAdapterMaterial.notifyDataSetChanged();
+        generalLV.setAdapter(customAdapterMaterial);
+        showsTV.setTypeface(ResourcesCompat.getFont(showsTV.getContext(), R.font.rubik_regular));
+        materialsTV.setTypeface(ResourcesCompat.getFont(showsTV.getContext(), R.font.rubik_semibold));
+    }
+
+    /**
+     * checkMaterialInput is responsible for check all the inputs that are related a Material object
+     * @param updateMode (in updateMode or not)
+     * @param typeOfMaterial the title of the CURRENT Material
+     * @param totalAmount the amount of the CURRENT Material
+     *
+     * @return True if all the inputs are good. Otherwise, False
+     */
+    private boolean checkMaterialInput(boolean updateMode,String typeOfMaterial, int totalAmount) {
+        boolean flag = true;
+        if (typeOfMaterial.isEmpty()){
+            flag = false;
+            Snackbar.make(generalLV, "שדה לא יהיה ריק", 3000).show();
+        } else if (materialsTitleList.contains(typeOfMaterial) && !updateMode){
+            flag = false;
+            Snackbar.make(generalLV, "חומר לא ירשם פעמיים", 3000).show();
+        } else if (!(totalAmount > 0)){
+            flag = false;
+            Snackbar.make(generalLV, "כמות חומר הינה מספר טבעי", 3000).show();
+        } else if (totalAmount < materialsUsedList.get(materialsTitleList.indexOf(typeOfMaterial))){
+            flag = false;
+            Snackbar.make(generalLV, "כמות חומר שהתקבלה אינה הגיונית", 3000).show();
+        }
+
+        return flag;
+    }
+
+    /**
+     * Create new show to save in the business system and to the FireBase DataBase.
      */
     public void createNewShow() {
         getAllShows();
@@ -337,40 +478,72 @@ public class settingsActivity extends AppCompatActivity{
         businessEqu.setMaterials(allMaterials);
         businessEqu.setTotalEmployees(dataList.get(0));
         businessEqu.setAvailableEmployees(dataList.get(1));
-        businessEqu.setEfficiency(dataList.get(2));
+        businessEqu.setEfficiency(efficiency);
 
         Shows temp = new Shows();
 
         LinearLayout AdScreen = new LinearLayout(this);
         AdScreen.setOrientation(LinearLayout.VERTICAL);
+        AdScreen.setPadding(15,0,15,0);
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle("מופע חדש");
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("מופע חדש");
+        titleTV.setTextColor(Color.rgb(143, 90, 31));
+        titleTV.setTextSize(25);
+        titleTV.setPadding(0,15,30,15);
+        titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
+        adb.setCustomTitle(titleTV);
         final EditText nameET = new EditText(this);
         nameET.setHint("שם המופע");
+        nameET.setTextSize(18);
+        nameET.setGravity(Gravity.RIGHT);
+        nameET.setPadding(0,15,30,30);
+        nameET.setTypeface(ResourcesCompat.getFont(nameET.getContext(), R.font.rubik_medium));
         final EditText costET = new EditText(this);
-        costET.setHint("עלות");
+        costET.setHint("סה\"כ עלות המופע");
+        costET.setTextSize(18);
+        costET.setGravity(Gravity.RIGHT);
+        costET.setPadding(0,15,30,30);
+        costET.setTypeface(ResourcesCompat.getFont(costET.getContext(), R.font.rubik_medium));
+        costET.setInputType(InputType.TYPE_CLASS_NUMBER);
         final EditText desET = new EditText(this);
-        desET.setHint("תיאור");
-        desET.setMaxLines(5);
+        desET.setHint("תוכן");
+        desET.setTextSize(18);
+        desET.setGravity(Gravity.RIGHT);
+        desET.setPadding(0,15,30,30);
+        desET.setTypeface(ResourcesCompat.getFont(desET.getContext(), R.font.rubik_medium));
+        final EditText employeesET = new EditText(this);
+        employeesET.setHint("כמות עובדים");
+        employeesET.setTextSize(18);
+        employeesET.setGravity(Gravity.RIGHT);
+        employeesET.setPadding(0,15,30,30);
+        employeesET.setTypeface(ResourcesCompat.getFont(employeesET.getContext(), R.font.rubik_medium));
+        employeesET.setInputType(InputType.TYPE_CLASS_NUMBER);
         AdScreen.addView(nameET);
         AdScreen.addView(costET);
         AdScreen.addView(desET);
+        AdScreen.addView(employeesET);
         adb.setView(AdScreen);
 
         adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                temp.setShowTitle(nameET.getText().toString());
-                temp.setCost(Integer.parseInt(costET.getText().toString()));
-                temp.setDescription(desET.getText().toString());
+                if (!costET.getText().toString().isEmpty() && !employeesET.getText().toString().isEmpty()){
+                    if (checkShowsInput(nameET.getText().toString(), desET.getText().toString(), Integer.parseInt(costET.getText().toString()), Integer.parseInt(employeesET.getText().toString()))){
+                        temp.setShowTitle(nameET.getText().toString());
+                        temp.setCost(Integer.parseInt(costET.getText().toString()));
+                        temp.setDescription(desET.getText().toString());
+                        temp.setEmployees(Integer.parseInt(employeesET.getText().toString()));
+                        allShows.add(temp);
+                        businessEqu.setShowsList(allShows);
+                        refBusinessEqu.setValue(businessEqu);
 
-                allShows.add(temp);
-                businessEqu.setShowsList(allShows);
-                refBusinessEqu.setValue(businessEqu);
-
-                showsKeyList.add(temp.getShowTitle());
-                showsDataList.add(temp.getCost());
-                showsDesList.add(temp.getDescription());
+                        showTitlesList.add(temp.getShowTitle());
+                        costsList.add(temp.getCost());
+                        descriptionsList.add(temp.getDescription());
+                        employeesList.add(temp.getEmployees());
+                    } else dialogInterface.dismiss();
+                }
             }
         });
         adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
@@ -382,6 +555,227 @@ public class settingsActivity extends AppCompatActivity{
 
         AlertDialog ad = adb.create();
         ad.show();
+    }
+
+    /**
+     * showInUsed is responsible to check if there is any show that appearing in a GREEN (also has accepted) event.
+     * @param pos (the Current position of the show to check)
+     *
+     * @return True if the CURRENT show is in used. Otherwise, False
+     */
+    private boolean showInUsed(int pos) {
+        boolean[] flag = {true};
+
+        refGreen_Event.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dS) {
+
+                for(DataSnapshot data : dS.getChildren()) {
+                    if (flag[0]){
+                        Event tempEvent = data.getValue(Event.class);
+
+                        if (Objects.requireNonNull(tempEvent).isHasAccepted()){
+                            flag[0] = Objects.requireNonNull(tempEvent).getEventShows().get(pos);
+                        }
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+
+        return flag[0];
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void updateAShow(int pos) {
+        getAllShows();
+        Shows temp = new Shows(allShows.get(pos).getShowTitle(), allShows.get(pos).getDescription(), allShows.get(pos).getCost(), allShows.get(pos).getEmployees());
+        LinearLayout AdScreen = new LinearLayout(this);
+        AdScreen.setOrientation(LinearLayout.VERTICAL);
+        AdScreen.setPadding(15,0,15,0);
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("עדכון המופע - "+allShows.get(pos).getShowTitle());
+        titleTV.setTextColor(Color.rgb(143, 90, 31));
+        titleTV.setTextSize(25);
+        titleTV.setPadding(0,15,30,15);
+        titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
+        adb.setCustomTitle(titleTV);
+        final EditText nameET = new EditText(this);
+        nameET.setHint("שם המופע");
+        nameET.setTextSize(18);
+        nameET.setGravity(Gravity.RIGHT);
+        nameET.setPadding(0,15,30,30);
+        nameET.setTypeface(ResourcesCompat.getFont(nameET.getContext(), R.font.rubik_medium));
+        final EditText totalAmountET = new EditText(this);
+        totalAmountET.setHint("סה\"כ עלות המופע");
+        totalAmountET.setTextSize(18);
+        totalAmountET.setGravity(Gravity.RIGHT);
+        totalAmountET.setPadding(0,15,30,30);
+        totalAmountET.setTypeface(ResourcesCompat.getFont(totalAmountET.getContext(), R.font.rubik_medium));
+        totalAmountET.setInputType(InputType.TYPE_CLASS_NUMBER);
+        final EditText desET = new EditText(this);
+        desET.setHint("תוכן");
+        desET.setTextSize(18);
+        desET.setGravity(Gravity.RIGHT);
+        desET.setPadding(0,15,30,30);
+        desET.setTypeface(ResourcesCompat.getFont(desET.getContext(), R.font.rubik_medium));
+        final EditText employeesET = new EditText(this);
+        employeesET.setHint("כמות עובדים");
+        employeesET.setTextSize(18);
+        employeesET.setGravity(Gravity.RIGHT);
+        employeesET.setPadding(0,15,30,30);
+        employeesET.setTypeface(ResourcesCompat.getFont(employeesET.getContext(), R.font.rubik_medium));
+        employeesET.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        AdScreen.addView(nameET);
+        AdScreen.addView(totalAmountET);
+        AdScreen.addView(desET);
+        AdScreen.addView(employeesET);
+        adb.setView(AdScreen);
+
+        nameET.setText(showTitlesList.get(pos));
+        totalAmountET.setText(""+costsList.get(pos));
+        desET.setText(descriptionsList.get(pos));
+        employeesET.setText(""+employeesList.get(pos));
+
+        adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (checkShowsInput(nameET.getText().toString(), desET.getText().toString(), Integer.parseInt(totalAmountET.getText().toString()), Integer.parseInt(employeesET.getText().toString()))){
+                    temp.setShowTitle(nameET.getText().toString());
+                    temp.setCost(Integer.parseInt(totalAmountET.getText().toString()));
+                    temp.setDescription(desET.getText().toString());
+                    temp.setEmployees(Integer.parseInt(employeesET.getText().toString()));
+
+                    allShows.set(pos,temp);
+                    refBusinessEqu.child("showsList").setValue(allShows);
+
+                    showTitlesList.set(pos, temp.getShowTitle());
+                    costsList.set(pos, temp.getCost());
+                    descriptionsList.set(pos, temp.getDescription());
+                    employeesList.set(pos, temp.getEmployees());
+
+                    customAdapterShows = new CustomAdapterShows(getApplicationContext(), showTitlesList, descriptionsList, costsList, employeesList);
+                    customAdapterShows.notifyDataSetChanged();
+                    generalLV.setAdapter(customAdapterShows);
+                } else dialogInterface.dismiss();
+            }
+        });
+        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+
+        AlertDialog ad = adb.create();
+        ad.show();
+    }
+
+    /**
+     * Display shows in generalLV ListView object.
+     *
+     * @param view the showsTV TextView object is being clicked.
+     */
+    public void displayShows(View view) {
+        option = "מופעים";
+        getAllShows();
+        customAdapterShows = new CustomAdapterShows(getApplicationContext(), showTitlesList, descriptionsList, costsList, employeesList);
+        customAdapterShows.notifyDataSetChanged();
+        generalLV.setAdapter(customAdapterShows);
+        showsTV.setTypeface(ResourcesCompat.getFont(showsTV.getContext(), R.font.rubik_semibold));
+        materialsTV.setTypeface(ResourcesCompat.getFont(showsTV.getContext(), R.font.rubik_regular));
+    }
+
+    /**
+     * checkShowsInput is responsible for check all the inputs that are related a Show object
+     * @param titleShow the title of the CURRENT show
+     * @param description the title of the CURRENT show
+     * @param cost the cost in (NIS) of the CURRENT show
+     * @param employees the amount of employees of the CURRENT show
+     *
+     * @return True if all the inputs are good. Otherwise, False
+     */
+    private boolean checkShowsInput(String titleShow, String description, int cost, int employees) {
+        boolean flag = true;
+        if (titleShow.isEmpty() || description.isEmpty()){
+            flag = false;
+            Snackbar.make(generalLV, "שדה לא יהיה ריק", 3000).show();
+        }
+        else if (!(cost > 0) || !(employees > 0)){
+            flag = false;
+            Snackbar.make(generalLV, "שדה יהיה מספר גדול מאפס", 3000).show();
+        }
+        return flag;
+    }
+
+    /**
+     * This method update the total employees amount that exists n the business system and to the FireBase DataBase.
+     * @param view the totalTV TextView object that being clicked.
+     */
+    @SuppressLint("SetTextI18n")
+    public void updateTotalEmployees(View view) {
+        allShows.clear();
+        allMaterials.clear();
+        getAllShows();
+        getAllMaterials();
+
+        businessEqu.setMaterials(allMaterials);
+        businessEqu.setTotalEmployees(dataList.get(0));
+        businessEqu.setAvailableEmployees(dataList.get(1));
+        businessEqu.setEfficiency(setEfficiency());
+        businessEqu.setShowsList(allShows);
+
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("סה\"כ עובדים ברוטו");
+        titleTV.setTextColor(Color.rgb(143, 90, 31));
+        titleTV.setTextSize(25);
+        titleTV.setPadding(0,15,30,15);
+        titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
+        adb.setCustomTitle(titleTV);
+
+        final EditText valueET = new EditText(this);
+        valueET.setHint("ערך");
+        valueET.setTextSize(18);
+        valueET.setGravity(Gravity.RIGHT);
+        valueET.setPadding(0,15,30,30);
+        valueET.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_medium));
+        valueET.setInputType(InputType.TYPE_CLASS_NUMBER);
+        adb.setTitle(keysList.get(0));
+
+        adb.setView(valueET);
+
+        valueET.setText(""+dataList.get(0));
+        adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dataList.set(0, Integer.parseInt(valueET.getText().toString()));
+                businessEqu.setTotalEmployees(dataList.get(0));
+
+                refBusinessEqu.setValue(businessEqu);
+
+                efficiencyTV.setText(businessEqu.getEfficiency()+"%");
+                efficiency = setEfficiency();
+                availableTV.setText(businessEqu.getAvailableEmployees()+"");
+                totalTV.setText(businessEqu.getTotalEmployees()+"");
+            }
+        }).setNegativeButton("בטל", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+
+        AlertDialog ad = adb.create();
+        ad.show();
+    }
+
+    public void moveToPreviousAct(View view) {
+        super.onBackPressed();
     }
 
     @Override
@@ -406,28 +800,35 @@ public class settingsActivity extends AppCompatActivity{
         String option = item.getTitle().toString();
         int pos = adpInfo.position;
 
-
-        // Creating different ContextItems according its type
+        // Making an action its type that is saved in the option variable
         if (option.equals("הסר חומר")){
-            materialsKeyList.remove(pos);
-            materialsDataList.remove(pos);
-            materialsUsedList.remove(pos);
-            allMaterials.remove(pos);
-            customAdapterSettings2.notifyDataSetChanged();
-            generalLV.setAdapter(customAdapterSettings2);
-            refBusinessEqu.child("materials").child(String.valueOf(pos)).removeValue();
+            if (materialsUsedList.get(pos) == 0){
+                materialsTitleList.remove(pos);
+                materialsTotalList.remove(pos);
+                materialsUsedList.remove(pos);
+                allMaterials.remove(pos);
+                customAdapterMaterial.notifyDataSetChanged();
+                generalLV.setAdapter(customAdapterMaterial);
+                refBusinessEqu.child("materials").child(String.valueOf(pos)).removeValue();
+                Snackbar.make(generalLV, "הציוד נמחק בהצלחה", 3000).show();
+            } else Snackbar.make(generalLV, "הציוד המבוקש משומש", 3000).show();
         }
         else if (option.equals("עדכן חומר")){
             updateAMaterial(pos);
         }
         else if (option.equals("הסר מופע")){
-            showsKeyList.remove(pos);
-            showsDataList.remove(pos);
-            showsDesList.remove(pos);
-            allShows.remove(pos);
-            customAdapterSettings3.notifyDataSetChanged();
-            generalLV.setAdapter(customAdapterSettings3);
-            refBusinessEqu.child("showsList").child(String.valueOf(pos)).removeValue();
+            if(!showInUsed(pos)){
+                showTitlesList.remove(pos);
+                costsList.remove(pos);
+                descriptionsList.remove(pos);
+                employeesList.remove(pos);
+                allShows.remove(pos);
+                customAdapterShows.notifyDataSetChanged();
+                generalLV.setAdapter(customAdapterShows);
+                refBusinessEqu.child("showsList").child(String.valueOf(pos)).removeValue();
+                Snackbar.make(generalLV, "המופע נמחק בהצלחה", 3000).show();
+            }
+            else Snackbar.make(generalLV, "המופע המבוקש משומש", 3000).show();
         }
         else if (option.equals("עדכן מופע")){
             updateAShow(pos);
@@ -436,204 +837,70 @@ public class settingsActivity extends AppCompatActivity{
         return super.onContextItemSelected(item);
     }
 
-    @SuppressLint("SetTextI18n")
-    public void updateAData(View view) {
-        allShows.clear();
-        allMaterials.clear();
-        getAllShows();
-        getAllMaterials();
-
-        businessEqu.setMaterials(allMaterials);
-        businessEqu.setTotalEmployees(dataList.get(0));
-        businessEqu.setAvailableEmployees(dataList.get(1));
-        businessEqu.setEfficiency(dataList.get(2));
-        businessEqu.setShowsList(allShows);
-
-        AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle(keysList.get(0));
-        final EditText valueET = new EditText(this);
-
-        valueET.setHint("ערך");
-
-        adb.setView(valueET);
-
-        valueET.setText(""+dataList.get(0));
-        adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dataList.set(0, Integer.parseInt(valueET.getText().toString()));
-                businessEqu.setTotalEmployees(dataList.get(0));
-
-                refBusinessEqu.setValue(businessEqu);
-
-                efficiencyTV.setText(businessEqu.getEfficiency()+"%");
-                if (dataList.get(2) > 85) efficiencyTV.setTextColor(Color.RED);
-                else efficiencyTV.setTextColor(Color.GRAY);
-                availableTV.setText(businessEqu.getAvailableEmployees()+"");
-                totalTV.setText(businessEqu.getTotalEmployees()+"");
-            }
-        }).setNegativeButton("בטל", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
-
-        AlertDialog ad = adb.create();
-        ad.show();
-    }
-
-    @SuppressLint("SetTextI18n")
-    private void updateAShow(int pos) {
-        getAllShows();
-        Shows temp = new Shows(allShows.get(pos).getShowTitle(), allShows.get(pos).getDescription(), allShows.get(pos).getCost());
-
-        LinearLayout AdScreen = new LinearLayout(this);
-        AdScreen.setOrientation(LinearLayout.VERTICAL);
-        AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle("עדכון מופע");
-        final EditText nameET = new EditText(this);
-        nameET.setHint("שם המופע");
-        final EditText totalAmountET = new EditText(this);
-        totalAmountET.setHint("סה\"כ החומר");
-        final EditText desET = new EditText(this);
-        desET.setHint("תוכן");
-        AdScreen.addView(nameET);
-        AdScreen.addView(totalAmountET);
-        AdScreen.addView(desET);
-        adb.setView(AdScreen);
-
-        nameET.setText(showsKeyList.get(pos));
-        totalAmountET.setText(""+showsDataList.get(pos));
-        desET.setText(showsDesList.get(pos));
-
-        adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                temp.setShowTitle(nameET.getText().toString());
-                temp.setCost(Integer.parseInt(totalAmountET.getText().toString()));
-                temp.setDescription(desET.getText().toString());
-
-                allShows.set(pos,temp);
-                refBusinessEqu.child("showsList").setValue(allShows);
-
-                showsKeyList.set(pos, temp.getShowTitle());
-                showsDataList.set(pos, temp.getCost());
-                showsDesList.set(pos, temp.getDescription());
-
-                customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList, true);
-                customAdapterSettings3.notifyDataSetChanged();
-                generalLV.setAdapter(customAdapterSettings3);
-            }
-        });
-        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
-
-        AlertDialog ad = adb.create();
-        ad.show();
-    }
-
-    @SuppressLint("SetTextI18n")
-    private void updateAMaterial(int pos) {
-        getAllMaterials();
-        Material temp = new Material(allMaterials.get(pos).getTypeOfMaterial(), allMaterials.get(pos).getTotalAmount(), allMaterials.get(pos).getUsedAmount());
-
-        LinearLayout AdScreen = new LinearLayout(this);
-        AdScreen.setOrientation(LinearLayout.VERTICAL);
-        AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle("עדכון חומר");
-        final EditText typeET = new EditText(this);
-        typeET.setHint("סוג");
-        final EditText totalAmountET = new EditText(this);
-        totalAmountET.setHint("סה\"כ החומר");
-        AdScreen.addView(typeET);
-        AdScreen.addView(totalAmountET);
-        adb.setView(AdScreen);
-
-        typeET.setText(materialsKeyList.get(pos));
-        totalAmountET.setText(""+materialsDataList.get(pos));
-
-        adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                temp.setTypeOfMaterial(typeET.getText().toString());
-                temp.setTotalAmount(Integer.parseInt(totalAmountET.getText().toString()));
-
-                allMaterials.set(pos,temp);
-                refBusinessEqu.child("Materials").setValue(allMaterials);
-
-                materialsKeyList.set(pos, temp.getTypeOfMaterial());
-                materialsDataList.set(pos, temp.getTotalAmount());
-
-                customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList, false);
-                customAdapterSettings2.notifyDataSetChanged();
-                generalLV.setAdapter(customAdapterSettings2);
-            }
-        });
-        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
-
-        AlertDialog ad = adb.create();
-        ad.show();
-    }
-
-
     /**
-     * Create new item according the selection.
-     *
-     * @param view the view
+     * Move to previous activity *only* when the back button is pressed.
      */
-    public void createNewItem(View view) {
-        if (option.equals("מופעים"))
-        {
-            createNewShow();
-            customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList, true);
-            customAdapterSettings3.notifyDataSetChanged();
-            generalLV.setAdapter(customAdapterSettings3);
-
-        }
-        else if (option.equals("ציוד"))
-        {
-            createNewMaterial();
-            customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList, false);
-            customAdapterSettings2.notifyDataSetChanged();
-            generalLV.setAdapter(customAdapterSettings2);
-        }
-        else{
-            Snackbar.make(generalLV, "לא נבחרה אפשרות", 5000).show();
-        }
-    }
-
-    public void moveToPreviousAct(View view) {
+    public void moveToPreviousAct() {
         super.onBackPressed();
     }
 
-    public void onSwitchClicked(View view) {
-        boolean isClicked = selectionSwitch.isChecked();
+    /**
+     * Move to create an event. when the FloatingActionButton is pressed.
+     * @param view the FloatingActionButton
+     */
+    public void moveToCreateAnEvent(View view) {
+        Toast.makeText(this, "New Event", Toast.LENGTH_SHORT).show();
+        Intent si = new Intent(this, newEventActivity.class);
+        startActivity(si);
+    }
 
-        if (!isClicked){
-            option = "ציוד";
-            getAllMaterials();
-            customAdapterSettings2 = new CustomAdapterSettings(getApplicationContext(), materialsKeyList, materialsDataList, materialsUsedList, false);
-            customAdapterSettings2.notifyDataSetChanged();
-            generalLV.setAdapter(customAdapterSettings2);
-        }
-        else{
-            option = "מופעים";
-            getAllShows();
-            customAdapterSettings3 = new CustomAdapterSettings(getApplicationContext(), showsKeyList, showsDataList, showsDesList, true);
-            customAdapterSettings3.notifyDataSetChanged();
-            generalLV.setAdapter(customAdapterSettings3);
-        }
+    /**
+     * Logout method for logout from the user.
+     * @param item the item in the layout_top_bar.xml
+     */
+    public void Logout(MenuItem item) {
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("יציאה ממערכת");
+        titleTV.setTextColor(Color.rgb(143, 90, 31));
+        titleTV.setTextSize(25);
+        titleTV.setPadding(0,15,30,15);
+        titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
+        adb.setCustomTitle(titleTV);
+
+        final TextView messageTV = new TextView(this);
+        messageTV.setText("החשבון "+FirebaseAuth.getInstance().getCurrentUser().getEmail().substring(0,FirebaseAuth.getInstance().getCurrentUser().getEmail().indexOf("@"))+" ינותק.");
+        messageTV.setTextSize(18);
+        messageTV.setGravity(Gravity.RIGHT);
+        messageTV.setPadding(0,15,30,0);
+        messageTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_medium));
+        adb.setView(messageTV);
+
+        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+
+        adb.setPositiveButton("צא", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                FirebaseAuth.getInstance().signOut();
+                Intent si = new Intent(settingsActivity.this, LoginActivity.class);
+
+                // Changing the preferences to default
+                SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putBoolean("stayConnect",false);
+                editor.apply();
+
+                startActivity(si);
+                finish();
+            }
+        });
+
+        AlertDialog ad = adb.create();
+        ad.show();
     }
 }
-
-

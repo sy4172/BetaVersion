@@ -7,8 +7,11 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -19,6 +22,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,7 +36,7 @@ import java.util.Objects;
 
 /**
     * * @author    Shahar Yani
-    * * @version  	1.0
+    * * @version  	4.1
     * * @since		03/03/2022
     *
     * * This missionsActivity.class displays the all missions by an Event in the business
@@ -46,12 +50,14 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
     ArrayList<String> titleEvents, dateEvents, phonesList, namesList, eventCharacterizeList, missionTitlesList, missionContentsList, missionLastDatesList, missionsKeysList;
     HashMap<String, Mission> allMissions;
     ArrayList<Integer> employeesList, frequencyList;
-    ArrayList<Boolean> missionStatusList;
+    ArrayList<Boolean> missionStatusList, isPaidList, hasAcceptedList;
     TextView eventIdTV;
     boolean toMissionsMenu;
 
     CustomAdapterMissions customAdapterMissions;
     CustomAdapterEvents customAdapterEvents;
+
+    User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +75,7 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
 
         backToStart.setVisibility(View.INVISIBLE);
         bottomNavigationView.setSelectedItemId(R.id.missions);
+        bottomNavigationView.setItemTextColor(ColorStateList.valueOf(Color.rgb(255, 165, 0)));
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
         bottomNavigationView.setOnNavigationItemReselectedListener(this);
 
@@ -82,6 +89,8 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
         employeesList = new ArrayList<>();
         eventCharacterizeList = new ArrayList<>();
         namesList = new ArrayList<>();
+        isPaidList = new ArrayList<>();
+        hasAcceptedList = new ArrayList<>();
 
         allMissions = new HashMap<>();
         missionTitlesList = new ArrayList<>();
@@ -101,6 +110,7 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
         toMissionsMenu = false;
         backToStart.setVisibility(View.INVISIBLE);
         eventIdTV.setText("בחר אירוע כדי להמשיך");
+        eventIdTV.setTextColor(Color.rgb(115, 115, 115));
     }
 
     private void readAllCloseEvents() {
@@ -113,21 +123,32 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
                 employeesList.clear();
                 namesList.clear();
                 eventCharacterizeList.clear();
+                isPaidList.clear();
+                hasAcceptedList.clear();
 
                 for(DataSnapshot data : dS.getChildren()) {
                     Event tempEvent = data.getValue(Event.class);
 
-                    titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
-                    dateEvents.add(tempEvent.getDateOfEvent());
-                    phonesList.add(tempEvent.getCustomerPhone());
-                    employeesList.add(tempEvent.getEventEmployees());
-                    eventCharacterizeList.add(tempEvent.getEventCharacterize());
-                    namesList.add(tempEvent.getCustomerName());
+                    if (Objects.requireNonNull(tempEvent).isHasAccepted()){
+                        titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
+                        dateEvents.add(tempEvent.getDateOfEvent());
+                        phonesList.add(tempEvent.getCustomerPhone());
+                        employeesList.add(tempEvent.getEventEmployees());
+                        eventCharacterizeList.add(tempEvent.getEventCharacterize());
+                        namesList.add(tempEvent.getCustomerName());
+                        isPaidList.add(tempEvent.isPaid());
+                        hasAcceptedList.add(true);
+                    }
                 }
 
-                customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList);
+                customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList, isPaidList, hasAcceptedList);
                 generalLV.setAdapter(customAdapterEvents);
                 toMissionsMenu = false;
+
+                if (titleEvents.isEmpty()){
+                    eventIdTV.setText("אין אירועים במערכת");
+                    eventIdTV.setTextColor(Color.rgb(178, 34, 34));
+                }
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -180,19 +201,30 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
 
     public void Logout(MenuItem item) {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle("Are you sure?");
-        SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
-        Variable.setEmailVer(settings.getString("email",""));
-        adb.setMessage(Variable.getEmailVer().substring(0,Variable.emailVer.indexOf("@"))+" will logged out");
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("יציאה ממערכת");
+        titleTV.setTextColor(Color.rgb(143, 90, 31));
+        titleTV.setTextSize(25);
+        titleTV.setPadding(0,15,30,15);
+        titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
+        adb.setCustomTitle(titleTV);
 
-        adb.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+        final TextView messageTV = new TextView(this);
+        messageTV.setText("החשבון "+FirebaseAuth.getInstance().getCurrentUser().getEmail().substring(0,FirebaseAuth.getInstance().getCurrentUser().getEmail().indexOf("@"))+" ינותק.");
+        messageTV.setTextSize(18);
+        messageTV.setGravity(Gravity.RIGHT);
+        messageTV.setPadding(0,15,30,0);
+        messageTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_medium));
+        adb.setView(messageTV);
+
+        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.cancel();
             }
         });
 
-        adb.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        adb.setPositiveButton("צא", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 FirebaseAuth.getInstance().signOut();
@@ -201,7 +233,6 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
                 // Changing the preferences to default
                 SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
                 SharedPreferences.Editor editor = settings.edit();
-                editor.putString("email", "");
                 editor.putBoolean("stayConnect",false);
                 editor.apply();
 
@@ -232,7 +263,7 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
             startActivity(si);
         }
         else if (id == R.id.remainder){
-            si = new Intent(this, reminderActivity.class);
+            si = new Intent(this, remindersActivity.class);
             startActivity(si);
         }
         else if (id == R.id.events){
@@ -256,7 +287,7 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
             startActivity(si);
         }
         else if (id == R.id.remainder){
-            si = new Intent(this, reminderActivity.class);
+            si = new Intent(this, remindersActivity.class);
             startActivity(si);
         }
         else if (id == R.id.events){
@@ -318,14 +349,15 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
             startActivity(si);
         }
         else if (option.equals("מחק")){
-            Intent si = new Intent(this, newMissionActivity.class);
-            si.putExtra("eventTitle", titleEvents.get(position));
-            si.putExtra("eventID", dateEvents.get(position));
-            si.putExtra("missionMode", missionStatusList.get(position));
-            si.putExtra("updateMode", false);
-            startActivity(si);
-        }
+            titleEvents.remove(position);
+            dateEvents.remove(position);
+            allMissions.remove(missionsKeysList.get(position));
+            missionStatusList.remove(position);
+            missionsKeysList.remove(position);
 
+            customAdapterMissions = new CustomAdapterMissions(getApplicationContext(),titleEvents ,missionTitlesList, missionStatusList, missionContentsList, missionLastDatesList, frequencyList);
+            generalLV.setAdapter(customAdapterMissions);
+        }
 
         return super.onContextItemSelected(item);
     }

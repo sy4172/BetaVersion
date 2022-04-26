@@ -15,8 +15,13 @@ import androidx.core.graphics.drawable.DrawableCompat;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Objects;
 
+/**
+ * * @author    Shahar Yani
+ * * @version  	4.2
+ *
+ * * This CustomAdapterReminder.class design an item of a reminder
+ */
 public class CustomAdapterReminder extends BaseAdapter{
     Context context;
     ArrayList<String> remindsTitleList;
@@ -62,16 +67,16 @@ public class CustomAdapterReminder extends BaseAdapter{
         ImageView statusIV = view.findViewById(R.id.statusIV);
 
         titleTV.setText(remindsTitleList.get(i));
-        // cast the String to date
-        Date tempSelectedDate = DateConvertor.stringToDate(lastDateToRemindList.get(i), "yyyyMMddHHmmyyyyMMddHHmmss");
+        Date tempSelectedDate = DateConvertor.stringToDate(lastDateToRemindList.get(i), "yyyyMMddHHmmyyyyMMddHHmmss"); // Cast the String to date
+        // Setting the selected date in format of 'dd/MM/yyyy'
+        lastDateTV.setText(DateConvertor.dateToString(tempSelectedDate, "dd/MM/yyyy"));
 
-        lastDateTV.setText(Objects.requireNonNull(tempSelectedDate).getDate()+"/"+tempSelectedDate.getMonth()+1+"/"+tempSelectedDate.getYear());
-
+        // Displaying the statusIV (ImageView) accordingly to the status
         if (!isText.get(i)) {
             contentTV.setText(contentTextList.get(i));
             statusIV.setImageResource(R.drawable.ic_mic);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 0.2f);
-            lp.setMargins(10, 10, 10, 10);
+            lp.setMargins(10, 10, 10, 10); // Set a layout for the statusIV that won't get all the area
             statusIV.setLayoutParams(lp);
             DrawableCompat.setTint(statusIV.getDrawable(), ContextCompat.getColor(view.getContext(), R.color.brown_200));
         }
@@ -79,7 +84,7 @@ public class CustomAdapterReminder extends BaseAdapter{
             contentTV.setText(contentTextList.get(i));
             statusIV.setImageResource(R.drawable.ic_text_sign);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 0.2f);
-            lp.setMargins(10, 10, 10, 10);
+            lp.setMargins(10, 10, 10, 10); // Set a layout for the statusIV that won't get all the area
             statusIV.setLayoutParams(lp);
             DrawableCompat.setTint(statusIV.getDrawable(), ContextCompat.getColor(view.getContext(), R.color.brown_200));
         }

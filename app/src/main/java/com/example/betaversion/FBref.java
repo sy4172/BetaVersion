@@ -20,5 +20,5 @@ public class FBref {
 
     public static DatabaseReference refGreen_Event = reflive_Event.child("greenEvent");
     public static DatabaseReference refOrange_Event = reflive_Event.child("orangeEvent");
-
+    public static DatabaseReference refRed_Event = reflive_Event.child("redEvent");
 }

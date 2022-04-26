@@ -74,6 +74,37 @@
             android:layout_margin="15dp"
             android:layout_weight="9" />
 
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigationView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_margin="0dp"
+            android:isScrollContainer="true"
+            android:keepScreenOn="false"
+            android:overScrollMode="never"
+            android:scrollbars="horizontal"
+            app:itemBackground="@color/white"
+            app:itemIconTint="@color/black200"
+            app:itemTextColor="@color/black200"
+            app:menu="@menu/bottom_navigation_menu">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center"
+                android:contentDescription="@string/app_name"
+                android:onClick="moveToCreateAnEvent"
+                android:src="@drawable/ic_baseline_add_circle_outline"
+                app:backgroundTint="@color/white"
+                app:fabCustomSize="10dp"
+                app:fabSize="normal"
+                app:maxImageSize="48dp"
+                app:tint="@color/black200" />
+        </com.google.android.material.bottomnavigation.BottomNavigationView>
+
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

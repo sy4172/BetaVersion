@@ -40,7 +40,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0px"
-            android:layout_weight="15"
+            android:layout_weight="3"
             android:orientation="horizontal">
 
             <LinearLayout
@@ -65,7 +65,7 @@
                     android:layout_weight="1"
                     android:fontFamily="@font/rubik_regular"
                     android:gravity="center|top"
-                    android:onClick="updateAData"
+                    android:onClick="updateTotalEmployees"
                     android:textSize="16sp"
                     tools:ignore="SpeakableTextPresentCheck" />
 
@@ -120,7 +120,7 @@
                     android:layout_weight="1"
                     android:fontFamily="@font/rubik_bold"
                     android:gravity="center"
-                    android:text="נצילות החומרים"
+                    android:text="נצילות הציוד"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -137,59 +137,58 @@
 
         </LinearLayout>
 
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="0px"
-            android:layout_weight="3" />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0px"
-            android:layout_weight="10"
+            android:layout_weight="2"
             android:orientation="horizontal">
 
             <Space
-                android:layout_width="wrap_content"
+                android:layout_width="0px"
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
 
-            <Button
-                android:layout_width="0px"
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.MaterialComponents.Button.Icon"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_margin="7dp"
+                android:layout_margin="5dp"
+                android:layout_marginTop="17dp"
                 android:layout_weight="3"
-                android:fontFamily="@font/rubik_light"
-                android:foregroundGravity="center"
+                android:fontFamily="@font/rubik_medium"
                 android:onClick="createNewItem"
-                android:text="חדש" />
+                android:paddingTop="4dp"
+                android:text="חדש"
+                android:textSize="16sp"
+                app:cornerRadius="20dp"
+                app:icon="@drawable/ic_add" />
 
             <Space
-                android:layout_width="wrap_content"
+                android:layout_width="0px"
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
 
             <TextView
+                android:id="@+id/showsTV"
                 android:layout_width="0px"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
+                android:fontFamily="@font/rubik_regular"
                 android:gravity="center"
-                android:text="מופעים" />
-
-            <Switch
-                android:id="@+id/selectionSwitch"
-                android:layout_width="0px"
-                android:layout_height="match_parent"
-                android:layout_weight="2"
-                android:contentDescription="SWITCH"
-                android:onClick="onSwitchClicked"
-                tools:ignore="UseSwitchCompatOrMaterialXml" />
+                android:onClick="displayShows"
+                android:text="מופעים"
+                android:textSize="20sp" />
 
             <TextView
+                android:id="@+id/materialsTV"
                 android:layout_width="0px"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
+                android:fontFamily="@font/rubik_regular"
                 android:gravity="center"
-                android:text="ציוד" />
+                android:onClick="displayMaterials"
+                android:text="ציוד"
+                android:textSize="20sp" />
 
             <Space
                 android:layout_width="wrap_content"
@@ -197,35 +196,85 @@
                 android:layout_weight="1" />
         </LinearLayout>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:fontFamily="@font/rubik_regular"
+            android:gravity="center"
+            android:text="לחיצה ארוכה על התא להמשך פעולות"
+            android:textSize="18sp" />
+
         <Space
             android:layout_width="match_parent"
             android:layout_height="0px"
-            android:layout_weight="3" />
+            android:layout_weight="1" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0px"
-            android:layout_weight="62">
+            android:layout_weight="4">
 
             <Space
                 android:layout_width="0px"
                 android:layout_height="match_parent"
-                android:layout_weight="1" />
+                android:layout_weight="0.5" />
 
             <ListView
                 android:id="@+id/generalLV"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="8" />
+                android:layout_weight="9" />
 
             <Space
                 android:layout_width="0px"
                 android:layout_height="match_parent"
-                android:layout_weight="1" />
+                android:layout_weight="0.5" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:layout_weight="9"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="1"
+                android:fontFamily="@font/rubik_bold"
+                android:gravity="center|right"
+                android:text="מצבי אירוע"
+                android:textSize="20sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="9"
+                android:orientation="horizontal">
+
+                <Space
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.5" />
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="9"
+                    android:scaleType="fitXY"
+                    app:srcCompat="@drawable/all_events" />
+
+                <Space
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.5" />
+            </LinearLayout>
 
         </LinearLayout>
 
     </LinearLayout>
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

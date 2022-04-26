@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * The type Event for creating new event in the system of the business.
- * * @version  	3.0
+ * * @author    Shahar Yani
+ * * @version  	5.0
+ *
+ * * The type Event for creating new event in the system of the business.
  */
 public class Event {
     private String customerName;
@@ -21,9 +23,11 @@ public class Event {
     private String eventCharacterize;
     private String eventPayment;
     private int eventEmployees;
-    private ArrayList<Boolean> eventEquipments;
+    private ArrayList<String> eventEquipments;
     private HashMap<String, Mission> eventMissions;
     private ArrayList<Boolean> eventShows;
+    private boolean isPaid;
+    private boolean hasAccepted;
 
     /**
      * Instantiates a new empty Event.
@@ -49,8 +53,10 @@ public class Event {
      * @param eventEquipments   the event equipments
      * @param eventMissions     the event missions
      * @param eventShows        the event shows
+     * @param isPaid            the is paid
+     * @param hasAccepted       the has accepted
      */
-    public Event(String customerName, String customerPhone, String customerEmail, String dateOfEvent, String dateOfCreation, String eventName, String eventLocation, int eventCost, String eventInformation, String eventContent, String eventCharacterize, String eventPayment, int eventEmployees, ArrayList<Boolean> eventEquipments, HashMap<String, Mission> eventMissions, ArrayList<Boolean> eventShows){
+    public Event(String customerName, String customerPhone, String customerEmail, String dateOfEvent, String dateOfCreation, String eventName, String eventLocation, int eventCost, String eventInformation, String eventContent, String eventCharacterize, String eventPayment, int eventEmployees, ArrayList<String> eventEquipments, HashMap<String, Mission> eventMissions, ArrayList<Boolean> eventShows, boolean isPaid, boolean hasAccepted){
         this.customerName = customerName;
         this.customerPhone = customerPhone;
         this.customerEmail = customerEmail;
@@ -67,8 +73,9 @@ public class Event {
         this.eventEquipments = eventEquipments;
         this.eventMissions = eventMissions;
         this.eventShows = eventShows;
+        this.isPaid = isPaid;
+        this.hasAccepted = hasAccepted;
     }
-
 
     /**
      * Gets customer name.
@@ -291,7 +298,7 @@ public class Event {
      *
      * @return the event equipments
      */
-    public ArrayList<Boolean> getEventEquipments() {
+    public ArrayList<String> getEventEquipments() {
         return eventEquipments;
     }
 
@@ -300,7 +307,7 @@ public class Event {
      *
      * @param eventEquipments the event equipments
      */
-    public void setEventEquipments(ArrayList<Boolean> eventEquipments) {
+    public void setEventEquipments(ArrayList<String> eventEquipments) {
         this.eventEquipments = eventEquipments;
     }
 
@@ -356,5 +363,41 @@ public class Event {
      */
     public void setEventShows(ArrayList<Boolean> eventShows) {
         this.eventShows = eventShows;
+    }
+
+    /**
+     * Is paid boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isPaid() {
+        return isPaid;
+    }
+
+    /**
+     * Sets paid.
+     *
+     * @param paid the paid
+     */
+    public void setPaid(boolean paid) {
+        isPaid = paid;
+    }
+
+    /**
+     * Is has accepted boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isHasAccepted() {
+        return hasAccepted;
+    }
+
+    /**
+     * Sets has accepted.
+     *
+     * @param hasAccepted the has accepted
+     */
+    public void setHasAccepted(boolean hasAccepted) {
+        this.hasAccepted = hasAccepted;
     }
 }

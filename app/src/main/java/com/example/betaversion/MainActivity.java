@@ -9,15 +9,19 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,7 +36,7 @@ import java.util.Objects;
 
 /**
  * * @author    Shahar Yani
- * * @version  	4.1
+ * * @version  	7.2
  * * @since		25/11/2021
  *
  * * This MainActivity.class displays the main control on the business.
@@ -41,15 +45,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     BottomNavigationView bottomNavigationView;
 
-    ListView beforeApprovalLV, closeEventsLV, remaindersLV, missionsLV;
+    ListView beforeApprovalLV, closeEventsLV, remaindersLV, missionsLV; // ListView for ORANGE events, GREEN events, Remainders and Missions
+
+    // ArrayLists for Event objects
     ArrayList<String> titleEvents, dateEvents, phonesList, namesList, eventCharacterizeList;
+    ArrayList<Boolean> isPaidList, hasAcceptedList;
     ArrayList<Integer> employeesList;
 
-    ArrayList<String> remindersTitleList, remindersContextList;
-    ArrayList<String> remindersAudioContentList;
-    ArrayList<String> remindersLastDateToRemindList;
+    // ArrayLists for Reminder objects
+    ArrayList<String> remindersTitleList, remindersContextList, remindersAudioContentList, remindersLastDateToRemindList;
     ArrayList<Boolean> isTextList;
 
+    // ArrayLists for Mission objects
     ArrayList<String> missionTitlesList, missionLastDatesList, missionContentsList;
     ArrayList<Boolean> missionStatusList;
     ArrayList<Integer> frequencyList;
@@ -87,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         missionsLV.setOnItemClickListener(this);
         remaindersLV.setOnItemClickListener(this);
 
-
         remindersTitleList = new ArrayList<>();
         remindersContextList = new ArrayList<>();
         remindersAudioContentList = new ArrayList<>();
@@ -100,6 +106,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         employeesList = new ArrayList<>();
         eventCharacterizeList = new ArrayList<>();
         namesList = new ArrayList<>();
+        isPaidList = new ArrayList<>();
+        hasAcceptedList = new ArrayList<>();
 
         missionTitlesList = new ArrayList<>();
         missionContentsList = new ArrayList<>();
@@ -107,13 +115,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         missionLastDatesList = new ArrayList<>();
         frequencyList = new ArrayList<>();
 
-        //readAllRemainders();
+        readAllRemainders();
         readAllCloseEvents();
         readAllBeforeApproval();
     }
 
+    /**
+     * readAllBeforeApproval method gets all the events that with eventCharacterize equals to 'O' from the FireBase DataBase.
+     */
     private void readAllBeforeApproval() {
-        Query query = refOrange_Event.limitToFirst(2);
+        Query query = refOrange_Event.limitToFirst(1);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
@@ -123,6 +134,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 employeesList.clear();
                 namesList.clear();
                 eventCharacterizeList.clear();
+                isPaidList.clear();
+                hasAcceptedList.clear();
 
                 for(DataSnapshot data : dS.getChildren()) {
                     Event tempEvent = data.getValue(Event.class);
@@ -133,10 +146,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     employeesList.add(tempEvent.getEventEmployees());
                     eventCharacterizeList.add(tempEvent.getEventCharacterize());
                     namesList.add(tempEvent.getCustomerName());
+                    isPaidList.add(tempEvent.isPaid());
+                    hasAcceptedList.add(tempEvent.isHasAccepted());
                 }
 
-                customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList);
-                closeEventsLV.setAdapter(customAdapterEvents);
+                customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList, isPaidList, hasAcceptedList);
+                beforeApprovalLV.setAdapter(customAdapterEvents);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -144,8 +159,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
+    /**
+     * readAllCloseEvents method gets all the events that with eventCharacterize equals to 'G' from the FireBase DataBase.
+     */
     private void readAllCloseEvents() {
-        Query query = refGreen_Event.limitToFirst(2);
+        Query query = refGreen_Event.limitToFirst(1);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
@@ -155,6 +173,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 employeesList.clear();
                 namesList.clear();
                 eventCharacterizeList.clear();
+                isPaidList.clear();
+                hasAcceptedList.clear();
 
                 for(DataSnapshot data : dS.getChildren()) {
                     Event tempEvent = data.getValue(Event.class);
@@ -165,8 +185,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     employeesList.add(tempEvent.getEventEmployees());
                     eventCharacterizeList.add(tempEvent.getEventCharacterize());
                     namesList.add(tempEvent.getCustomerName());
+                    isPaidList.add(tempEvent.isPaid());
+                    hasAcceptedList.add(tempEvent.isHasAccepted());
                 }
-                customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList);
+                customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList, isPaidList, hasAcceptedList);
                 closeEventsLV.setAdapter(customAdapterEvents);
 
                 readAllMissions();
@@ -177,8 +199,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
+    /**
+     * readAllRemainders method gets all the Remainder objects that were created to display on the ListView object objects from the FireBase DataBase.
+     */
     private void readAllRemainders() {
-        Query query = refReminders.limitToFirst(2);
+        Query query = refReminders.limitToFirst(1);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
@@ -208,6 +233,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
+    /**
+     * readAllMissions method gets all the Mission objects that were created to display on the ListView object from the FireBase DataBase.
+     */
     private void readAllMissions() {
         if (dateEvents.size() != 0){
             for (int i = 0; i < dateEvents.size(); i++) {
@@ -246,9 +274,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         if (view  == beforeApprovalLV){
-//            Intent si = new Intent(this, events.class);
-//            si.putExtra("Index", i);
-//            startActivity(si);
+            Intent si = new Intent(this, eventsActivity.class);
+            si.putExtra("Index", i);
+            startActivity(si);
         }
         else if (view == missionsLV){
             Intent si = new Intent(this, missionsActivity.class);
@@ -261,37 +289,27 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             startActivity(si);
         }
         else if (view == remaindersLV){
-            Intent si = new Intent(this, reminderActivity.class);
+            Intent si = new Intent(this, remindersActivity.class);
             si.putExtra("Index", i);
             startActivity(si);
         }
     }
 
-    public void moveToCreateAnEvent(View view) {
-        Intent si = new Intent(this, newEventActivity.class);
-        startActivity(si);
-    }
-
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        Intent si;
 
         if (id == R.id.settingsAct){
-            si = new Intent(this, settingsActivity.class);
-            startActivity(si);
+            startActivity(new Intent(this, settingsActivity.class));
         }
         else if (id == R.id.remainder){
-            si = new Intent(this, reminderActivity.class);
-            startActivity(si);
+            startActivity(new Intent(this, remindersActivity.class));
         }
         else if (id == R.id.events){
-            si = new Intent(this, eventsActivity.class);
-            startActivity(si);
+            startActivity(new Intent(this, eventsActivity.class));
         }
         else if (id == R.id.missions){
-            si = new Intent(this, missionsActivity.class);
-            startActivity(si);
+            startActivity(new Intent(this, missionsActivity.class));
         }
         else{
             return false;
@@ -301,19 +319,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     @Override
-    public void onPointerCaptureChanged(boolean hasCapture) { }
-
-    @Override
     public void onNavigationItemReselected(@NonNull MenuItem item) {
         int id = item.getItemId();
         Intent si;
 
-       if (id == R.id.settingsAct){
+        if (id == R.id.settingsAct){
             si = new Intent(this, settingsActivity.class);
             startActivity(si);
         }
         else if (id == R.id.remainder){
-            si = new Intent(this, reminderActivity.class);
+            si = new Intent(this, remindersActivity.class);
             startActivity(si);
         }
         else if (id == R.id.events){
@@ -326,21 +341,99 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) { }
+
+    /**
+     * onResume method inorder to react when the user return to THIS activity
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        bottomNavigationView.setSelectedItemId(R.id.empty);
+        readAllRemainders();
+        readAllCloseEvents();
+        readAllBeforeApproval();
+    }
+
+    /**
+     * Move to create an event. when the FloatingActionButton is pressed.
+     * @param view the FloatingActionButton
+     */
+    public void moveToCreateAnEvent(View view) {
+        startActivity(new Intent(this, newEventActivity.class));
+    }
+
+    public void moveToPreviousAct(View view) {
+        super.onBackPressed();
+    }
+
+    public void moveToReminderAct(View view) {
+        startActivity(new Intent(this, remindersActivity.class));
+    }
+
+    /**
+     * Move to eventsActivity.java inorder to display all the GREEN events that appears in the FireBase DateBase.
+     *
+     * @param view the button that next to the title "אירועים קרובים" is pressed
+     */
+    public void moveToGreenEvents(View view) {
+        Intent si = new Intent(this, eventsActivity.class);
+        si.putExtra("userSelection", "ירוק");
+        startActivity(si);
+    }
+
+    /**
+     * Move to eventsActivity.java inorder to display all the ORANGE events that appears in the FireBase DateBase.
+     *
+     * @param view the button that next to the title "אירועים לפי אישור" is pressed
+     */
+    public void moveToOrangeEvents(View view) {
+        Intent si = new Intent(this, eventsActivity.class);
+        si.putExtra("userSelection", "כתום");
+        startActivity(si);
+    }
+
+    public void moveToMissionsActivity(View view) {
+        startActivity(new Intent(this, missionsActivity.class));
+    }
+
+    public void moveToCreditsActivity(View view) {
+        startActivity(new Intent(this, creditsActivity.class));
+    }
+
+    /**
+     * Logout method for logout from the user.
+     *
+     * @param item the item in the layout_top_bar.xml
+     */
     public void Logout(MenuItem item) {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle("Are you sure?");
-        SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
-        Variable.setEmailVer(settings.getString("email",""));
-        adb.setMessage(Variable.getEmailVer().substring(0,Variable.emailVer.indexOf("@"))+" will logged out");
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("יציאה ממערכת");
+        titleTV.setTextColor(Color.rgb(143, 90, 31));
+        titleTV.setTextSize(25);
+        titleTV.setPadding(0,15,30,15);
+        titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
+        adb.setCustomTitle(titleTV);
 
-        adb.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+        final TextView messageTV = new TextView(this);
+        messageTV.setText("החשבון "+ FirebaseAuth.getInstance().getCurrentUser().getEmail().substring(0,FirebaseAuth.getInstance().getCurrentUser().getEmail().indexOf("@"))+" ינותק.");
+        messageTV.setTextSize(18);
+        messageTV.setGravity(Gravity.RIGHT);
+        messageTV.setPadding(0,15,30,0);
+        messageTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_medium));
+        adb.setView(messageTV);
+
+        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.cancel();
             }
         });
 
-        adb.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        adb.setPositiveButton("צא", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 FirebaseAuth.getInstance().signOut();
@@ -349,7 +442,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 // Changing the preferences to default
                 SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
                 SharedPreferences.Editor editor = settings.edit();
-                editor.putString("email", "");
                 editor.putBoolean("stayConnect",false);
                 editor.apply();
 
@@ -360,30 +452,5 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         AlertDialog ad = adb.create();
         ad.show();
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        bottomNavigationView.setSelectedItemId(R.id.empty);
-        //readAllRemainders();
-        readAllCloseEvents();
-        readAllBeforeApproval();
-    }
-
-    public void moveToPreviousAct(View view) {
-        super.onBackPressed();
-    }
-
-    public void moveToReminderAct(View view) {
-        startActivity(new Intent(this, reminderActivity.class));
-    }
-
-    public void moveToEventsActivity(View view) {
-        startActivity(new Intent(this, eventsActivity.class));
-    }
-
-    public void moveToMissionsActivity(View view) {
-        startActivity(new Intent(this, missionsActivity.class));
     }
 }

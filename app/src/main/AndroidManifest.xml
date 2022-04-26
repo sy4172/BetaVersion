@@ -5,7 +5,6 @@
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -19,30 +18,21 @@
         android:roundIcon="@drawable/administrator"
         android:supportsRtl="true"
         android:theme="@style/Theme.BetaVersion"
-        tools:ignore="AllowBackup"
         tools:targetApi="m">
         <activity
-            android:name=".newMissionActivity"
+            android:name=".remindersActivity"
             android:windowSoftInputMode="adjustPan"
             android:exported="false" />
         <activity
+            android:name=".creditsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".newMissionActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
             android:name=".missionsActivity"
             android:exported="false" />
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.betaversion.provider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths" />
-        </provider>
-
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="${MAPS_API_KEY}" />
-
         <activity
             android:name=".eventsActivity"
             android:exported="false" />
@@ -51,12 +41,9 @@
             android:exported="false"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".reminderActivity"
+            android:name=".settingsActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustPan" />
-        <activity
-            android:name=".settingsActivity"
-            android:exported="false" />
         <activity
             android:name=".LoginActivity"
             android:exported="false" />
@@ -76,9 +63,19 @@
             android:name=".MapActivity"
             android:exported="false" />
 
-        <receiver android:name=".notificationPublisher" />
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.betaversion.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
 
-        <service android:name=".notificationPublisher$NotificationActionService" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
     </application>
 
 </manifest>

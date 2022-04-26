@@ -14,28 +14,29 @@
 
         <ImageView
             android:id="@+id/flagIV"
-            android:layout_width="wrap_content"
+            android:layout_width="0px"
             android:layout_height="wrap_content"
+            android:layout_gravity="center|left"
             android:layout_weight="1"
-            tools:srcCompat="@tools:sample/avatars" />
+            android:scaleType="centerInside" />
 
         <TextView
             android:id="@+id/dateOfEventTV"
-            android:layout_width="wrap_content"
+            android:layout_width="0px"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:layout_weight="1"
+            android:layout_margin="5dp"
+            android:layout_weight="10"
             android:fontFamily="@font/rubik_medium"
             android:gravity="center"
             android:text="TextView"
-            android:textSize="16sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/titleTV"
-            android:layout_width="wrap_content"
+            android:layout_width="0px"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:layout_weight="1"
+            android:layout_margin="5dp"
+            android:layout_weight="10"
             android:fontFamily="@font/rubik_bold"
             android:gravity="center|right"
             android:text="TextView"
@@ -45,24 +46,52 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1">
+        android:layout_weight="2">
 
         <TextView
             android:id="@+id/eventEmployeesTV"
-            android:layout_width="wrap_content"
+            android:layout_width="0px"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:layout_weight="1"
+            android:layout_margin="5dp"
+            android:layout_weight="3"
             android:fontFamily="@font/rubik_semibold"
+            android:gravity="center|left"
             android:text="TextView"
             android:textSize="16sp" />
 
+        <ImageView
+            android:id="@+id/isPaidIV"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_gravity="center|top"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_weight="1"
+            android:scaleType="centerInside"
+            app:srcCompat="@drawable/coin" />
+
+        <Space
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/hasAcceptedIV"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_gravity="center|top"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_weight="1"
+            android:scaleType="centerInside"
+            app:srcCompat="@drawable/deal" />
+
         <TextView
             android:id="@+id/customerDetailsTV"
-            android:layout_width="wrap_content"
+            android:layout_width="0px"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:layout_weight="1"
+            android:layout_margin="5dp"
+            android:layout_weight="5"
             android:fontFamily="@font/rubik_light"
             android:gravity="center|right"
             android:text="TextView"

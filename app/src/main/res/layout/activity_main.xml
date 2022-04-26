@@ -19,7 +19,9 @@
             android:layout_height="?attr/actionBarSize"
             android:background="@color/orange_500"
             app:logo="@drawable/logo_white"
-            app:navigationIcon="@drawable/null1"
+            app:navigationIcon="@drawable/ic_info"
+            android:animationCache="true"
+            android:onClick="moveToCreditsActivity"
             app:menu="@menu/layout_top_bar" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -99,11 +101,17 @@
                                 android:layout_height="match_parent"
                                 android:layout_weight="0.1" />
 
-                            <Button
-                                android:layout_width="0px"
+                            <com.google.android.material.button.MaterialButton
+                                android:layout_width="0dp"
                                 android:layout_height="match_parent"
                                 android:layout_weight="1"
-                                android:text="עוד" />
+                                android:backgroundTint="@color/brown_200"
+                                android:checkable="true"
+                                android:fontFamily="@font/rubik_regular"
+                                android:text="עוד"
+                                android:onClick="moveToOrangeEvents"
+                                android:textAlignment="center"
+                                app:cornerRadius="20dp" />
 
                             <Space
                                 android:layout_width="0px"
@@ -181,13 +189,17 @@
                                 android:layout_height="match_parent"
                                 android:layout_weight="0.1" />
 
-                            <Button
-                                android:layout_width="0px"
+                            <com.google.android.material.button.MaterialButton
+                                android:layout_width="0dp"
                                 android:layout_height="match_parent"
                                 android:layout_weight="1"
+                                android:backgroundTint="@color/brown_200"
+                                android:checkable="true"
                                 android:fontFamily="@font/rubik_regular"
-                                android:onClick="moveToEventsActivity"
-                                android:text="עוד" />
+                                android:onClick="moveToGreenEvents"
+                                android:text="עוד"
+                                android:textAlignment="center"
+                                app:cornerRadius="20dp" />
 
                             <Space
                                 android:layout_width="0px"
@@ -265,13 +277,17 @@
                                 android:layout_height="match_parent"
                                 android:layout_weight="0.1" />
 
-                            <Button
-                                android:layout_width="0px"
+                            <com.google.android.material.button.MaterialButton
+                                android:layout_width="0dp"
                                 android:layout_height="match_parent"
                                 android:layout_weight="1"
+                                android:backgroundTint="@color/brown_200"
+                                android:checkable="true"
                                 android:fontFamily="@font/rubik_regular"
                                 android:onClick="moveToReminderAct"
-                                android:text="עוד" />
+                                android:text="עוד"
+                                android:textAlignment="center"
+                                app:cornerRadius="20dp" />
 
                             <Space
                                 android:layout_width="0px"
@@ -350,13 +366,16 @@
                                 android:layout_height="match_parent"
                                 android:layout_weight="0.1" />
 
-                            <Button
-                                android:layout_width="0px"
+                            <com.google.android.material.button.MaterialButton
+                                android:layout_width="0dp"
                                 android:layout_height="match_parent"
                                 android:layout_weight="1"
+                                android:backgroundTint="@color/brown_200"
+                                android:checkable="true"
                                 android:onClick="moveToMissionsActivity"
-                                android:fontFamily="@font/rubik_regular"
-                                android:text="עוד" />
+                                android:text="עוד"
+                                android:textAlignment="center"
+                                app:cornerRadius="20dp" />
 
                             <Space
                                 android:layout_width="0px"

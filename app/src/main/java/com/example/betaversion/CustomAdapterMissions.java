@@ -13,20 +13,35 @@ import android.widget.TextView;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 
+/**
+ * * @author    Shahar Yani
+ * * @version  	1.0
+ *
+ * * This CustomAdapterMissions.class design an item of a mission
+ */
 public class CustomAdapterMissions extends BaseAdapter {
+
     Context context;
-    ArrayList<String> eventTitlesList, missionTitlesList, missionContentsList, missionLastDatesList;
+
+    ArrayList<String> eventTitlesList, missionTitlesList,missionContentsList, missionLastDatesList;
     ArrayList<Boolean> missionStatusList;
     ArrayList<Integer> frequencyList;
     LayoutInflater inflter;
 
+    /**
+     * Instantiates a new Custom adapter missions.
+     *
+     * @param applicationContext   the application context
+     * @param eventTitlesList      the event titles list
+     * @param missionTitlesList    the mission titles list
+     * @param missionStatusList    the mission status list
+     * @param missionContentsList  the mission contents list
+     * @param missionLastDatesList the mission last dates list
+     * @param frequencyList        the frequency list
+     */
     public CustomAdapterMissions(Context applicationContext,ArrayList<String> eventTitlesList, ArrayList<String> missionTitlesList, ArrayList<Boolean> missionStatusList, ArrayList<String> missionContentsList, ArrayList<String> missionLastDatesList, ArrayList<Integer> frequencyList){
         this.context = context;
         this.eventTitlesList = eventTitlesList;
@@ -65,6 +80,7 @@ public class CustomAdapterMissions extends BaseAdapter {
 
         missionTitle.setText(eventTitlesList.get(i)+" >> "+missionTitlesList.get(i));
 
+        // Set a layout for the missionStatusIV that won't get all the area
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 0.5f);
         lp.setMargins(0, 0, 3, 0);
         missionStatusIV.setLayoutParams(lp);
@@ -75,7 +91,7 @@ public class CustomAdapterMissions extends BaseAdapter {
         }
         DrawableCompat.setTint(missionStatusIV.getDrawable(), ContextCompat.getColor(view.getContext(), R.color.brown_200));
 
-
+        // Displaying the missionContent accordingly to the status
         if (!missionContentsList.get(i).isEmpty()){
            missionContent.setText(missionContentsList.get(i));
        }
@@ -83,15 +99,11 @@ public class CustomAdapterMissions extends BaseAdapter {
            missionContent.setText("<קטע קול>");
        }
 
-        DateFormat format = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
-        Date tempSelectedDate  = null;
-        try {
-            tempSelectedDate = format.parse(missionLastDatesList.get(i));
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+       // Setting the selected date in format of 'dd/MM/yyyy'
+        Date tempSelectedDate  = DateConvertor.stringToDate(missionLastDatesList.get(i), "yyyyMMdd");
         String strDate = DateConvertor.dateToString(tempSelectedDate,"dd/MM/yyyy");
         lastDateMission.setText("עד ה־"+strDate+" | תדירות של "+frequencyList.get(i)+" פעמים");
+
         return view;
     }
 }

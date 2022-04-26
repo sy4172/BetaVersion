@@ -1,15 +1,25 @@
 package com.example.betaversion;
 
 public class User {
+    private String userId;
     private String password;
     private String email;
     private String phone;
 
     public User () {}
-    public User (String password, String email, String phone){
+    public User (String userId, String password, String email, String phone){
+        this.userId = userId;
         this.password = password;
         this.email = email;
         this.phone = phone;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getPhone() {
@@ -28,7 +38,6 @@ public class User {
         this.email = email;
     }
 
-
     public String getPassword() {
         return password;
     }
@@ -36,4 +45,5 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
 }

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".reminderActivity">
+    tools:context=".remindersActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -18,10 +18,9 @@
             android:background="@color/orange_500"
             android:clickable="true"
             android:onClick="moveToPreviousAct"
+            app:logo="@drawable/logo_white"
             app:menu="@menu/layout_top_bar"
-            app:navigationIcon="@drawable/ic_back"
-            app:titleCentered="true"
-            app:title="תזכורות"/>
+            app:navigationIcon="@drawable/ic_back" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -41,7 +40,7 @@
             android:layout_weight="10"
             android:orientation="horizontal">
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 style="@style/Widget.MaterialComponents.Button.Icon"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -51,6 +50,7 @@
                 android:onClick="openAlertDialogSelection"
                 android:text="חדש"
                 android:textSize="16sp"
+                app:cornerRadius="20dp"
                 app:icon="@drawable/ic_add" />
 
             <Space
@@ -64,7 +64,7 @@
                 android:layout_weight="2"
                 android:fontFamily="@font/rubik_bold"
                 android:gravity="right|center_vertical"
-                android:text="התזכורות שלי"
+                android:text="התזכורות לעסק"
                 android:textSize="28sp" />
 
         </LinearLayout>

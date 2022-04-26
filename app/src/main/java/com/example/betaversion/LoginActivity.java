@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
@@ -74,18 +75,25 @@ public class LoginActivity extends AppCompatActivity {
         isSignUp = true;
         phoneLayout.setVisibility(View.VISIBLE);
 
-        if (!checkInternetConnection()){
-            // Asking to connect to the Internet
-            // Action: startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+        Handler handler = new Handler();
+        Runnable r = new Runnable() {
+            @Override
+            public void run(){
+                if (!checkInternetConnection()){
+                    // Asking to connect to the Internet connection
+                    // Action: startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
 
-                // Responds to click on the action
-            Snackbar.make(layoutView, "לא זוהה חיבור לאינטרנט", 10000).setAction("התחבר", new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                    // Responds to click on the action
+                    Snackbar.make(layoutView, "אין חיבור לאינטרנט", 5000).setAction("התחבר", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                        }
+                    }).show();
                 }
-            }).show();
-        }
+            }
+        };
+        handler.postDelayed(r,1000);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -131,18 +139,18 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(si);
             finish();
         }
-//        else{
-//            // Asking to connect to the Internet
-//            // Action: startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-//
-//            // Responds to click on the action
-//            Snackbar.make(layoutView, "לא זוהה חיבור לאינטרנט", 10000).setAction("התחבר", new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-//                }
-//            }).show();
-//        }
+        else{
+            // Asking to connect to the Internet
+           // Action: startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+
+           // Responds to click on the action
+           Snackbar.make(layoutView, "לא זוהה חיבור לאינטרנט", 10000).setAction("התחבר", new View.OnClickListener() {
+                @Override
+               public void onClick(View view) {
+                   startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                }
+            }).show();
+        }
     }
 
 
@@ -236,7 +244,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
         else{
-            User tempUser = new User(passwordET.getText().toString(),emailET.getText().toString(), phoneET.getText().toString());
+            User tempUser = new User(mAuth.getCurrentUser().getUid(),passwordET.getText().toString(),emailET.getText().toString(), phoneET.getText().toString());
             mAuth.createUserWithEmailAndPassword(tempUser.getEmail(), tempUser.getPassword() )
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
