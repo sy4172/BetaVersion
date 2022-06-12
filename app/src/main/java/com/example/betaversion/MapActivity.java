@@ -11,12 +11,14 @@ import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -27,6 +29,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -165,24 +168,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             }
         });
-    }
-
-    private void turnGPSOn1() {
-        try
-        {
-            String provider = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_MODE);
-
-            if(!provider.contains("gps")){ //if gps is disabled
-                Intent intent = new Intent();
-                intent.setClassName("com.android.settings", "com.android.settings.widget.SettingsAppWidgetProvider");
-                intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
-                intent.setData(Uri.parse("3"));
-                sendBroadcast(intent);
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public void turnGPSOff(){
@@ -362,19 +347,30 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      */
     public void Logout(MenuItem item) {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle("Are you sure?");
-        SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
-        Variable.setEmailVer(settings.getString("email",""));
-        adb.setMessage(Variable.getEmailVer().substring(0,Variable.emailVer.indexOf("@"))+" will logged out");
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("יציאה ממערכת");
+        titleTV.setTextColor(Color.rgb(143, 90, 31));
+        titleTV.setTextSize(25);
+        titleTV.setPadding(0,15,30,15);
+        titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
+        adb.setCustomTitle(titleTV);
 
-        adb.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+        final TextView messageTV = new TextView(this);
+        messageTV.setText("החשבון "+FirebaseAuth.getInstance().getCurrentUser().getEmail().substring(0,FirebaseAuth.getInstance().getCurrentUser().getEmail().indexOf("@"))+" ינותק.");
+        messageTV.setTextSize(18);
+        messageTV.setGravity(Gravity.RIGHT);
+        messageTV.setPadding(0,15,30,0);
+        messageTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_medium));
+        adb.setView(messageTV);
+
+        adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.cancel();
             }
         });
 
-        adb.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        adb.setPositiveButton("צא", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 FirebaseAuth.getInstance().signOut();
@@ -383,7 +379,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 // Changing the preferences to default
                 SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
                 SharedPreferences.Editor editor = settings.edit();
-                editor.putString("email", "");
                 editor.putBoolean("stayConnect",false);
                 editor.apply();
 

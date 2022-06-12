@@ -18,7 +18,6 @@ public class Event {
     private String eventName;
     private String eventLocation;
     private int eventCost;
-    private String eventInformation;
     private String eventContent;
     private String eventCharacterize;
     private String eventPayment;
@@ -45,7 +44,6 @@ public class Event {
      * @param eventName         the event name
      * @param eventLocation     the event location
      * @param eventCost         the event cost
-     * @param eventInformation  the event information
      * @param eventContent      the event content
      * @param eventCharacterize the event characterize
      * @param eventPayment      the event payment
@@ -56,7 +54,10 @@ public class Event {
      * @param isPaid            the is paid
      * @param hasAccepted       the has accepted
      */
-    public Event(String customerName, String customerPhone, String customerEmail, String dateOfEvent, String dateOfCreation, String eventName, String eventLocation, int eventCost, String eventInformation, String eventContent, String eventCharacterize, String eventPayment, int eventEmployees, ArrayList<String> eventEquipments, HashMap<String, Mission> eventMissions, ArrayList<Boolean> eventShows, boolean isPaid, boolean hasAccepted){
+    public Event(String customerName, String customerPhone, String customerEmail, String dateOfEvent, String dateOfCreation,
+                 String eventName, String eventLocation, int eventCost, String eventContent, String eventCharacterize,
+                 String eventPayment, int eventEmployees, ArrayList<String> eventEquipments, HashMap<String, Mission> eventMissions,
+                 ArrayList<Boolean> eventShows, boolean isPaid, boolean hasAccepted){
         this.customerName = customerName;
         this.customerPhone = customerPhone;
         this.customerEmail = customerEmail;
@@ -65,7 +66,6 @@ public class Event {
         this.eventName = eventName;
         this.eventLocation = eventLocation;
         this.eventCost = eventCost;
-        this.eventInformation = eventInformation;
         this.eventContent = eventContent;
         this.eventCharacterize = eventCharacterize;
         this.eventPayment = eventPayment;
@@ -203,23 +203,6 @@ public class Event {
         this.eventCost = eventCost;
     }
 
-    /**
-     * Gets event information.
-     *
-     * @return the event information
-     */
-    public String getEventInformation() {
-        return eventInformation;
-    }
-
-    /**
-     * Sets event information.
-     *
-     * @param eventInformation the event information
-     */
-    public void setEventInformation(String eventInformation) {
-        this.eventInformation = eventInformation;
-    }
 
     /**
      * Gets event content.

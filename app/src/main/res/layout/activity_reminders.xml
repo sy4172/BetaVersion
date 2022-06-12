@@ -76,10 +76,20 @@
             android:layout_weight="90"
             android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/statusRemindersTV"
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="1"
+                android:fontFamily="@font/rubik_medium"
+                android:gravity="center"
+                android:textSize="16sp" />
+
             <ListView
                 android:id="@+id/remaindersLV"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="0px"
+                android:layout_weight="8" />
         </LinearLayout>
 
     </LinearLayout>

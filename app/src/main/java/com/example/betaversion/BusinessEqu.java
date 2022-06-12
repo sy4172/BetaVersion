@@ -1,18 +1,18 @@
 package com.example.betaversion;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * The type Business equ for all the properties of the business.
  *
- * @version 2.1
+ * @version 5.0
  */
 public class BusinessEqu {
-    private ArrayList<Material> materials;
+    private HashMap<String, Material> materials;
     private int totalEmployees;
     private int availableEmployees;
     private int efficiency; // (1-100)%
-    private ArrayList<Shows> showsList;
+    private HashMap<String, Shows> showsList;
 
     /**
      * Instantiates a new Business equ for the RT Firebase Database.
@@ -28,7 +28,7 @@ public class BusinessEqu {
      * @param efficiency         the efficiency
      * @param showsList          the shows list
      */
-    public BusinessEqu(ArrayList<Material> materials, int totalEmployees, int availableEmployees, int efficiency, ArrayList<Shows> showsList) {
+    public BusinessEqu(HashMap<String, Material> materials, int totalEmployees, int availableEmployees, int efficiency, HashMap<String, Shows> showsList) {
         this.materials = materials;
         this.totalEmployees = totalEmployees;
         this.availableEmployees = availableEmployees;
@@ -41,7 +41,7 @@ public class BusinessEqu {
      *
      * @return the materials
      */
-    public ArrayList<Material> getMaterials() {
+    public HashMap<String, Material> getMaterials() {
         return materials;
     }
 
@@ -50,7 +50,7 @@ public class BusinessEqu {
      *
      * @param materials the materials
      */
-    public void setMaterials(ArrayList<Material> materials) {
+    public void setMaterials(HashMap<String, Material> materials) {
         this.materials = materials;
     }
 
@@ -113,7 +113,7 @@ public class BusinessEqu {
      *
      * @return the shows list
      */
-    public ArrayList<Shows> getShowsList() {
+    public HashMap<String, Shows> getShowsList() {
         return showsList;
     }
 
@@ -122,7 +122,7 @@ public class BusinessEqu {
      *
      * @param showsList the shows list
      */
-    public void setShowsList(ArrayList<Shows> showsList) {
+    public void setShowsList(HashMap<String, Shows> showsList) {
         this.showsList = showsList;
     }
 }

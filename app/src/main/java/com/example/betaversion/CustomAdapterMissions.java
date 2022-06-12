@@ -18,15 +18,15 @@ import java.util.Date;
 
 /**
  * * @author    Shahar Yani
- * * @version  	1.0
+ * * @version  	2.0
  *
  * * This CustomAdapterMissions.class design an item of a mission
  */
 public class CustomAdapterMissions extends BaseAdapter {
 
     Context context;
-
-    ArrayList<String> eventTitlesList, missionTitlesList,missionContentsList, missionLastDatesList;
+    String eventTitle;
+    ArrayList<String> missionTitlesList,missionContentsList, missionLastDatesList;
     ArrayList<Boolean> missionStatusList;
     ArrayList<Integer> frequencyList;
     LayoutInflater inflter;
@@ -35,16 +35,16 @@ public class CustomAdapterMissions extends BaseAdapter {
      * Instantiates a new Custom adapter missions.
      *
      * @param applicationContext   the application context
-     * @param eventTitlesList      the event titles list
+     * @param eventTitle           the event title
      * @param missionTitlesList    the mission titles list
      * @param missionStatusList    the mission status list
      * @param missionContentsList  the mission contents list
      * @param missionLastDatesList the mission last dates list
      * @param frequencyList        the frequency list
      */
-    public CustomAdapterMissions(Context applicationContext,ArrayList<String> eventTitlesList, ArrayList<String> missionTitlesList, ArrayList<Boolean> missionStatusList, ArrayList<String> missionContentsList, ArrayList<String> missionLastDatesList, ArrayList<Integer> frequencyList){
+    public CustomAdapterMissions(Context applicationContext,String eventTitle, ArrayList<String> missionTitlesList, ArrayList<Boolean> missionStatusList, ArrayList<String> missionContentsList, ArrayList<String> missionLastDatesList, ArrayList<Integer> frequencyList){
         this.context = context;
-        this.eventTitlesList = eventTitlesList;
+        this.eventTitle = eventTitle;
         this.missionTitlesList = missionTitlesList;
         this.missionStatusList = missionStatusList;
         this.missionContentsList = missionContentsList;
@@ -78,7 +78,7 @@ public class CustomAdapterMissions extends BaseAdapter {
         TextView missionContent = (TextView) view.findViewById(R.id.missionContent);
         TextView lastDateMission = (TextView) view.findViewById(R.id.lastDateMission);
 
-        missionTitle.setText(eventTitlesList.get(i)+" >> "+missionTitlesList.get(i));
+        missionTitle.setText(eventTitle+" >> "+missionTitlesList.get(i));
 
         // Set a layout for the missionStatusIV that won't get all the area
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 0.5f);
@@ -100,7 +100,7 @@ public class CustomAdapterMissions extends BaseAdapter {
        }
 
        // Setting the selected date in format of 'dd/MM/yyyy'
-        Date tempSelectedDate  = DateConvertor.stringToDate(missionLastDatesList.get(i), "yyyyMMdd");
+        Date tempSelectedDate  = DateConvertor.stringToDate(missionLastDatesList.get(i), "yyyyMMddHHmm");
         String strDate = DateConvertor.dateToString(tempSelectedDate,"dd/MM/yyyy");
         lastDateMission.setText("עד ה־"+strDate+" | תדירות של "+frequencyList.get(i)+" פעמים");
 

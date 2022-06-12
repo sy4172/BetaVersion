@@ -7,7 +7,6 @@ import static com.example.betaversion.FBref.refRed_Event;
 import static com.example.betaversion.FBref.reflive_Event;
 import static com.example.betaversion.FBref.storageRef;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -16,7 +15,6 @@ import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -33,10 +31,10 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.text.InputFilter;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
@@ -56,8 +54,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
@@ -96,7 +94,7 @@ import java.util.regex.Pattern;
  * * @author    Shahar Yani
  * * @version  	7.2
  * * @since		30/12/2021
- *
+ * <p>
  * * This newEventActivity.class displays and creates all the events of the customers.
  */
 public class newEventActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -126,7 +124,6 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
     Event newEvent, updatedEvent;
     File rootPath;
-    User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -243,7 +240,6 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
         getAllShowsToDisplay();
         getAllMaterialsToDisplay();
-        getAllEventsToDisplay();
 
         allEventsDates = new ArrayList<>();
         newEvent = new Event();
@@ -255,6 +251,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         }
     }
 
+    // Display the event according its status and id
     private void displayEvent(String eventId, String status) {
         reflive_Event.child(status).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -318,7 +315,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                             selectedShows = tempEvent.getEventShows();
                             hasAccepted = tempEvent.isHasAccepted();
                             isPaid = tempEvent.isPaid();
-                            updatedEvent = new Event(tempEvent.getCustomerName(), tempEvent.getCustomerPhone(), tempEvent.getCustomerEmail(), tempEvent.getDateOfEvent(), tempEvent.getDateOfCreation(), tempEvent.getEventName(), tempEvent.getEventLocation(), tempEvent.getEventCost(), tempEvent.getEventInformation(), tempEvent.getEventContent(), tempEvent.getEventCharacterize(), tempEvent.getEventPayment(), tempEvent.getEventEmployees(), tempEvent.getEventEquipments(), tempEvent.getEventMissions(), tempEvent.getEventShows(),tempEvent.isPaid(), tempEvent.isHasAccepted());
+                            updatedEvent = new Event(tempEvent.getCustomerName(), tempEvent.getCustomerPhone(), tempEvent.getCustomerEmail(), tempEvent.getDateOfEvent(), tempEvent.getDateOfCreation(), tempEvent.getEventName(), tempEvent.getEventLocation(), tempEvent.getEventCost(), tempEvent.getEventContent(), tempEvent.getEventCharacterize(), tempEvent.getEventPayment(), tempEvent.getEventEmployees(), tempEvent.getEventEquipments(), tempEvent.getEventMissions(), tempEvent.getEventShows(),tempEvent.isPaid(), tempEvent.isHasAccepted());
                         }
                     }
                 }
@@ -326,43 +323,6 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-            }
-        });
-    }
-
-    // TODO: Continue to reading from the FB
-    private void getAllEventsToDisplay() {
-        refGreen_Event.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dS) {
-                allEventsDates.clear();
-
-                for (DataSnapshot data : dS.getChildren()) {
-                    Event tempEvent = data.getValue(Event.class);
-
-                    allEventsDates.add(Objects.requireNonNull(tempEvent).getDateOfEvent());
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-            }
-        });
-
-        refOrange_Event.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dS) {
-
-                for (DataSnapshot data : dS.getChildren()) {
-                    Event tempEvent = data.getValue(Event.class);
-
-                    allEventsDates.add(Objects.requireNonNull(tempEvent).getDateOfEvent());
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
     }
@@ -517,14 +477,31 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
     private void getMaterialAmountAD(int index, Chip tempCh, boolean [] isToAdd) {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle("כמה לקחת מ"+materialsKeyList.get(index));
+        LinearLayout AdScreen = new LinearLayout(this);
+        AdScreen.setOrientation(LinearLayout.VERTICAL);
+        AdScreen.setPadding(15,0,15,0);
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("כמה לקחת מ"+materialsKeyList.get(index));
+        titleTV.setTextColor(Color.rgb(143, 90, 31));
+        titleTV.setTextSize(25);
+        titleTV.setPadding(0,15,30,15);
+        titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
+        adb.setCustomTitle(titleTV);
+        final TextView totalLeftTV = new TextView(this);
+        totalLeftTV.setText("סה''כ נשאר "+(materialsDataList.get(index) - materialsUsedList.get(index)));
+        totalLeftTV.setTextColor(Color.rgb(0, 0, 0));
+        totalLeftTV.setTextSize(18);
+        totalLeftTV.setPadding(0,15,30,15);
+        totalLeftTV.setTypeface(ResourcesCompat.getFont(totalLeftTV.getContext(), R.font.rubik_semibold));
+        AdScreen.addView(totalLeftTV);
         final EditText amountET = new EditText(this);
         amountET.setInputType(InputType.TYPE_CLASS_NUMBER);
         int maxLength = 6;
         amountET.setFilters(new InputFilter[] {new InputFilter.LengthFilter(maxLength)});
-        adb.setView(amountET);
-
-        amountET.setText(""+materialsUsedList.get(index));
+        amountET.setTypeface(ResourcesCompat.getFont(amountET.getContext(), R.font.rubik_semibold));
+        AdScreen.addView(amountET);
+        adb.setView(AdScreen);
+        amountET.setText(""+0);
         adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -675,12 +652,16 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
     private void changeTitleEvent() {
         if (editingMode || updateMode){
             AlertDialog.Builder adb = new AlertDialog.Builder(this);
-            adb.setTitle("כותרת האירוע");
+            final TextView titleTV = new TextView(this);
+            titleTV.setText("כותרת האירוע");
+            titleTV.setTextColor(Color.rgb(143, 90, 31));
+            titleTV.setTextSize(25);
+            titleTV.setPadding(0,15,30,15);
+            titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
+            adb.setCustomTitle(titleTV);
             final EditText titleET = new EditText(this);
             titleET.setFilters(new InputFilter[] {new InputFilter.LengthFilter(14)});
             adb.setView(titleET);
-
-            titleET.setText(eventTitleTV.getText());
 
             adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
                 @Override
@@ -707,14 +688,29 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         }
     }
 
+    /**
+     * Check if to exit.
+     *
+     * @param view the view
+     */
     public void checkIfToExit(View view) {
-        if (editingMode || updateMode){
+        if (editingMode || updateMode &&(newEvent != null || updatedEvent != null)){
             AlertDialog.Builder adb = new AlertDialog.Builder(this);
-            TextView titleTV = new TextView(this);
-            titleTV.setText("היציאה לא תשמור");
-            titleTV.setGravity(Gravity.RIGHT);
-            titleTV.setTextSize(18);
+            final TextView titleTV = new TextView(this);
+            titleTV.setText("יציאה מהזנת אירוע");
+            titleTV.setTextColor(Color.rgb(143, 90, 31));
+            titleTV.setTextSize(25);
+            titleTV.setPadding(0,15,30,15);
+            titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
             adb.setCustomTitle(titleTV);
+
+            final TextView messageTV = new TextView(this);
+            messageTV.setText("היציאה לא תשמור את אשר נעשה");
+            messageTV.setTextSize(18);
+            messageTV.setGravity(Gravity.RIGHT);
+            messageTV.setPadding(0,15,30,0);
+            messageTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_medium));
+            adb.setView(messageTV);
 
             adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
                 @Override
@@ -738,13 +734,20 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         }
     }
 
+    /**
+     * Edit employees.
+     *
+     * @param view the view
+     */
     public void editEmployees(View view) {
         if (editingMode || updateMode){
             AlertDialog.Builder adb = new AlertDialog.Builder(this);
             TextView titleTV = new TextView(this);
             titleTV.setText("עובדים");
-            titleTV.setGravity(Gravity.RIGHT);
-            titleTV.setTextSize(18);
+            titleTV.setTextColor(Color.rgb(143, 90, 31));
+            titleTV.setTextSize(25);
+            titleTV.setPadding(0,15,30,15);
+            titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
             adb.setCustomTitle(titleTV);
             final EditText employeeET = new EditText(this);
             adb.setView(employeeET);
@@ -770,17 +773,24 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         } else Snackbar.make(layout, "לא ניתן במצב צפייה", 3000).show();
     }
 
+    /**
+     * Edit prize.
+     *
+     * @param view the view
+     */
     public void editPrize(View view) {
         if (editingMode || updateMode){
             AlertDialog.Builder adb = new AlertDialog.Builder(this);
             TextView titleTV = new TextView(this);
             titleTV.setText("מחיר");
-            titleTV.setGravity(Gravity.RIGHT);
-            titleTV.setTextSize(18);
+            titleTV.setTextColor(Color.rgb(143, 90, 31));
+            titleTV.setTextSize(25);
+            titleTV.setPadding(0,15,30,15);
+            titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
             adb.setCustomTitle(titleTV);
-            final EditText costET = new EditText(this);
-            adb.setView(costET);
-            costET.setText(eventCostTV.getText().toString());
+            final EditText priceET = new EditText(this);
+            adb.setView(priceET);
+            priceET.setText(eventCostTV.getText().toString());
 
             adb.setNegativeButton("בטל", new DialogInterface.OnClickListener() {
                 @Override
@@ -793,8 +803,8 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             adb.setPositiveButton("שמור", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    eventCost = Integer.parseInt(costET.getText().toString());
-                    eventCostTV.setText(costET.getText().toString());
+                    eventCost = Integer.parseInt(priceET.getText().toString());
+                    eventCostTV.setText(priceET.getText().toString());
                 }
             });
 
@@ -849,6 +859,11 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         }
     }
 
+    /**
+     * Logout.
+     *
+     * @param item the item
+     */
     public void Logout(MenuItem item) {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         final TextView titleTV = new TextView(this);
@@ -895,6 +910,11 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         ad.show();
     }
 
+    /**
+     * Open date picker.
+     *
+     * @param view the view
+     */
     public void openDatePicker(View view) {
         if (editingMode || updateMode){
             Calendar calendar = Calendar.getInstance();
@@ -961,14 +981,15 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
     }
 
+    /**
+     * Create new event.
+     *
+     * @param view the view
+     */
     public void createNewEvent(View view) {
         currentDate = new Date();
         if (checkEvent() && !allEventsDates.contains(eventStrDate)){
             // Creates the event as a constructor
-            if (userSelection.equals(paymentSelection[0]) ){
-                openADCheckPayment(false);
-            }
-
             if (!hasAccepted) {
                 newEvent.setEventCharacterize("O");
             } else {
@@ -982,8 +1003,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             newEvent.setEventMissions(null);
 
             newEvent.setDateOfEvent(eventStrDate);
-            // Casting the Date to String
-            String strDate = DateConvertor.dateToString(currentDate,"yyyyMMddHHmm");
+            String strDate = DateConvertor.dateToString(currentDate,"yyyyMMddHHmm");  // Casting the Date to String
             newEvent.setDateOfCreation(strDate);
 
             newEvent.setEventContent(eventContent);
@@ -995,19 +1015,78 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             newEvent.setHasAccepted(hasAccepted);
             newEvent.setPaid(isPaid);
 
+            ProgressDialog progressDialog = new ProgressDialog(newEventActivity.this);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog.setMax(100);
+            Drawable drawable = new ProgressBar(this).getIndeterminateDrawable().mutate();
+            drawable.setColorFilter(ContextCompat.getColor(this, R.color.orange_flag),
+                    PorterDuff.Mode.SCREEN);
+            progressDialog.setIndeterminateDrawable(drawable);
+            progressDialog.setIndeterminate(false);
+            final TextView title = new TextView(this);
+            title.setText(newEvent.getEventName()+" ביצירה");
+            title.setTextSize(20);
+            title.setPadding(0,15,55,15);
+            title.setTextColor(Color.GRAY);
+            title.setTypeface(ResourcesCompat.getFont(title.getContext(), R.font.rubik_semibold));
+            progressDialog.setCustomTitle(title);
+            progressDialog.setMessage("בניית הצעת האירוע בתהליך...");
+            final int[] progress = {0};
+            new CountDownTimer(6000, 200) {
+                @Override
+                public void onTick(long l) {
+                    progress[0]++;
+                    progressDialog.incrementProgressBy(progress[0]);
+                    progressDialog.show();
+                }
+
+                @Override
+                public void onFinish() {
+                }
+            }.start();
+
             File eventFile = creatingFile(newEvent);
 
-            uploadToFB(newEvent, eventFile);
-            String childID = newEvent.getDateOfEvent();
-            if (newEvent.getEventCharacterize().equals("G")){
-                refGreen_Event.child(childID).setValue(newEvent);
-                updateFBData(newEvent); // Update the Business data
-            } else{
-                refOrange_Event.child(childID).setValue(newEvent);
-            }
-            sendingToEmail(eventFile, newEvent);
-            Snackbar.make(layout,eventTitleTV.getText().toString()+" נוצר בהצלחה", 3000).show();
-            clearAllFields();
+            Handler handler = new Handler();
+            Runnable r = new Runnable() {
+                @Override
+                public void run(){
+                    if (uploadToFB(eventFile, progressDialog)){
+                        String childID = newEvent.getDateOfEvent();
+                        if (newEvent.getEventCharacterize().equals("G")){
+                            refGreen_Event.child(childID).setValue(newEvent);
+                            updateFBData(newEvent); // Update the Business data
+                        } else{
+                            refOrange_Event.child(childID).setValue(newEvent);
+                        }
+                        progressDialog.setCancelable(true);
+                        //progressDialog.setProgress = 100
+                        Handler handler = new Handler();
+                        Runnable r = new Runnable() {
+                            @Override
+                            public void run(){
+                                progressDialog.dismiss();
+                            }
+                        };
+                        handler.postDelayed(r,3000);
+                        Snackbar.make(layout,"תהליך שליחת המייל בהקמה..", 1500).show();
+                        Handler handler1 = new Handler();
+                        String eventName = newEvent.getEventName();
+                        Runnable r1 = new Runnable() {
+                            @Override
+                            public void run(){
+                                sendingToEmail(eventFile, customerEmail, eventName);
+                            }
+                        };
+                        handler1.postDelayed(r1,2000);
+                        Snackbar.make(layout,eventTitleTV.getText().toString()+" נוצר בהצלחה", 3000).show();
+                        clearAllFields();
+                    } else {
+                        Snackbar.make(layout,"שגיאה בתהליך ייצור", 3000).show();
+                    }
+                }
+            };
+            handler.postDelayed(r,3000);
         }
         else if (allEventsDates.contains(eventStrDate) && editingMode){
             Snackbar.make(layout,"תאריך תפוס", 3000).show();
@@ -1040,8 +1119,8 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                 updatedEvent.setEventEmployees(eventEmployee);
             }
             updatedEvent.setEventPayment(userSelection);
-//            updatedEvent.setEventShows(selectedShows);
-//            updatedEvent.setEventEquipments(selectedMaterials);
+            updatedEvent.setEventShows(selectedShows);
+            updatedEvent.setEventEquipments(selectedMaterials);
             updatedEvent.setPaid(isPaid);
             updatedEvent.setHasAccepted(hasAccepted);
 
@@ -1050,17 +1129,75 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             } else {
                 newEvent.setEventCharacterize("G");
             }
+            ProgressDialog progressDialog = new ProgressDialog(newEventActivity.this);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog.setMax(100);
+            Drawable drawable = new ProgressBar(this).getIndeterminateDrawable().mutate();
+            drawable.setColorFilter(ContextCompat.getColor(this, R.color.orange_flag),
+                    PorterDuff.Mode.SCREEN);
+            progressDialog.setIndeterminateDrawable(drawable);
+            final TextView title = new TextView(this);
+            title.setText(" ביצירה"+updatedEvent.getEventName());
+            title.setTextSize(20);
+            title.setPadding(0,15,30,15);
+            title.setTextColor(Color.GRAY);
+            title.setTypeface(ResourcesCompat.getFont(title.getContext(), R.font.rubik_semibold));
+            progressDialog.setCustomTitle(title);
+            progressDialog.setMessage("בניית הצעת האירוע בתהליך...");
+            final int[] progress = {0};
+            new CountDownTimer(6000, 200) {
+                @Override
+                public void onTick(long l) {
+                    progress[0]++;
+                    progressDialog.incrementProgressBy(progress[0]);
+                    progressDialog.show();
+                }
 
+                @Override
+                public void onFinish() {
+                }
+            }.start();
             File eventFile = creatingFile(updatedEvent);
-            uploadToFB(updatedEvent, eventFile);
-            if (updatedEvent.getEventCharacterize().equals("G")){
-                refGreen_Event.child(updatedEvent.getDateOfEvent()).setValue(updatedEvent);
-            } else{
-                refOrange_Event.child(updatedEvent.getDateOfEvent()).setValue(updatedEvent);
-            }
-            sendingToEmail(eventFile, updatedEvent);
-            Snackbar.make(layout,"התעדכן בהצלחה", 3000).show();
-            updateMode = false;
+
+            Handler handler = new Handler();
+            Runnable r = new Runnable() {
+                @Override
+                public void run(){
+                    if (uploadToFB(eventFile, progressDialog)){
+                        if (updatedEvent.getEventCharacterize().equals("G")){
+                            refGreen_Event.child(updatedEvent.getDateOfEvent()).setValue(updatedEvent);
+                        } else{
+                            refOrange_Event.child(updatedEvent.getDateOfEvent()).setValue(updatedEvent);
+                        }
+                        progressDialog.setCancelable(true);
+                        updateMode = false;
+                        //progressDialog.setProgress = 100
+                        Handler handler = new Handler();
+                        Runnable r = new Runnable() {
+                            @Override
+                            public void run(){
+                                progressDialog.dismiss();
+                            }
+                        };
+                        handler.postDelayed(r,3000);
+                        Snackbar.make(layout,"תהליך שליחת המייל בהקמה..", 1500).show();
+                        Handler handler1 = new Handler();
+                        String eventName = updatedEvent.getEventName();
+                        Runnable r1 = new Runnable() {
+                            @Override
+                            public void run(){
+                                sendingToEmail(eventFile, customerEmail, eventName);
+                            }
+                        };
+                        handler1.postDelayed(r1,2000);
+                        Snackbar.make(layout,"התעדכן בהצלחה", 3000).show();
+                        clearAllFields();
+                    } else {
+                        Snackbar.make(layout,"שגיאה בתהליך עדכון", 3000).show();
+                    }
+                }
+            };
+            handler.postDelayed(r,3000);
         }
     }
 
@@ -1093,20 +1230,10 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
     }
 
-    private void uploadToFB(Event event, File eventFile) {
-        ProgressDialog progressDialog = new ProgressDialog(newEventActivity.this);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        Drawable drawable = new ProgressBar(this).getIndeterminateDrawable().mutate();
-        drawable.setColorFilter(ContextCompat.getColor(this, R.color.orange_flag),
-                PorterDuff.Mode.SCREEN);
-        progressDialog.setIndeterminateDrawable(drawable);
-        final TextView title = new TextView(this);
-        title.setText("מבצע שמירה בענן ל"+ event.getEventName());
-        title.setTextSize(20);
-        title.setPadding(0,15,30,15);
-        title.setTextColor(Color.GRAY);
-        title.setTypeface(ResourcesCompat.getFont(title.getContext(), R.font.rubik_semibold));
-        progressDialog.setCustomTitle(title);
+    private boolean uploadToFB(File eventFile, ProgressDialog progressDialog) {
+        boolean [] flag = {true};
+        progressDialog.setProgress(0);
+        progressDialog.setMessage("מבצע העלאת אירוע לענן...");
 
         // Upload to FireBase DateBase
         Uri file = Uri.fromFile(new File(eventFile.getPath()));
@@ -1119,32 +1246,22 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             public void onFailure(@NonNull Exception exception) {
                 progressDialog.setCancelable(true);
                 progressDialog.dismiss();
-                Snackbar.make(layout,"שמירה נכשלה", 3000).show();
+                flag[0] = false;
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                if (progressDialog.isShowing()) {
-                    progressDialog.setCancelable(true);
-                    //progressDialog.setProgress = 100
-                    Handler handler = new Handler();
-                    Runnable r = new Runnable() {
-                        @Override
-                        public void run(){
-                            progressDialog.dismiss();
-                        }
-                    };
-                    handler.postDelayed(r,2000);
-                }
+                flag[0] = true;
             }
         }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
                 int currentProgress = (int) (100*(snapshot.getBytesTransferred()/snapshot.getTotalByteCount()));
-                progressDialog.incrementProgressBy(currentProgress - progressDialog.getProgress());
+                progressDialog.incrementProgressBy(currentProgress);
                 progressDialog.show();
             }
         });
+        return flag[0];
     }
 
     private void clearAllFields() {
@@ -1193,53 +1310,68 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         });
     }
 
-
-    @SuppressLint("SetTextI18n")
-    private void uploadToFB(File eventFile, Event event) {
-        ProgressDialog progressDialog = new ProgressDialog(newEventActivity.this);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-
-//        final TextView title = new TextView(this);
-//        title.setText("מבצע שמירה בענן ל"+newEvent.getEventName());
-//        title.setTextSize(20);
-//        title.setPadding(0,15,30,15);
-//        title.setTextColor(Color.GRAY);
-//        title.setTypeface(ResourcesCompat.getFont(title.getContext(), R.font.rubik_semibold));
-
-//        progressDialog.setCustomTitle(title);
-//        progressDialog.setProgress(0);
-//        progressDialog.setMessage("שומר בענן "+event.getEventName());
-//        progressDialog.setCancelable(false);
-
-
-        Uri file = Uri.fromFile(new File(eventFile.getPath()));
-        StorageReference riversRef = storageRef.child("files/"+file.getLastPathSegment());
-        UploadTask uploadTask = riversRef.putFile(file);
-
-
-    }
-
     @SuppressLint("LongLogTag")
-    private void sendingToEmail(File fileToSend, Event event) {
-        Uri uri = Uri.parse("mailto:" + "shahryani96@gmail.com").buildUpon()
-                .appendQueryParameter("to", event.getCustomerEmail())
-                .appendQueryParameter("subject", "סיכום יצירת אירוע: "+event.getEventName())
-                .appendQueryParameter("body", "להלן קובץ אישור העסקה: ")
-                .build();
+    private void sendingToEmail(@NonNull File fileToSend, String customerEmail, String eventName) {
+        LinearLayout AdScreen = new LinearLayout(this);
+        AdScreen.setOrientation(LinearLayout.VERTICAL);
+        AdScreen.setPadding(15,0,15,0);
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("שליחת אימייל אל הלקוח");
+        titleTV.setTextColor(Color.rgb(143, 90, 31));
+        titleTV.setTextSize(25);
+        titleTV.setPadding(0,15,30,15);
+        titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
+        adb.setCustomTitle(titleTV);
+        final TextView fromTV = new TextView(this);
+        fromTV.setText("ישלח מ "+Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getEmail());
+        fromTV.setTextSize(18);
+        fromTV.setGravity(Gravity.RIGHT);
+        fromTV.setPadding(0,15,30,30);
+        fromTV.setTypeface(ResourcesCompat.getFont(fromTV.getContext(), R.font.rubik_medium));
+        final TextView toTV = new TextView(this);
+        toTV.setText("ישלח אל "+customerEmail);
+        toTV.setTextSize(18);
+        toTV.setGravity(Gravity.RIGHT);
+        toTV.setPadding(0,15,30,30);
+        toTV.setTypeface(ResourcesCompat.getFont(toTV.getContext(), R.font.rubik_medium));
+        final EditText desET = new EditText(this);
+        desET.setHint("תוכן ההודעה");
+        desET.setTextSize(18);
+        desET.setGravity(Gravity.RIGHT);
+        desET.setPadding(0,15,30,30);
+        desET.setTypeface(ResourcesCompat.getFont(desET.getContext(), R.font.rubik_medium));
+        final TextView fileNameTV = new TextView(this);
+        fileNameTV.setText("הקובץ המצורף: "+fileToSend.getName());
+        fileNameTV.setTextSize(16);
+        fileNameTV.setGravity(Gravity.RIGHT);
+        fileNameTV.setPadding(0,15,30,30);
+        fileNameTV.setTypeface(ResourcesCompat.getFont(fileNameTV.getContext(), R.font.rubik_medium));
+        fileNameTV.setInputType(InputType.TYPE_CLASS_NUMBER);
+        AdScreen.addView(fromTV);
+        AdScreen.addView(toTV);
+        AdScreen.addView(desET);
+        AdScreen.addView(fileNameTV);
+        adb.setView(AdScreen);
+        adb.setCancelable(false);
 
-        Intent emailIntent = new Intent(Intent.ACTION_SENDTO, uri);
+        adb.setPositiveButton("שלח", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent emailIntent = new Intent(Intent.ACTION_SEND);
+                emailIntent.setType("vnd.android.cursor.dir/email");
+                emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {customerEmail});
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, eventName);
+                emailIntent.putExtra(Intent.EXTRA_TEXT, desET.getText().toString());
+                emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                Uri fileUri = FileProvider.getUriForFile(newEventActivity.this,getPackageName()+".provider",fileToSend);
+                emailIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+                startActivity(Intent.createChooser(emailIntent, "ישלח באמצעות..."));
+            }
+        });
 
-        emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-        Uri path = Uri.fromFile(new File(fileToSend.getAbsolutePath()));
-        emailIntent.putExtra(Intent.EXTRA_STREAM, path);
-
-        try {
-            startActivity(emailIntent);
-            Log.i("Finished sending email...", "");
-        } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(this, "There is no email client installed.", Toast.LENGTH_SHORT).show();
-        }
+        AlertDialog ad = adb.create();
+        ad.show();
     }
 
     private File creatingFile(Event event) {
@@ -1268,37 +1400,111 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
         titlePaint.setTextAlign(Paint.Align.RIGHT);
         titlePaint.setTextSize(15);
-        paint.setTypeface(Typeface.create("Calibri",Typeface.NORMAL));
+        titlePaint.setTypeface(Typeface.create("Calibri",Typeface.NORMAL));
         canvas.drawText( ""+event.getCustomerName(), (float) (width*0.7), 320, titlePaint);
         canvas.drawText(""+event.getCustomerPhone(),(float) (width*0.7), 350, titlePaint);
         canvas.drawText(""+event.getCustomerEmail(),(float) (width*0.7), 380, titlePaint);
 
+        if (event.isHasAccepted()){
+            titlePaint.setTextSize(20);
+            titlePaint.setTypeface(Typeface.create("Calibri",Typeface.BOLD));
+            titlePaint.setColor(Color.rgb(00,80,00));
+            titlePaint.setTypeface(Typeface.create("Calibri",Typeface.NORMAL));
+            canvas.drawText("<< אירוע אושר והחלה עבודה >>",(float) width/2, 380, titlePaint);
+        }
 
         Bitmap priceBM = BitmapFactory.decodeResource(getResources(), R.drawable.pdf_prize);
         Bitmap scaledbmp2 = Bitmap.createScaledBitmap(priceBM,858,45,false);
         canvas.drawBitmap(scaledbmp2, (width-858)/2,height/5+100,paint);
 
-        Paint prizePaint = new Paint();
-        prizePaint.setTextAlign(Paint.Align.CENTER);
-        prizePaint.setTextSize(15);
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setTextSize(16);
         paint.setTypeface(Typeface.create("Calibri",Typeface.BOLD));
-        canvas.drawText( ""+event.getEventCost(), (float) (width*0.6), (float) (height/5+122.5), prizePaint);
+        canvas.drawText( ""+event.getEventCost()+"₪", (float) (width*0.6), (float) (height/5+100+45*0.6), paint);
 
         // Parsing the String of the date to a format String
-        Date tempSelectedDate = DateConvertor.stringToDate(event.getDateOfCreation(), "yyyyMMddHHmm");
-        String strDate = DateConvertor.dateToString(tempSelectedDate, "dd/MM/yyyy");
-        canvas.drawText(""+strDate,(float) (width*0.43), (float) (height/5+122.5), prizePaint);
+        Date createdDate = DateConvertor.stringToDate(event.getDateOfCreation(), "yyyyMMddHHmm");
+        String strCreatedDate = DateConvertor.dateToString(createdDate, "dd/MM/yyyy");
+        canvas.drawText(""+strCreatedDate,(float) (width*0.43), (float) (height/5+100+45*0.6), paint);
+
+        // WRITING GENERAL DATA
+        float currentHeight = (float) (height/5+122.5+100);
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setTextSize(20);
+        paint.setTypeface(Typeface.create("Calibri",Typeface.BOLD));
+        Date selectedDate = DateConvertor.stringToDate(event.getDateOfEvent(), "yyyyMMddHHmm");
+        String strSelectedDate = DateConvertor.dateToString(selectedDate, "dd/MM/yyyy");
+        String strTime = DateConvertor.dateToString(selectedDate, "HH:mm");
+        canvas.drawText("האירוע יהיה בתאריך: "+strSelectedDate + " מהשעה: "+strTime,width/2, currentHeight, paint);
+        currentHeight += 50;
+
+        // WRITING THE SELECTED SHOW(S)
+        paint.setTextAlign(Paint.Align.RIGHT);
+        paint.setTextSize(20);
+        paint.setTypeface(Typeface.create("Calibri",Typeface.BOLD));
+        Integer[] selectedShowIndexes = {-1,-1};
+        boolean toAdd = true;
+        for (int i = 0; i < event.getEventShows().size(); i++) {
+            if (event.getEventShows().get(i) && toAdd){
+                selectedShowIndexes[0] = i;
+                toAdd = false;
+            }
+            else if (selectedShowIndexes[0] != -1 && event.getEventShows().get(i)){
+                selectedShowIndexes[1] = i;
+            }
+        }
+        canvas.drawText("מופע: "+allShows.get(selectedShowIndexes[0]).getShowTitle(),(858+(width-858)/2), currentHeight, paint);
+        paint.setTextAlign(Paint.Align.RIGHT);
+        paint.setTextSize(16);
+        paint.setTypeface(Typeface.create("Calibri",Typeface.NORMAL));
+        canvas.drawText("תיאור: "+allShows.get(selectedShowIndexes[0]).getDescription(),(858+(width-858)/2), currentHeight+25, paint);
+        currentHeight += 25;
+        canvas.drawText("עלות: "+allShows.get(selectedShowIndexes[0]).getCost()+"₪",(858+(width-858)/2), currentHeight+25, paint);
+        currentHeight += 25;
+        if (selectedShowIndexes[1] != -1){
+            paint.setTextAlign(Paint.Align.RIGHT);
+            paint.setTextSize(20);
+            paint.setTypeface(Typeface.create("Calibri",Typeface.BOLD));
+            canvas.drawText("מופע: "+allShows.get(selectedShowIndexes[1]).getShowTitle(),(858+(width-858)/2), (float) currentHeight+50, paint);
+            currentHeight += 50;
+            paint.setTextAlign(Paint.Align.RIGHT);
+            paint.setTextSize(16);
+            paint.setTypeface(Typeface.create("Calibri",Typeface.NORMAL));
+            canvas.drawText("תיאור: "+allShows.get(selectedShowIndexes[1]).getDescription(),(858+(width-858)/2), currentHeight+25, paint);
+            currentHeight += 25;
+            canvas.drawText("עלות: "+allShows.get(selectedShowIndexes[1]).getCost()+"₪",(858+(width-858)/2), currentHeight+25, paint);
+            currentHeight += 25;
+        }
+
+        // WRITING EXTRA CONTENT <event.getContent()>
+        paint.setTextAlign(Paint.Align.RIGHT);
+        paint.setTextSize(20);
+        paint.setTypeface(Typeface.create("Calibri",Typeface.BOLD));
+        canvas.drawText("הערות:",(858+(width-858)/2),  currentHeight+45, paint);
+        currentHeight +=45;
+        paint.setTextAlign(Paint.Align.RIGHT);
+        paint.setTextSize(16);
+        paint.setTypeface(Typeface.create("Calibri",Typeface.NORMAL));
+        String[] strParts = event.getEventContent().split("\n"); // Writing the content as it was written by Jakkob
+        for (int i = 0; i < strParts.length ; i++) {
+            canvas.drawText(strParts[i],(858+(width-858)/2),  currentHeight+25, paint);
+            currentHeight += 25;
+        }
 
         // END OF DOCUMENT
         Bitmap endBM = BitmapFactory.decodeResource(getResources(), R.drawable.pdf_end);
         Bitmap scaledbmp3 = Bitmap.createScaledBitmap(endBM,1191,618,false);
         canvas.drawBitmap(scaledbmp3, (width-1191)/2,height-618,paint);
-        // Printing the total price after taxes
-        canvas.drawText(""+ (int) Math.floor(eventCost*1.17), (float) (width*0.25), height-590, prizePaint);
-
+        paint.setTypeface(Typeface.create("Calibri",Typeface.BOLD));
+        canvas.drawText(""+ (int) Math.floor(eventCost*1.17), (float) (width*0.25), height-595, paint); // Printing the total price after taxes (117% from the price)
+        canvas.drawText(event.getEventPayment(), (float) (850+(width-1191)/2), (float) (height-535), paint); // Printing the event payment method
+        canvas.drawText("** יעקב אברהם **", (float) (1191*0.4+(width-1191)/2), (float) (height-400), paint); // Printing the signature
+        if (event.isHasAccepted()){
+            canvas.drawText("** "+event.getCustomerName()+" **", (float) (1191*0.7+(width-1191)/2), (float) (height-400), paint); // Printing the customer's signature
+        }
         pdfDocument.finishPage(page1);
 
-        File dataFile = new File(rootPath, event.getDateOfEvent()+event.getEventName()+".pdf");;
+        File dataFile = new File(rootPath, event.getEventName()+event.getDateOfEvent()+".pdf");;
 
         try {
             pdfDocument.writeTo(new FileOutputStream(dataFile));
@@ -1310,30 +1516,6 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         return dataFile;
     }
 
-    private void openADCheckPayment(boolean toUpdate) {
-        AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        final TextView titleTV = new TextView(this);
-        titleTV.setText("אמצעי תשלום לפני שמסיימים..");
-        titleTV.setGravity(Gravity.RIGHT);
-        titleTV.setTextSize(20);
-        adb.setCustomTitle(titleTV);
-
-        adb.setPositiveButton("אשר", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if (toUpdate){
-                    updatedEvent.setEventCharacterize("O");
-                } else {
-                    newEvent.setEventCharacterize("O");
-                }
-                DrawableCompat.setTint(flag.getDrawable(), ContextCompat.getColor(getApplicationContext(), R.color.orange_flag));
-                dialogInterface.dismiss();
-            }
-        });
-
-        AlertDialog ad = adb.create();
-        ad.show();
-    }
 
     private boolean checkEvent() {
         boolean flag = true;
@@ -1343,7 +1525,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         eventLocation = locationET.getText().toString();
         eventContent = contentET.getText().toString();
 
-        if (eventTitleTV.getText().toString().isEmpty() || customerName.isEmpty() || customerEmail.isEmpty() || customerPhone.isEmpty() || eventLocation.isEmpty() || eventContent.isEmpty()){
+        if (eventTitleTV.getText().toString().isEmpty() || customerName.isEmpty() || customerPhone.isEmpty() || eventLocation.isEmpty() || eventContent.isEmpty()){
             flag = false;
             Snackbar.make(layout, "שדה לא יהיה ריק", 3000).show();
         }
@@ -1403,7 +1585,7 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
             }
         }
 
-        boolean anyMaterial = checkForMaterial(0);
+        boolean anyMaterial = checkForMaterial();
         if (!anyMaterial){
             flag = false;
             Snackbar.make(layout,"נא לבחור ציוד לאירוע", 3000).show();
@@ -1422,49 +1604,55 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
                 Snackbar.make(layout,"לא ניתן יותר משני מופעים", 3000).show();
             }
         }
+        if (userSelection.equals(paymentSelection[0])){
+            flag = false;
+            Snackbar.make(layout,"חסר אמצעי תשלום", 3000).show();
+        }
 
         return flag && checkLocation();
     }
 
-    private boolean checkForMaterial(int i) {
-        if (i < selectedMaterials.size() - 1) {
-            return selectedMaterials.get(i).contains("t_") || checkForMaterial(i++);
+    private boolean checkForMaterial() {
+        int i = 0;
+        boolean flag = false;
+        while (i < selectedMaterials.size() && !flag) {
+            flag = selectedMaterials.get(i).contains("t_");
+            i++;
         }
-        else return false;
+        return flag;
     }
 
     @SuppressLint("MissingPermission")
     private boolean checkLocation() {
         boolean[] locationFlag = {true};
-        if (ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(newEventActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            FusedLocationProviderClient fusedLocationProviderClient;
-            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        FusedLocationProviderClient fusedLocationProviderClient;
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-            fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
-                @SuppressLint("SetTextI18n")
-                @Override
-                public void onComplete(@NonNull Task<Location> task) {
-                    Location location = task.getResult();
-                    if (location != null) {
-                        Geocoder geocoder = new Geocoder(newEventActivity.this);
-                        try {
-                            List<Address> addressList = geocoder.getFromLocationName(eventLocation, 6);
-                            //LatLng latLng = new LatLng(user_address.getLatitude(), user_address.getLongitude());
-                        } catch (Exception e) {
-                            locationFlag[0] = false;
-                            Snackbar.make(layout, "אין כתובת כזו", 3000).show();
-                        }
+        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                Location location = task.getResult();
+                if (location != null) {
+                    Geocoder geocoder = new Geocoder(newEventActivity.this);
+                    try {
+                        List<Address> addressList = geocoder.getFromLocationName(eventLocation, 6);
+                        //LatLng latLng = new LatLng(user_address.getLatitude(), user_address.getLongitude());
+                    } catch (Exception e) {
+                        locationFlag[0] = false;
+                        Snackbar.make(layout, "אין כתובת כזו", 3000).show();
                     }
                 }
-            });
-        }  else {
-            locationFlag[0] = false;
-            Snackbar.make(layout, "אין הרשאות מיקום", 3000).show();
-       }
-
+            }
+        });
         return locationFlag[0];
     }
 
+    /**
+     * Change is paid.
+     *
+     * @param view the view
+     */
     public void changeIsPaid(View view) {
         if (updateMode || editingMode){
             if (!isPaid){
@@ -1478,6 +1666,11 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
         }
     }
 
+    /**
+     * Change has accepted.
+     *
+     * @param view the view
+     */
     public void changeHasAccepted(View view) {
         if (editingMode){
             if (!hasAccepted){

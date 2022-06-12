@@ -58,13 +58,34 @@
         </LinearLayout>
 
         <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/rubik_medium"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="לחיצה ארוכה לִפְעִילוּת על האירוע"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/statusEventsTV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:fontFamily="@font/rubik_medium"
+            android:gravity="center"
+            android:layout_marginBottom="10dp"
+            android:text=""
+            android:textSize="18sp" />
+
+        <TextView
             android:id="@+id/dateRangeTV"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="15dp"
-            android:layout_marginRight="20dp"
+            android:layout_margin="10dp"
             android:fontFamily="@font/rubik_medium"
-            android:gravity="center|right"
+            android:gravity="center"
             android:textSize="16sp" />
 
         <ListView

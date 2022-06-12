@@ -26,140 +26,383 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginStart="15dp"
-        android:layout_marginLeft="15dp"
-        android:layout_marginTop="60dp"
-        android:layout_marginEnd="15dp"
-        android:layout_marginBottom="15dp"
-        android:orientation="vertical">
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0px"
-            android:layout_weight="1">
-
-            <Space
-                android:layout_width="0px"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
-
-            <ImageView
-                android:layout_width="0px"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:elevation="25dp"
-                app:srcCompat="@drawable/administrator" />
-
-            <Space
-                android:layout_width="0px"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0px"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-
-            <Space
-                android:layout_width="0px"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
-
-            <LinearLayout
-                android:layout_width="0px"
-                android:layout_height="match_parent"
-                android:layout_weight="9"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="0px"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/rubik_light"
-                    android:gravity="center"
-                    android:text="@string/app_ver"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="0px"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/rubik_medium"
-                    android:gravity="center|top"
-                    android:onClick="openMailService"
-                    android:text="@string/appEmail"
-                    android:textColor="#DD2C00"
-                    android:textSize="16sp" />
-            </LinearLayout>
-
-            <Space
-                android:layout_width="0px"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
-        </LinearLayout>
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="0px"
-            android:layout_weight="1" />
+        android:layout_height="600dp"
+        android:layout_gravity="center">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Space
-                android:layout_width="0px"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
+            android:layout_gravity="top"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:orientation="vertical">
 
             <LinearLayout
-                android:layout_width="0px"
-                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="1">
+
+                <Space
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:elevation="25dp"
+                    app:srcCompat="@drawable/administrator" />
+
+                <Space
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0px"
                 android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <Space
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <LinearLayout
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="9"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0px"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/rubik_light"
+                        android:gravity="center"
+                        android:text="@string/app_ver"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0px"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/rubik_medium"
+                        android:gravity="center|top"
+                        android:onClick="openMailService"
+                        android:text="@string/appEmail"
+                        android:textColor="#DD2C00"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/currentUserEmailTV"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/rubik_regular"
+                        android:gravity="center" />
+                </LinearLayout>
+
+                <Space
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0px"
+                android:layout_weight="2"
                 android:orientation="vertical">
 
                 <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/rubik_light"
+                    android:layout_height="0px"
+                    android:layout_marginBottom="5dp"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/rubik_semibold"
                     android:gravity="center"
-                    android:text="from"
-                    android:textColor="@color/gray_700"
-                    android:textSize="14sp" />
+                    android:text="הרשאות משתמש"
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/rubik_regular"
-                    android:gravity="bottom|center"
-                    android:text="SY_GROUP"
-                    android:textColor="@color/orange_500"
-                    android:textSize="18sp" />
+                    android:layout_height="0px"
+                    android:layout_weight="2"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:id="@+id/locationCB"
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.5"
+                        android:onClick="reactToClick" />
+
+                    <TextView
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2"
+                        android:fontFamily="@font/rubik_medium"
+                        android:gravity="center|right"
+                        android:text="קבלת מיקום בזמן אמת לקבלת חוזי מרחק ממקום האירוע"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0px"
+                    android:layout_weight="2">
+
+                    <CheckBox
+                        android:id="@+id/writeStorageCB"
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.5"
+                        android:onClick="reactToClick" />
+
+                    <TextView
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2"
+                        android:fontFamily="@font/rubik_medium"
+                        android:gravity="center|right"
+                        android:text="כתיבה לזיכרון לצורך שמירת מסמכי PDF וקבצי שמע"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0px"
+                    android:layout_weight="2"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:id="@+id/readStorageCB"
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.5"
+                        android:onClick="reactToClick" />
+
+                    <TextView
+                        android:id="@+id/textView"
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2"
+                        android:fontFamily="@font/rubik_medium"
+                        android:gravity="center|right"
+                        android:text="קריאה לזיכרון לצורך שמירת מסמכי PDF וקבצי שמע"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0px"
+                    android:layout_weight="2">
+
+                    <CheckBox
+                        android:id="@+id/recordCB"
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.5"
+                        android:onClick="reactToClick" />
+
+                    <TextView
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2"
+                        android:fontFamily="@font/rubik_medium"
+                        android:gravity="center|right"
+                        android:text="הקלטה לצורך הקלטת התזכורות והמשימות לאירוע"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
             </LinearLayout>
 
-            <Space
-                android:layout_width="0px"
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="15dp"
+                android:fontFamily="@font/rubik_semibold"
+                android:gravity="center"
+                android:text="מידע למשתמש"
+                android:textColor="@color/black"
+                android:textSize="20sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp">
+
+                <TextView
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2"
+                    android:fontFamily="@font/rubik_medium"
+                    android:gravity="center|right"
+                    android:text="מסך המשמש להגדרות העסק תוך מעקב אחר חומרי הגלם והנתונים השונים של העסק כגון: מעקב אחר נצילות הציוד, כמות עובדים זמינים"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:contentDescription="TODO"
+                    android:padding="15dp"
+                    app:srcCompat="@drawable/ic_baseline_settings"
+                    app:tint="@color/orange_flag" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp">
+
+                <TextView
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2"
+                    android:fontFamily="@font/rubik_medium"
+                    android:gravity="center|right"
+                    android:text="מסך לתזכורות מרכזיות לעסק מאגד את כל התזכורות תוך אפשרות לקביעת, ערכית התזכורות הנחוצות לניהול מיטבי של העסק"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:contentDescription="TODO"
+                    android:padding="15dp"
+                    app:srcCompat="@drawable/ic_round_speaker_notes"
+                    app:tint="@color/orange_flag" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp">
+
+                <TextView
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2"
+                    android:fontFamily="@font/rubik_medium"
+                    android:gravity="center|right"
+                    android:text="מסך ליצירת אירוע תוך כדי התקשרות עם הלקוח"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:contentDescription="TODO"
+                    app:srcCompat="@drawable/ic_baseline_add_circle_outline"
+                    app:tint="@color/orange_flag" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1" />
+                android:layout_marginBottom="15dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2"
+                    android:fontFamily="@font/rubik_medium"
+                    android:gravity="center|right"
+                    android:text="מאגד את כלל האירועים לפי אפשרויות סינון ומיון תוך פירוט המאפיינים השונים אשר כלולים באירוע"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:contentDescription="TODO"
+                    android:padding="15dp"
+                    app:srcCompat="@drawable/ic_event_note"
+                    app:tint="@color/orange_flag" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0px"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2"
+                    android:fontFamily="@font/rubik_medium"
+                    android:gravity="center|right"
+                    android:text="מסך המכיל את המשימות לבעל העסק בהתאם לאירוע אשר הוגדר כאושר על ידי הלקוח"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="0px"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:contentDescription="TODO"
+                    android:padding="30dp"
+                    app:srcCompat="@drawable/ic_baseline_checklist_rtl"
+                    app:tint="@color/orange_flag" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/rubik_light"
+                        android:gravity="center"
+                        android:text="from"
+                        android:textColor="@color/gray_700"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/rubik_regular"
+                        android:gravity="bottom|center"
+                        android:text="SY_GROUP"
+                        android:textColor="@color/orange_500"
+                        android:textSize="18sp" />
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.5" />
-
-    </LinearLayout>
+    </ScrollView>
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

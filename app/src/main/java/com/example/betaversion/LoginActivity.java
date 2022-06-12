@@ -1,9 +1,12 @@
 package com.example.betaversion;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -11,6 +14,7 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -20,6 +24,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -29,6 +34,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *  * @author		Shahar Yani
@@ -41,7 +48,7 @@ import java.util.Objects;
 public class LoginActivity extends AppCompatActivity {
 
     EditText emailET, passwordET, phoneET;
-    TextView statusTV, messageTV;
+    TextView statusTV, messageTV, currentUserTV;
     CheckBox checkBox; // The CheckBox object to get the stay connect state.
 
     LinearLayout phoneLayout;
@@ -66,6 +73,7 @@ public class LoginActivity extends AppCompatActivity {
         phoneLayout = findViewById(R.id.phoneLayout);
         messageTV = findViewById(R.id.messageTV);
         layoutView = findViewById(R.id.layoutView);
+        currentUserTV = findViewById(R.id.currentUserTV);
 
         ActionBar actionBar = getSupportActionBar();
         Objects.requireNonNull(actionBar).hide();
@@ -75,11 +83,11 @@ public class LoginActivity extends AppCompatActivity {
         isSignUp = true;
         phoneLayout.setVisibility(View.VISIBLE);
 
-        Handler handler = new Handler();
-        Runnable r = new Runnable() {
-            @Override
-            public void run(){
-                if (!checkInternetConnection()){
+        if (!checkInternetConnection()){
+            Handler handler = new Handler();
+            Runnable r = new Runnable() {
+                @Override
+                public void run(){
                     // Asking to connect to the Internet connection
                     // Action: startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
 
@@ -91,11 +99,15 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     }).show();
                 }
-            }
-        };
-        handler.postDelayed(r,1000);
+            };
+            handler.postDelayed(r,1000);
+        }
 
         mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
+        if (currentUser == null){
+            currentUserTV.setText("אין משתמש מחובר במערכת");
+        } else currentUserTV.setText("משתמש מחובר במערכת:"+"\n"+currentUser.getEmail());
 
         // Getting the current user from the FirebaseAuth
         FirebaseAuth.AuthStateListener mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -106,6 +118,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         };
     }
+
     /**
      * checkInternetConnection method checks is there is any INTERNET connection.
      * if there is no connection - returns False. Otherwise, returns Ture;
@@ -134,17 +147,16 @@ public class LoginActivity extends AppCompatActivity {
         currentUser = mAuth.getCurrentUser();
 
         if (toSkip && (currentUser != null) && checkInternetConnection()){
-            Variable.setEmailVer(emailET.getText().toString());
             Intent si = new Intent(this, MainActivity.class);
             startActivity(si);
             finish();
         }
-        else{
+        else if (!checkInternetConnection()){
             // Asking to connect to the Internet
            // Action: startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
 
            // Responds to click on the action
-           Snackbar.make(layoutView, "לא זוהה חיבור לאינטרנט", 10000).setAction("התחבר", new View.OnClickListener() {
+           Snackbar.make(layoutView, "אין חיבור לאינטרנט", 10000).setAction("התחבר", new View.OnClickListener() {
                 @Override
                public void onClick(View view) {
                    startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
@@ -152,7 +164,6 @@ public class LoginActivity extends AppCompatActivity {
             }).show();
         }
     }
-
 
     /**
      * login method get the user in the system (if the typed user exists) when the button is clicked.
@@ -162,15 +173,27 @@ public class LoginActivity extends AppCompatActivity {
         String email = emailET.getText().toString();
         String password = passwordET.getText().toString();
 
-        if (TextUtils.isEmpty(email)){
-            emailET.setError("שדה לא יהיה ריק");
+        boolean flag = true; // In order to chekc if all the conditions are good.
+        if(email.isEmpty()){
+            emailET.setError("חסר כתובת אימייל");
             emailET.requestFocus();
+            flag = false;
+        } else{
+            // Checks if the email is valid and verified
+            Matcher matcher =  Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE).matcher(email);
+            if (!matcher.find()){
+                emailET.setError("כתובת אימייל לא חוקית");
+                emailET.requestFocus();
+                flag = false;
+            }
         }
-        else if (TextUtils.isEmpty(password)){
+        if (TextUtils.isEmpty(password)){
             passwordET.setError("שדה לא יהיה ריק");
             passwordET.requestFocus();
+            flag = false;
         }
-        else {
+
+        if (currentUser == null && flag){
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
@@ -182,24 +205,48 @@ public class LoginActivity extends AppCompatActivity {
                                 updateUI(user);
 
                                 Intent si = new Intent(LoginActivity.this, MainActivity.class);
-                                Variable.setEmailVer(email);
-                                SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
-                                SharedPreferences.Editor editor = settings.edit();
-                                editor.putString("email", Variable.getEmailVer());
-                                editor.apply();
                                 startActivity(si);
                             } else {
                                 // If sign in fails, display a message to the user.
                                 Log.w(TAG, "signInWithEmail:failure", task.getException());
-                                Snackbar.make(layoutView, "אין משתמש רשום במערכת", 3000).show();
-
-//                                Toast.makeText(LoginActivity.this, "It might be no user",
-//                                        Toast.LENGTH_SHORT).show();
+                                Snackbar.make(layoutView, "אין משתמש כזה במערכת", 3000).show();
                                 updateUI(null);
                             }
                         }
                     });
         }
+        else if (flag){
+            anotherUserAD();
+        }
+    }
+
+    private void anotherUserAD() {
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("אין אפשרות כניסה");
+        titleTV.setTextColor(Color.rgb(143, 90, 31));
+        titleTV.setTextSize(25);
+        titleTV.setPadding(0,15,30,15);
+        titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
+        adb.setCustomTitle(titleTV);
+
+        final TextView messageTV = new TextView(this);
+        messageTV.setText("החשבון "+FirebaseAuth.getInstance().getCurrentUser().getEmail().substring(0,FirebaseAuth.getInstance().getCurrentUser().getEmail().indexOf("@"))+" מחובר למערכת.");
+        messageTV.setTextSize(18);
+        messageTV.setGravity(Gravity.RIGHT);
+        messageTV.setPadding(0,15,30,0);
+        messageTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_medium));
+        adb.setView(messageTV);
+
+        adb.setNegativeButton("אוקיי", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+
+        AlertDialog ad = adb.create();
+        ad.show();
     }
 
     /**
@@ -211,41 +258,47 @@ public class LoginActivity extends AppCompatActivity {
         String password = passwordET.getText().toString();
         String phone = phoneET.getText().toString();
 
-        if (TextUtils.isEmpty(email)){
-            emailET.setError("The email field can not be empty");
+        boolean flag = true; // In order to check that all the conditions are good
+        if(email.isEmpty()){
+            emailET.setError("חסר כתובת אימייל");
             emailET.requestFocus();
+            flag = false;
+        } else{
+            // Checks if the email is valid and verified
+            Matcher matcher =  Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE).matcher(email);
+            if (!matcher.find()){
+                emailET.setError("כתובת אימייל לא חוקית");
+                emailET.requestFocus();
+                flag = false;
+            }
         }
-        else if (!email.contains("@") || !email.endsWith(".com") || email.contains(" ")){
-            emailET.setError("כתובת האימייל לא חוקית");
-            emailET.requestFocus();
-        }
-        else if (email.substring(email.indexOf("@"),email.indexOf(".com") - 1).isEmpty()){
-            emailET.setError("כתובת האימייל לא חוקית");
-            emailET.requestFocus();
-        }
-        else if (TextUtils.isEmpty(password)){
-            passwordET.setError("The password filed can not be empty");
+        if (TextUtils.isEmpty(password)){
+            passwordET.setError("שדה לא יהיה ריק");
             passwordET.requestFocus();
+            flag = false;
         }
         else if (phone.length() < 9 || phone.length() > 10){
             phoneET.setError("מספר הטלפון לא חוקי");
             phoneET.requestFocus();
+            flag = false;
         }
         else if(phone.length() == 10){
             if (!phone.startsWith("05") || phone.contains("#")){
                 phoneET.setError("מספר הטלפון לא חוקי");
                 phoneET.requestFocus();
+                flag = false;
             }
         }
         else if (phone.length() == 9){
             if (!phone.startsWith("0")){
                 phoneET.setError("מספר הטלפון לא חוקי");
                 phoneET.requestFocus();
+                flag = false;
             }
         }
-        else{
-            User tempUser = new User(mAuth.getCurrentUser().getUid(),passwordET.getText().toString(),emailET.getText().toString(), phoneET.getText().toString());
-            mAuth.createUserWithEmailAndPassword(tempUser.getEmail(), tempUser.getPassword() )
+
+        if (currentUser == null && flag){
+            mAuth.createUserWithEmailAndPassword(emailET.getText().toString(), passwordET.getText().toString())
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
@@ -256,22 +309,21 @@ public class LoginActivity extends AppCompatActivity {
                                 updateUI(user);
 
                                 Intent si = new Intent(LoginActivity.this, MainActivity.class);
-                                Variable.setEmailVer(tempUser.getEmail());
                                 SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
                                 SharedPreferences.Editor editor = settings.edit();
-                                editor.putString("email", Variable.getEmailVer());
+                                editor.putString("smsPhone", phoneET.getText().toString());
                                 editor.apply();
                                 startActivity(si);
                             } else {
                                 // If sign in fails, display a message to the user.
                                 Log.w(TAG, "createUserWithEmail:failure", task.getException());
                                 Snackbar.make(layoutView, "יש משתמש רשום במערכת עם פרטים דומים", 3000).show();
-//                                Toast.makeText(LoginActivity.this, "The user might be created",
-//                                        Toast.LENGTH_SHORT).show();
                                 updateUI(null);
                             }
                         }
                     });
+        } else if (flag) {
+            anotherUserAD();
         }
     }
 

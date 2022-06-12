@@ -5,7 +5,12 @@ import static com.example.betaversion.FBref.storageRef;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
@@ -23,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -42,9 +48,12 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * The type New mission activity.
+ */
 public class newMissionActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
-    TextView eventTitle, finalDateTV;
+    TextView eventTitle, finalDateTV, dateForNotificationTV;
     EditText titleMissionET, contextMissionET;
     Spinner frequencySpinner;
 
@@ -58,7 +67,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
     SeekBar seekBar;
 
     boolean isText,updateMode, isRecording, isPlaying, creationMode;
-    String eventID, line1, line2, title, context, dateOfChange, finalDateStr;
+    String eventID, line1, line2, title, context, dateOfChange, finalDateStr, eventDateStr;
     String [] frequencyOptions;
     int frequency;
     Date selectedDate;
@@ -68,6 +77,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
 
     private static final int PERMISSION_CODE = 12;
     private String recordPermission = Manifest.permission.RECORD_AUDIO;
+    private String storagePermission = Manifest.permission.READ_EXTERNAL_STORAGE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +95,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
         line1 = "הגדרת משימות לאירוע";
         line2 = gi.getStringExtra("eventTitle");
         eventID = gi.getStringExtra("eventID");
+        eventDateStr = gi.getStringExtra("eventID");
         eventTitle.setText(line1 + System.lineSeparator() + line2);
 
         isText = gi.getBooleanExtra("missionMode",false);
@@ -103,10 +114,15 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
         isPlaying = true;
         mediaPlayer = new MediaPlayer();
 
+        checkPermissions(recordPermission);
+        checkPermissions(storagePermission);
+        createChannel();
+
         ArrayAdapter<String> adp = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, frequencyOptions);
 
         if (isText && !updateMode){
             setContentView(R.layout.text_layout_mission);
+            dateForNotificationTV = findViewById(R.id.dateForNotificationTV);
             eventTitle = findViewById(R.id.eventTitle);
             finalDateTV = findViewById(R.id.finalDateTV);
             titleMissionET = findViewById(R.id.titleMissionET);
@@ -148,6 +164,27 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
         }
     }
 
+    private void createChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Missions Channel";
+            String description = "Missions for the all 'Green' events";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("missionsChannel", name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    /**
+     * Create recorded mission.
+     *
+     * @param view the button that clicked
+     */
     public void createRecordedMission(View view) {
         isText = isRecording = creationMode = false;
         updateMode = true;
@@ -166,6 +203,11 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
         frequencySpinner.setAdapter(adp);
     }
 
+    /**
+     * Start record process.
+     *
+     * @param view the button that clicked with the icon
+     */
     public void startRecord(View view) {
         setContentView(R.layout.record_layout_mission);
         eventTitle = findViewById(R.id.eventTitle);
@@ -186,7 +228,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
             recordIV.setImageResource(R.drawable.ic_mic);
             isRecording = true;
 
-            if (checkPermissions()){
+            if (checkPermissions(recordPermission)){
                 Snackbar.make(eventTitle,"מקליט..", 1000).show();
                 startRecording();
                 isRecording = true;
@@ -203,15 +245,20 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
         }
     }
 
-    private boolean checkPermissions() {
-        if (ActivityCompat.checkSelfPermission(getApplicationContext(), recordPermission) == PackageManager.PERMISSION_GRANTED){
+    private boolean checkPermissions(String permissionType) {
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), permissionType) == PackageManager.PERMISSION_GRANTED){
             return true;
         }else{
-            ActivityCompat.requestPermissions(this,new String[]{recordPermission}, PERMISSION_CODE);
+            ActivityCompat.requestPermissions(this,new String[]{permissionType}, PERMISSION_CODE);
             return false;
         }
     }
 
+
+    /**
+     * Start record process. (the actual work)
+     *
+     */
     private void startRecording() {
         if(!rootPath.exists()) {
             rootPath.mkdirs();
@@ -248,6 +295,11 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
         mediaRecorder = null;
     }
 
+    /**
+     * Play record process.
+     *
+     * @param view the view
+     */
     public void playRecord(View view) {
         if (!isRecording){
             playIV = findViewById(R.id.playIV);
@@ -315,6 +367,11 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
         }
     }
 
+
+    /**
+     * play Audio process (actual work).
+     *
+     */
     private void playAudio() {
         if (dataFile != null) {
             mediaPlayer = new MediaPlayer();
@@ -344,26 +401,11 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
         playIV.setImageResource(R.drawable.ic_pause);
     }
 
-    public void createTextedMission(View view) {
-        isText = true;
-        updateMode = true;
-
-        setContentView(R.layout.text_layout_mission);
-        eventTitle = findViewById(R.id.eventTitle);
-        finalDateTV = findViewById(R.id.finalDateTV);
-        titleMissionET = findViewById(R.id.titleMissionET);
-        contextMissionET = findViewById(R.id.contextMissionET);
-        frequencySpinner = findViewById(R.id.frequencySpinner);
-
-        ArrayAdapter<String> adp = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, frequencyOptions);
-        frequencySpinner.setAdapter(adp);
-
-        frequencySpinner.setOnItemSelectedListener(this);
-
-        line1 = "הגדרת משימה כטקסט לאירוע";
-        eventTitle.setText(line1 + System.lineSeparator() + line2);
-    }
-
+    /**
+     * Open date picker for getting the date.
+     *
+     * @param view the view
+     */
     public void openDatePicker(View view) {
         if (updateMode){
             selectedDate = new Date();
@@ -376,25 +418,9 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
                 @Override
                 public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                     Calendar c = Calendar.getInstance();
-                    c.set(year, month++, dayOfMonth);
-                    selectedDate = new Date(c.get(Calendar.YEAR) - 1900, c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
-                    String dateStr;
-                    if (selectedDate.getTime() == new Date().getTime()){
-                        Snackbar.make(eventTitle,"תאריך לא רלוונטי", 3000).show();
-                        finalDateTV = findViewById(R.id.finalDateTV);
-                        finalDateTV.setText("dd/MM/yyyy");
-                    }
-                    else if (selectedDate.after(new Date())){
-                        selectedDate.setTime(selectedDate.getTime());
-                        dateStr = DateConvertor.dateToString(selectedDate, "dd/MM/yyyy");
-                        finalDateTV = findViewById(R.id.finalDateTV);
-                        finalDateTV.setText(dateStr);
-                    }
-                    else{
-                        Snackbar.make(eventTitle,"תאריך לא רלוונטי", 3000).show();
-                    }
-
-                    finalDateStr = DateConvertor.dateToString(selectedDate, "yyyyMMdd"); // The format in the FB
+                    c.set(year-1900, month++, dayOfMonth,0,0,0);
+                    selectedDate = new Date(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH),0,0,0);
+                    openTimePicker();
                 }
             }, year, month, day);
 
@@ -404,54 +430,137 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
         }
     }
 
+    private void openTimePicker() {
+        Calendar cldr = Calendar.getInstance();
+        final int hour = cldr.get(Calendar.HOUR_OF_DAY);
+        final int minutes = cldr.get(Calendar.MINUTE);
+        // time picker dialog
+        TimePickerDialog picker = new TimePickerDialog(this,
+                new TimePickerDialog.OnTimeSetListener() {
+                    @SuppressLint("SetTextI18n")
+                    @Override
+                    public void onTimeSet(TimePicker tp, int hour, int minute) {
+                        selectedDate.setHours(hour);
+                        selectedDate.setMinutes(minute);
+                        selectedDate.setSeconds(0);
+                        selectedDate.setTime(selectedDate.getTime());
+
+                        Date eventDate = DateConvertor.stringToDate(eventDateStr, "yyyyMMddHHmm"); // Getting the DATE constructor of the eventDate in order to compare.
+                        String dateStr;
+                        if (selectedDate.after(new Date()) && selectedDate.before(eventDate)){
+                            selectedDate.setTime(selectedDate.getTime());
+                            dateStr = DateConvertor.dateToString(selectedDate, "dd/MM/yyyy");
+                            finalDateTV = findViewById(R.id.finalDateTV);
+                            finalDateStr = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmm");;
+                            finalDateTV.setText(dateStr);
+                            if (isText){
+                                dateForNotificationTV.setText(DateConvertor.dateToString(selectedDate, "HH:mm"));
+                            } else{
+                                dateStr = DateConvertor.dateToString(selectedDate, "dd/MM/yyyy HH:mm");
+                                finalDateTV = findViewById(R.id.finalDateTV);
+                                finalDateTV.setText(dateStr);
+                            }
+                        } else {
+                            Snackbar.make(eventTitle,"תאריך לא רלוונטי", 3000).show();
+                            finalDateTV = findViewById(R.id.finalDateTV);
+                            finalDateTV.setText("dd/MM/yyyy");
+                        }
+                    }
+                }, hour, minutes, true);
+        picker.show();
+    }
+
+    /**
+     * Create mission according its status.
+     *
+     * @param view the view
+     */
     public void createMission(View view) {
         if (isText){
+            dateForNotificationTV = findViewById(R.id.dateForNotificationTV);
             titleMissionET = findViewById(R.id.titleMissionET);
             contextMissionET = findViewById(R.id.contextMissionET);
             finalDateTV = findViewById(R.id.finalDateTV);
 
-            finalDateTV.setText(finalDateStr);
+            finalDateTV.setText(DateConvertor.dateToString(selectedDate, "dd/MM/yyyy"));
 
             if (checkInputs()){
                 title = titleMissionET.getText().toString();
                 context = contextMissionET.getText().toString();
-                dateOfChange = DateConvertor.dateToString(new Date(), "dd/mm/yyyy HH:mm");
+                dateOfChange = DateConvertor.dateToString(new Date(), "dd/MM/yyyy");
 
                 tempMission = new Mission(title, true, context,"",DateConvertor.dateToString(new Date(), "yyyyMMddHHmmss"), frequency, finalDateStr);
                 // Save the tempMission in the current place of the selected event in the RealTime DataBaseFirebase
                 String missionID = finalDateStr+DateConvertor.dateToString(new Date(), "yyyyMMddHHmmss");
                 allMissions.put(missionID,tempMission);
-                refGreen_Event.child(eventID).child("eventMissions").setValue(allMissions);
+                refGreen_Event.child(eventID).child("eventMissions").child(missionID).setValue(tempMission);;
 
-                // TODO: Implementation of the notifications
-                Snackbar.make(finalDateTV,"המשימה נוצרה", 3000).show();
+                // Create a notification
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(selectedDate.getTime());
+
+                Intent intentToBrod = new Intent(newMissionActivity.this, notificationPublisher.class);
+                intentToBrod.putExtra("SubText", tempMission.getTextContent());
+                intentToBrod.putExtra("Title", tempMission.getTitle());
+                intentToBrod.putExtra("Content", "משימות | ");
+                intentToBrod.putExtra("channel", "missionsChannel");
+                intentToBrod.putExtra("audioContent", tempMission.getAudioContent());
+                intentToBrod.putExtra("index", (int) Math.random());
+
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(newMissionActivity.this,200, intentToBrod,PendingIntent.FLAG_UPDATE_CURRENT);
+                AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+
+                Snackbar.make(finalDateTV,"המשימה נוצרה בהצלחה", 3000).show();
+                titleMissionET.setText("");
+                contextMissionET.setText("");
+                dateForNotificationTV.setText("HH:mm");
             }
 
-        } else {
+        } else if (!isText && checkPermissions(recordPermission)) {
             titleMissionET = findViewById(R.id.titleMissionET);
             contextMissionET = findViewById(R.id.contextMissionET);
             finalDateTV = findViewById(R.id.finalDateTV);
 
-            if (finalDateStr.isEmpty()){
-                finalDateTV.setText("dd/mm/yyyy HH:mm");
-            } else finalDateTV.setText(finalDateStr);
+            finalDateTV.setText("dd/MM/yyyy HH:mm");
 
             if (checkInputs()){
                 title = titleMissionET.getText().toString();
-                context = contextMissionET.getText().toString();
-                dateOfChange = DateConvertor.dateToString(new Date(), "yyyyMMddHHmmss");
+                String dateForNotification = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmmss");
 
                 // Save the recorded mission in the FireBase Storage and gets the url of the location.
                 String urlOfRecord = uploadRecordingFB();
 
-                tempMission = new Mission(title, true, "<קטע קול>",urlOfRecord,dateOfChange, frequency, finalDateStr);
+                tempMission = new Mission(title, false, "<קטע קול>",urlOfRecord, dateForNotification, frequency, finalDateStr);
                 // Save the tempMission in the current place of the selected event in the RealTime DataBaseFirebase
-                String missionID = finalDateStr+dateOfChange;
+                String currentDateStr = DateConvertor.dateToString(new Date(), "yyyyMMddHHmmss");
+                finalDateTV.setText(DateConvertor.dateToString(selectedDate, "dd/MM/yyyy HH:mm"));
+                String missionID = finalDateStr+currentDateStr;
                 allMissions.put(missionID,tempMission);
-                refGreen_Event.child(eventID).child("eventMissions").setValue(allMissions);
+                refGreen_Event.child(eventID).child("eventMissions").child(missionID).setValue(tempMission);
 
-                // TODO: Implementation of the notifications
+                //Create a notification
+                Calendar calendar = Calendar.getInstance();
+                if (new Date().getTime() > selectedDate.getTime()){
+                    calendar.add(Calendar.DAY_OF_MONTH, 1);
+                }
+                // According to the amount of the frequency:
+                for (int i = 0; i < frequency; i++) {
+                    Intent intentToBrod = new Intent(newMissionActivity.this, notificationPublisher.class);
+                    intentToBrod.putExtra("SubText", tempMission.getTextContent());
+                    intentToBrod.putExtra("Title", tempMission.getTitle());
+                    intentToBrod.putExtra("Content", "משימות | ");
+                    intentToBrod.putExtra("channel", "missionsChannel");
+                    intentToBrod.putExtra("audioContent", tempMission.getAudioContent());
+                    intentToBrod.putExtra("index", (int) Math.random());
+
+                    PendingIntent pendingIntent = PendingIntent.getBroadcast(newMissionActivity.this,200, intentToBrod,PendingIntent.FLAG_UPDATE_CURRENT);
+                    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                }
+
                 Snackbar.make(finalDateTV,"המשימה נוצרה", 3000).show();
+                titleMissionET.setText("");
             }
         }
     }
@@ -466,21 +575,33 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
     }
 
     private boolean checkInputs() {
-        boolean flag = true;
+        titleMissionET = findViewById(R.id.titleMissionET);
         finalDateTV = findViewById(R.id.finalDateTV);
-        if (titleMissionET.getText().toString().isEmpty() || contextMissionET.getText().toString().isEmpty() || finalDateStr.isEmpty()){
+        dateForNotificationTV = findViewById(R.id.dateForNotificationTV);
+        finalDateTV = findViewById(R.id.finalDateTV);
+        boolean flag = true;
+
+        if (isText){
+            contextMissionET = findViewById(R.id.contextMissionET);
+            if (contextMissionET.getText().toString().isEmpty() || dateForNotificationTV.getText().toString().equals("HH:mm")){
+                flag = false;
+                Snackbar.make(finalDateTV, "שדה לא יהיה ריק", 3000).show();
+            }
+        }
+
+        if (titleMissionET.getText().toString().isEmpty() || finalDateTV.getText().toString().equals("dd/MM/yyyy")){
             flag = false;
             Snackbar.make(finalDateTV, "שדה לא יהיה ריק", 3000).show();
         }
-        else if (frequency == 0){
+        else if (selectedDate == null){
             flag = false;
-            Snackbar.make(finalDateTV, "נא לבחור את התדירות", 3000).show();
+            Snackbar.make(finalDateTV, "נא לבחור את תאריך", 3000).show();
         }
-        else if (!isText && mediaSaverFile.getName().equals("")){
+        else if (!isText && mediaSaverFile == null){
             flag = false;
             Snackbar.make(finalDateTV, "נא ליצור הקלטה", 3000).show();
         }
-
+        finalDateTV.setText("dd/MM/yyyy");
         return flag;
     }
 
@@ -492,6 +613,11 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) { }
 
+    /**
+     * Move to main of mission (the first layout).
+     *
+     * @param view the view
+     */
     public void moveToMainOfMission(View view) {
         if (updateMode){
            Intent si = new Intent(this, missionsActivity.class);

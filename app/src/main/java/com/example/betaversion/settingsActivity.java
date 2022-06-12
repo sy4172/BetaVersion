@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
@@ -22,7 +23,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -36,6 +36,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -63,15 +64,14 @@ public class settingsActivity extends AppCompatActivity{
     ArrayList<Integer> dataList;
     int efficiency;
 
-    ArrayList<Material> allMaterials; // Summarize all the Material objects that were created
-    ArrayList<Shows> allShows;// Summarize all the Shows objects that were created
+    HashMap<String, Material> allMaterials; // Summarize all the Material objects that were created
+    HashMap<String, Shows> allShows;// Summarize all the Shows objects that were created
 
     CustomAdapterMaterials customAdapterMaterial;
     CustomAdapterShows customAdapterShows;
 
     String option; // The Option that selected. (Material OR Show)
     BusinessEqu businessEqu; // the general object to all the settings properties in order to upload the FireBase DataBase
-    User user;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -105,12 +105,14 @@ public class settingsActivity extends AppCompatActivity{
         costsList = new ArrayList<>();
         employeesList = new ArrayList<>();
 
-        allMaterials = new ArrayList<>();
-        allShows = new ArrayList<>();
+        allMaterials = new HashMap<>();
+        allShows = new HashMap<>();
 
         businessEqu = new BusinessEqu();
         option = " ";
         getAllSysData();
+        getAllMaterials();
+        getAllShows();
 
         // Displaying a guide message to the user
         SharedPreferences settings = getSharedPreferences("Status",MODE_PRIVATE);
@@ -162,7 +164,7 @@ public class settingsActivity extends AppCompatActivity{
 
                 for(DataSnapshot data : dS.getChildren()) {
                     Shows tempShow = data.getValue(Shows.class);
-                    allShows.add(tempShow);
+                    allShows.put(Objects.requireNonNull(tempShow).getShowTitle(),tempShow);
 
                     showTitlesList.add(Objects.requireNonNull(tempShow).getShowTitle());
                     descriptionsList.add(tempShow.getDescription());
@@ -190,7 +192,7 @@ public class settingsActivity extends AppCompatActivity{
 
                 for(DataSnapshot data : dS.getChildren()) {
                     Material temp = data.getValue(Material.class);
-                    allMaterials.add(temp);
+                    allMaterials.put(Objects.requireNonNull(temp).getTypeOfMaterial(), temp);
 
                     materialsTitleList.add(Objects.requireNonNull(temp).getTypeOfMaterial());
                     materialsTotalList.add(temp.getTotalAmount());
@@ -335,13 +337,18 @@ public class settingsActivity extends AppCompatActivity{
                         temp.setTotalAmount(Integer.parseInt(totalAmountET.getText().toString()));
                         temp.setUsedAmount(0);
 
-                        allMaterials.add(temp);
+                        allMaterials.put(temp.getTypeOfMaterial(), temp);
                         businessEqu.setMaterials(allMaterials);
                         refBusinessEqu.setValue(businessEqu);
 
                         materialsTitleList.add(temp.getTypeOfMaterial());
                         materialsTotalList.add(temp.getTotalAmount());
                         materialsUsedList.add(temp.getUsedAmount());
+                        customAdapterMaterial.notifyDataSetChanged();
+                        efficiency = setEfficiency();
+                        efficiencyTV.setText(""+efficiency+"%");
+                        businessEqu.setEfficiency(efficiency);
+
                     } else dialogInterface.dismiss();
                 }
             }
@@ -357,17 +364,21 @@ public class settingsActivity extends AppCompatActivity{
         ad.show();
     }
 
+    /**
+     * updateAMaterial method is for updating the material
+     * @param  pos the index of the material in the list.
+     */
     @SuppressLint("SetTextI18n")
     private void updateAMaterial(int pos) {
         getAllMaterials();
-        Material temp = new Material(allMaterials.get(pos).getTypeOfMaterial(), allMaterials.get(pos).getTotalAmount(), allMaterials.get(pos).getUsedAmount());
+        Material temp = new Material(allMaterials.get(materialsTitleList.get(pos)).getTypeOfMaterial(), allMaterials.get(materialsTitleList.get(pos)).getTotalAmount(), allMaterials.get(materialsTitleList.get(pos)).getUsedAmount());
 
         LinearLayout AdScreen = new LinearLayout(this);
         AdScreen.setOrientation(LinearLayout.VERTICAL);
         AdScreen.setPadding(15,0,15,0);
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         final TextView titleTV = new TextView(this);
-        titleTV.setText("עדכן את החומר - "+allMaterials.get(pos).getTypeOfMaterial());
+        titleTV.setText("עדכן את החומר - "+allMaterials.get(materialsTitleList.get(pos)).getTypeOfMaterial());
         titleTV.setTextColor(Color.rgb(143, 90, 31));
         titleTV.setTextSize(25);
         titleTV.setPadding(0,15,30,15);
@@ -395,6 +406,7 @@ public class settingsActivity extends AppCompatActivity{
         totalAmountET.setText(""+materialsTotalList.get(pos));
 
         adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
+
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 if (!totalAmountET.getText().toString().isEmpty()){
@@ -402,7 +414,9 @@ public class settingsActivity extends AppCompatActivity{
                         temp.setTypeOfMaterial(typeET.getText().toString());
                         temp.setTotalAmount(Integer.parseInt(totalAmountET.getText().toString()));
 
-                        allMaterials.set(pos,temp);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            allMaterials.replace(materialsTitleList.get(pos),temp);
+                        }
                         refBusinessEqu.child("materials").setValue(allMaterials);
 
                         materialsTitleList.set(pos, temp.getTypeOfMaterial());
@@ -433,12 +447,15 @@ public class settingsActivity extends AppCompatActivity{
      */
     public void displayMaterials(View view) {
         option = "ציוד";
-        getAllMaterials();
         customAdapterMaterial = new CustomAdapterMaterials(this, materialsTitleList, materialsTotalList, materialsUsedList);
         customAdapterMaterial.notifyDataSetChanged();
         generalLV.setAdapter(customAdapterMaterial);
         showsTV.setTypeface(ResourcesCompat.getFont(showsTV.getContext(), R.font.rubik_regular));
         materialsTV.setTypeface(ResourcesCompat.getFont(showsTV.getContext(), R.font.rubik_semibold));
+
+        if (materialsTitleList.isEmpty()){
+            Snackbar.make(generalLV, "אין ציוד במערכת", 3000).show();
+        }
     }
 
     /**
@@ -460,7 +477,7 @@ public class settingsActivity extends AppCompatActivity{
         } else if (!(totalAmount > 0)){
             flag = false;
             Snackbar.make(generalLV, "כמות חומר הינה מספר טבעי", 3000).show();
-        } else if (totalAmount < materialsUsedList.get(materialsTitleList.indexOf(typeOfMaterial))){
+        } else if (updateMode && totalAmount < materialsUsedList.get(materialsTitleList.indexOf(typeOfMaterial))){
             flag = false;
             Snackbar.make(generalLV, "כמות חומר שהתקבלה אינה הגיונית", 3000).show();
         }
@@ -534,7 +551,7 @@ public class settingsActivity extends AppCompatActivity{
                         temp.setCost(Integer.parseInt(costET.getText().toString()));
                         temp.setDescription(desET.getText().toString());
                         temp.setEmployees(Integer.parseInt(employeesET.getText().toString()));
-                        allShows.add(temp);
+                        allShows.put(temp.getShowTitle(), temp);
                         businessEqu.setShowsList(allShows);
                         refBusinessEqu.setValue(businessEqu);
 
@@ -588,16 +605,20 @@ public class settingsActivity extends AppCompatActivity{
         return flag[0];
     }
 
+    /**
+     * updateAShow method is for updating the shows
+     * @param  pos the index of the show in the list.
+     */
     @SuppressLint("SetTextI18n")
     private void updateAShow(int pos) {
         getAllShows();
-        Shows temp = new Shows(allShows.get(pos).getShowTitle(), allShows.get(pos).getDescription(), allShows.get(pos).getCost(), allShows.get(pos).getEmployees());
+        Shows temp = new Shows(allShows.get(showTitlesList.get(pos)).getShowTitle(), allShows.get(showTitlesList.get(pos)).getDescription(), allShows.get(showTitlesList.get(pos)).getCost(), allShows.get(showTitlesList.get(pos)).getEmployees());
         LinearLayout AdScreen = new LinearLayout(this);
         AdScreen.setOrientation(LinearLayout.VERTICAL);
         AdScreen.setPadding(15,0,15,0);
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         final TextView titleTV = new TextView(this);
-        titleTV.setText("עדכון המופע - "+allShows.get(pos).getShowTitle());
+        titleTV.setText("עדכון המופע - "+allShows.get(showTitlesList.get(pos)).getShowTitle());
         titleTV.setTextColor(Color.rgb(143, 90, 31));
         titleTV.setTextSize(25);
         titleTV.setPadding(0,15,30,15);
@@ -650,7 +671,9 @@ public class settingsActivity extends AppCompatActivity{
                     temp.setDescription(desET.getText().toString());
                     temp.setEmployees(Integer.parseInt(employeesET.getText().toString()));
 
-                    allShows.set(pos,temp);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        allShows.replace(showTitlesList.get(pos),temp);
+                    }
                     refBusinessEqu.child("showsList").setValue(allShows);
 
                     showTitlesList.set(pos, temp.getShowTitle());
@@ -682,12 +705,15 @@ public class settingsActivity extends AppCompatActivity{
      */
     public void displayShows(View view) {
         option = "מופעים";
-        getAllShows();
         customAdapterShows = new CustomAdapterShows(getApplicationContext(), showTitlesList, descriptionsList, costsList, employeesList);
         customAdapterShows.notifyDataSetChanged();
         generalLV.setAdapter(customAdapterShows);
         showsTV.setTypeface(ResourcesCompat.getFont(showsTV.getContext(), R.font.rubik_semibold));
         materialsTV.setTypeface(ResourcesCompat.getFont(showsTV.getContext(), R.font.rubik_regular));
+
+        if (showTitlesList.isEmpty()){
+            Snackbar.make(generalLV, "אין מופעים", 3000).show();
+        }
     }
 
     /**
@@ -753,15 +779,21 @@ public class settingsActivity extends AppCompatActivity{
         adb.setPositiveButton("עדכן", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                dataList.set(0, Integer.parseInt(valueET.getText().toString()));
-                businessEqu.setTotalEmployees(dataList.get(0));
+                // Updating also the available employees in the FireBase and to dispaly
+                int previousTotalEmployees = dataList.get(0);
+                int currentTotalEmployees = Integer.parseInt(valueET.getText().toString());
+                if (currentTotalEmployees > businessEqu.getAvailableEmployees() || previousTotalEmployees - businessEqu.getAvailableEmployees() == 0){
+                    businessEqu.setAvailableEmployees(previousTotalEmployees + (currentTotalEmployees - previousTotalEmployees)); // Adding the change between the previous and the CURRENT.
+                    dataList.set(0, Integer.parseInt(valueET.getText().toString()));
+                    businessEqu.setTotalEmployees(dataList.get(0));
 
-                refBusinessEqu.setValue(businessEqu);
+                    refBusinessEqu.setValue(businessEqu);
 
-                efficiencyTV.setText(businessEqu.getEfficiency()+"%");
-                efficiency = setEfficiency();
-                availableTV.setText(businessEqu.getAvailableEmployees()+"");
-                totalTV.setText(businessEqu.getTotalEmployees()+"");
+                    efficiencyTV.setText(businessEqu.getEfficiency()+"%");
+                    efficiency = setEfficiency();
+                    availableTV.setText(businessEqu.getAvailableEmployees()+"");
+                    totalTV.setText(businessEqu.getTotalEmployees()+"");
+                } else Snackbar.make(generalLV, "לא ניתן להפחית מכמות עובדים אשר משומשת", 3000).show();
             }
         }).setNegativeButton("בטל", new DialogInterface.OnClickListener() {
             @Override
@@ -803,13 +835,13 @@ public class settingsActivity extends AppCompatActivity{
         // Making an action its type that is saved in the option variable
         if (option.equals("הסר חומר")){
             if (materialsUsedList.get(pos) == 0){
+                refBusinessEqu.child("materials").child(materialsTitleList.get(pos)).removeValue();
+                allMaterials.remove(materialsTitleList.get(pos));
                 materialsTitleList.remove(pos);
                 materialsTotalList.remove(pos);
                 materialsUsedList.remove(pos);
-                allMaterials.remove(pos);
                 customAdapterMaterial.notifyDataSetChanged();
                 generalLV.setAdapter(customAdapterMaterial);
-                refBusinessEqu.child("materials").child(String.valueOf(pos)).removeValue();
                 Snackbar.make(generalLV, "הציוד נמחק בהצלחה", 3000).show();
             } else Snackbar.make(generalLV, "הציוד המבוקש משומש", 3000).show();
         }
@@ -818,14 +850,14 @@ public class settingsActivity extends AppCompatActivity{
         }
         else if (option.equals("הסר מופע")){
             if(!showInUsed(pos)){
+                refBusinessEqu.child("showsList").child(showTitlesList.get(pos)).removeValue();
+                allShows.remove(showTitlesList.get(pos));
                 showTitlesList.remove(pos);
                 costsList.remove(pos);
                 descriptionsList.remove(pos);
                 employeesList.remove(pos);
-                allShows.remove(pos);
                 customAdapterShows.notifyDataSetChanged();
                 generalLV.setAdapter(customAdapterShows);
-                refBusinessEqu.child("showsList").child(String.valueOf(pos)).removeValue();
                 Snackbar.make(generalLV, "המופע נמחק בהצלחה", 3000).show();
             }
             else Snackbar.make(generalLV, "המופע המבוקש משומש", 3000).show();
@@ -849,7 +881,6 @@ public class settingsActivity extends AppCompatActivity{
      * @param view the FloatingActionButton
      */
     public void moveToCreateAnEvent(View view) {
-        Toast.makeText(this, "New Event", Toast.LENGTH_SHORT).show();
         Intent si = new Intent(this, newEventActivity.class);
         startActivity(si);
     }

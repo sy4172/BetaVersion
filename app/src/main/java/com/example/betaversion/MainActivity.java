@@ -1,8 +1,10 @@
 package com.example.betaversion;
 
+import static com.example.betaversion.FBref.refEnd_Event;
 import static com.example.betaversion.FBref.refGreen_Event;
 import static com.example.betaversion.FBref.refOrange_Event;
 import static com.example.betaversion.FBref.refReminders;
+import static com.example.betaversion.FBref.reflive_Event;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -14,7 +16,6 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -31,6 +32,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Objects;
 
 
@@ -41,13 +43,14 @@ import java.util.Objects;
  *
  * * This MainActivity.class displays the main control on the business.
  */
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener {
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener {
 
     BottomNavigationView bottomNavigationView;
 
-    ListView beforeApprovalLV, closeEventsLV, remaindersLV, missionsLV; // ListView for ORANGE events, GREEN events, Remainders and Missions
+    ListView beforeApprovalLV, closeEventsLV, remaindersLV, missionsLV; // ListViews for ORANGE events, GREEN events, Remainders and Missions
 
     // ArrayLists for Event objects
+    Date eventDate;
     ArrayList<String> titleEvents, dateEvents, phonesList, namesList, eventCharacterizeList;
     ArrayList<Boolean> isPaidList, hasAcceptedList;
     ArrayList<Integer> employeesList;
@@ -62,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     ArrayList<Integer> frequencyList;
 
     CustomAdapterMissions customAdapterMissions;
-    CustomAdapterEvents customAdapterEvents;
+    CustomAdapterEvents customAdapterEventsGreen, customAdapterEventsOrange;
 
     @SuppressLint("WrongConstant")
     @Override
@@ -89,10 +92,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
         bottomNavigationView.setOnNavigationItemReselectedListener(this);
-        beforeApprovalLV.setOnItemClickListener(this);
-        closeEventsLV.setOnItemClickListener(this);
-        missionsLV.setOnItemClickListener(this);
-        remaindersLV.setOnItemClickListener(this);
 
         remindersTitleList = new ArrayList<>();
         remindersContextList = new ArrayList<>();
@@ -115,9 +114,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         missionLastDatesList = new ArrayList<>();
         frequencyList = new ArrayList<>();
 
-        readAllRemainders();
-        readAllCloseEvents();
         readAllBeforeApproval();
+        readAllCloseEvents();
+        readAllRemainders();
     }
 
     /**
@@ -140,18 +139,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 for(DataSnapshot data : dS.getChildren()) {
                     Event tempEvent = data.getValue(Event.class);
 
-                    titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
-                    dateEvents.add(tempEvent.getDateOfEvent());
-                    phonesList.add(tempEvent.getCustomerPhone());
-                    employeesList.add(tempEvent.getEventEmployees());
-                    eventCharacterizeList.add(tempEvent.getEventCharacterize());
-                    namesList.add(tempEvent.getCustomerName());
-                    isPaidList.add(tempEvent.isPaid());
-                    hasAcceptedList.add(tempEvent.isHasAccepted());
+                    eventDate = new Date();
+                    eventDate = DateConvertor.stringToDate(Objects.requireNonNull(tempEvent).getDateOfEvent(), "yyyyMMddHHmm");
+                    if (eventDate.after(new Date())){
+                        titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
+                        dateEvents.add(tempEvent.getDateOfEvent());
+                        phonesList.add(tempEvent.getCustomerPhone());
+                        employeesList.add(tempEvent.getEventEmployees());
+                        eventCharacterizeList.add(tempEvent.getEventCharacterize());
+                        namesList.add(tempEvent.getCustomerName());
+                        isPaidList.add(tempEvent.isPaid());
+                        hasAcceptedList.add(tempEvent.isHasAccepted());
+                    } else {
+                        tempEvent.setEventCharacterize("R");
+                        tempEvent.setHasAccepted(false);
+                        reflive_Event.child("redEvent").setValue(tempEvent);
+                    }
                 }
-
-                customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList, isPaidList, hasAcceptedList);
-                beforeApprovalLV.setAdapter(customAdapterEvents);
+                customAdapterEventsOrange = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList, isPaidList, hasAcceptedList);
+                beforeApprovalLV.setAdapter(customAdapterEventsOrange);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -179,19 +185,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 for(DataSnapshot data : dS.getChildren()) {
                     Event tempEvent = data.getValue(Event.class);
 
-                    titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
-                    dateEvents.add(tempEvent.getDateOfEvent());
-                    phonesList.add(tempEvent.getCustomerPhone());
-                    employeesList.add(tempEvent.getEventEmployees());
-                    eventCharacterizeList.add(tempEvent.getEventCharacterize());
-                    namesList.add(tempEvent.getCustomerName());
-                    isPaidList.add(tempEvent.isPaid());
-                    hasAcceptedList.add(tempEvent.isHasAccepted());
+                    eventDate = new Date();
+                    eventDate = DateConvertor.stringToDate(Objects.requireNonNull(tempEvent).getDateOfEvent(), "yyyyMMddHHmm");
+                    if (eventDate.after(new Date())){
+                        titleEvents.add(Objects.requireNonNull(tempEvent).getEventName());
+                        dateEvents.add(tempEvent.getDateOfEvent());
+                        phonesList.add(tempEvent.getCustomerPhone());
+                        employeesList.add(tempEvent.getEventEmployees());
+                        eventCharacterizeList.add(tempEvent.getEventCharacterize());
+                        namesList.add(tempEvent.getCustomerName());
+                        isPaidList.add(tempEvent.isPaid());
+                        hasAcceptedList.add(tempEvent.isHasAccepted());
+                    } else {
+                        tempEvent.setEventCharacterize("Dead");
+                        refEnd_Event.setValue(tempEvent);
+                    }
                 }
-                customAdapterEvents = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList, isPaidList, hasAcceptedList);
-                closeEventsLV.setAdapter(customAdapterEvents);
+                customAdapterEventsGreen = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList, isPaidList, hasAcceptedList);
+                closeEventsLV.setAdapter(customAdapterEventsGreen);
 
-                readAllMissions();
+                readAllMissions(titleEvents);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -216,14 +229,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 for(DataSnapshot data : dS.getChildren()) {
                     Reminder temp = data.getValue(Reminder.class);
 
-                    remindersTitleList.add(Objects.requireNonNull(temp).getTitle());
-                    remindersContextList.add(temp.getTextContent());
-                    remindersAudioContentList.add(temp.getAudioContent());
-                    isTextList.add(temp.isText());
-                    remindersLastDateToRemindList.add(temp.getLastDateToRemind());
+                    eventDate = new Date();
+                    eventDate = DateConvertor.stringToDate(Objects.requireNonNull(temp).getLastDateToRemind(), "yyyyMMddHHmm");
+                    if (eventDate.after(new Date())){
+                        remindersTitleList.add(Objects.requireNonNull(temp).getTitle());
+                        remindersContextList.add(temp.getTextContent());
+                        remindersAudioContentList.add(temp.getAudioContent());
+                        isTextList.add(temp.isText());
+                        remindersLastDateToRemindList.add(temp.getLastDateToRemind());
+                    } else{
+                        refReminders.child(Objects.requireNonNull(data.getKey())).removeValue();
+                    }
                 }
 
-                // checkDate();
                 CustomAdapterReminder customAdapterReminder = new CustomAdapterReminder(getApplicationContext(), remindersTitleList, remindersContextList, remindersAudioContentList, isTextList, remindersLastDateToRemindList);
                 remaindersLV.setAdapter(customAdapterReminder);
             }
@@ -236,10 +254,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     /**
      * readAllMissions method gets all the Mission objects that were created to display on the ListView object from the FireBase DataBase.
      */
-    private void readAllMissions() {
+    private void readAllMissions(ArrayList<String> titleEvents) {
+        String eventTitle;
         if (dateEvents.size() != 0){
             for (int i = 0; i < dateEvents.size(); i++) {
                 if (eventCharacterizeList.get(i).equals("G")){
+                    eventTitle = titleEvents.get(i);
+                    String finalEventTitle = eventTitle;
                     refGreen_Event.child(dateEvents.get(i)).child("eventMissions").addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dS) {
@@ -252,14 +273,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             for(DataSnapshot data : dS.getChildren()) {
                                 Mission tempMission = data.getValue(Mission.class);
 
-                                missionTitlesList.add(Objects.requireNonNull(tempMission).getTitle());
-                                missionStatusList.add(tempMission.isText());
-                                missionContentsList.add(tempMission.getTextContent());
-                                missionLastDatesList.add(tempMission.getLastDateToRemind());
-                                frequencyList.add(tempMission.getFrequency());
+                                eventDate = new Date();
+                                eventDate = DateConvertor.stringToDate(Objects.requireNonNull(tempMission.getLastDateToRemind()), "yyyyMMddHHmm");
+                                if (eventDate.after(new Date())){
+                                    missionTitlesList.add(Objects.requireNonNull(tempMission).getTitle());
+                                    missionStatusList.add(tempMission.isText());
+                                    missionContentsList.add(tempMission.getTextContent());
+                                    missionLastDatesList.add(tempMission.getLastDateToRemind());
+                                    frequencyList.add(tempMission.getFrequency());
+                                }
                             }
 
-                            customAdapterMissions = new CustomAdapterMissions(getApplicationContext(), titleEvents, missionTitlesList, missionStatusList, missionContentsList, missionLastDatesList, frequencyList);
+                            customAdapterMissions = new CustomAdapterMissions(getApplicationContext(), finalEventTitle, missionTitlesList, missionStatusList, missionContentsList, missionLastDatesList, frequencyList);
                             missionsLV.setAdapter(customAdapterMissions);
                         }
                         @Override
@@ -271,29 +296,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        if (view  == beforeApprovalLV){
-            Intent si = new Intent(this, eventsActivity.class);
-            si.putExtra("Index", i);
-            startActivity(si);
-        }
-        else if (view == missionsLV){
-            Intent si = new Intent(this, missionsActivity.class);
-            si.putExtra("Index", i);
-            startActivity(si);
-        }
-        else if (view == closeEventsLV){
-            Intent si = new Intent(this, eventsActivity.class);
-            si.putExtra("Index", i);
-            startActivity(si);
-        }
-        else if (view == remaindersLV){
-            Intent si = new Intent(this, remindersActivity.class);
-            si.putExtra("Index", i);
-            startActivity(si);
-        }
-    }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -352,9 +354,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onResume();
 
         bottomNavigationView.setSelectedItemId(R.id.empty);
-        readAllRemainders();
-        readAllCloseEvents();
         readAllBeforeApproval();
+        titleEvents = new ArrayList<>();
+        dateEvents = new ArrayList<>();
+        phonesList = new ArrayList<>();
+        employeesList = new ArrayList<>();
+        eventCharacterizeList = new ArrayList<>();
+        namesList = new ArrayList<>();
+        isPaidList = new ArrayList<>();
+        hasAcceptedList = new ArrayList<>();
+        readAllCloseEvents();
+        readAllRemainders();
     }
 
     /**

@@ -67,7 +67,7 @@ public class CustomAdapterReminder extends BaseAdapter{
         ImageView statusIV = view.findViewById(R.id.statusIV);
 
         titleTV.setText(remindsTitleList.get(i));
-        Date tempSelectedDate = DateConvertor.stringToDate(lastDateToRemindList.get(i), "yyyyMMddHHmmyyyyMMddHHmmss"); // Cast the String to date
+        Date tempSelectedDate = DateConvertor.stringToDate(lastDateToRemindList.get(i), "yyyyMMddHHmm"); // Cast the String to date
         // Setting the selected date in format of 'dd/MM/yyyy'
         lastDateTV.setText(DateConvertor.dateToString(tempSelectedDate, "dd/MM/yyyy"));
 

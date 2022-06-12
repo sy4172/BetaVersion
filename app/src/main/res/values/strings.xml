@@ -3,8 +3,7 @@
 
     <string name="toSignUp"> משתמש חדש? <b><font color="#0000FF"><u>הירשם כאן</u></font></b> </string>
     <string name="toSignIn"> משתמש רשום? <b><font color="#0000FF"><u>היכנס כאן</u></font></b> </string>
-    <string name="appEmail"><b><font color="#fe991d"><u>app.Boomaka.support@gmail.com</u></font></b> </string>
-    <string name="app_ver"><b><font color="#737373">גירסה 1.0.0.1/7</font></b> </string>
-
+    <string name="appEmail"><b><font color="#fe991d"><u>shahryani96@gmail.com</u></font></b> </string>
+    <string name="app_ver"><b><font color="#737373">גירסה 1.0.0.1/10</font></b> </string>
 
 </resources>

@@ -2,19 +2,25 @@ package com.example.betaversion;
 
 import static android.os.Environment.DIRECTORY_DOWNLOADS;
 import static com.example.betaversion.FBref.refReminders;
+import static com.example.betaversion.FBref.remindersRef;
 import static com.example.betaversion.FBref.storageRef;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.DownloadManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -34,7 +40,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -69,9 +74,9 @@ import java.util.Objects;
 
 /**
  * * @author    Shahar Yani
- * * @version  	3.9
+ * * @version  	4.4
  * * @since		24/12/2021
- *
+ * <p>
  * * This reminderActivity.class displays and creates all the reminds for the business.
  */
 public class remindersActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener, AdapterView.OnItemClickListener {
@@ -80,7 +85,6 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
 
     boolean isTextNewReminder, creationMode, isRecording, isPlaying, toDisplay;
     LinearLayout textLayout, recordLayout, reminderLayout;
-
     ImageView recordIV, playIV;
     MediaRecorder mediaRecorder;
     MediaPlayer mediaPlayer;
@@ -93,7 +97,7 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
     SeekBar seekBar;
 
     Date selectedDate, currentDate;
-    TextView selectedDateTV;
+    TextView selectedDateTV, statusRemindersTV;
     EditText titleReminderET, contextReminderET;
 
     ListView remaindersLV;
@@ -103,8 +107,6 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
 
     private static final int PERMISSION_CODE = 12;
     private String recordPermission = Manifest.permission.RECORD_AUDIO;
-
-    User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +122,7 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         textLayout = findViewById(R.id.textLayout);
         reminderLayout = findViewById(R.id.reminderLayout);
         remaindersLV = findViewById(R.id.remaindersLV);
+        statusRemindersTV = findViewById(R.id.statusRemindersTV);
 
         bottomNavigationView.setSelectedItemId(R.id.remainder); // set the selection of the bottomNavigationView object to the current activity
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
@@ -127,6 +130,8 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
 
         remaindersLV.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         remaindersLV.setOnItemClickListener(this);
+
+        createNotificationCH();
 
         rootPath = new File(this.getExternalFilesDir("/"), "myRemindersRECOREDS");
         if(!rootPath.exists()) {
@@ -149,6 +154,26 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         isTextList = new ArrayList<>();
 
         readAllRemainders();
+        Intent gi = getIntent();
+        if (gi.getBooleanExtra("playFromNotification",false)){
+            playARecordInAD(gi.getStringExtra("audioContent"),gi.getStringExtra("ContentTitle"));
+        }
+    }
+
+    private void createNotificationCH() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Reminders Channel";
+            String description = "Reminders for the business";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("remindersChannel", name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 
     @Override
@@ -159,10 +184,20 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         }
     }
 
+    /**
+     * Move to previous act.
+     *
+     * @param view the view
+     */
     public void moveToPreviousAct(View view) {
         super.onBackPressed();
     }
 
+    /**
+     * Logout.
+     *
+     * @param item the item
+     */
     @SuppressLint("SetTextI18n")
     public void Logout(MenuItem item) {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
@@ -218,7 +253,7 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
             startActivity(new Intent(this, settingsActivity.class));
         }
         else if (id == R.id.remainder){
-            startActivity(new Intent(this, reminderActivity.class));
+            startActivity(new Intent(this, remindersActivity.class));
         }
         else if (id == R.id.events){
             startActivity(new Intent(this,eventsActivity.class));
@@ -247,6 +282,11 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         }
     }
 
+    /**
+     * Open alert dialog selection.
+     *
+     * @param view the view
+     */
     public void openAlertDialogSelection(View view) {
         LinearLayout adScreenMain = new LinearLayout(this);
         adScreenMain.setOrientation(LinearLayout.VERTICAL);
@@ -309,10 +349,17 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
             return true;
         }else{
             ActivityCompat.requestPermissions(this,new String[]{recordPermission}, PERMISSION_CODE);
+            Snackbar.make(recordLayout,"אין הרשאת מיקרופון", 1000).show();
             return false;
         }
     }
 
+    /**
+     * methodsOnItemAD according to its staus
+     *
+     * @param isRecordItem its status
+     * @param pos the index in the list
+     * */
     private void methodsOnItemAD(boolean isRecordItem, int pos) {
         LinearLayout adScreen = new LinearLayout(this);
         adScreen.setOrientation(LinearLayout.VERTICAL);
@@ -323,16 +370,17 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         final TextView titleTV = new TextView(this);
         titleTV.setText(remindersTitleList.get(pos));
         titleTV.setTextColor(Color.rgb(143, 90, 31));
-        titleTV.setTextSize(20);
+        titleTV.setTextSize(25);
         titleTV.setPadding(0,15,30,15);
         titleTV.setTypeface(ResourcesCompat.getFont(titleTV.getContext(), R.font.rubik_semibold));
 
         final TextView playTV = new TextView(this);
         final TextView removeTV = new TextView(this);
         removeTV.setText("הסר תזכורת");
+        removeTV.setTextSize(18);
+        removeTV.setGravity(Gravity.RIGHT);
+        removeTV.setPadding(0,15,30,0);
         removeTV.setTextColor(Color.BLACK);
-        removeTV.setTextSize(16);
-        removeTV.setPadding(0,15,30,10);
         removeTV.setTypeface(ResourcesCompat.getFont(removeTV.getContext(), R.font.rubik_medium));
 
         adScreen.addView(titleTV);
@@ -340,10 +388,11 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
 
         if(isRecordItem) {
             playTV.setText("נגן הקלטה");
+            playTV.setTextSize(18);
+            playTV.setGravity(Gravity.RIGHT);
+            playTV.setPadding(0,15,30,30);
             playTV.setTextColor(Color.BLACK);
-            playTV.setPadding(0,10,30,25);
             playTV.setTypeface(ResourcesCompat.getFont(playTV.getContext(), R.font.rubik_medium));
-            playTV.setTextSize(16);
             adScreen.addView(playTV);
         }
 
@@ -355,7 +404,9 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
             public void onClick(View view) {
                 refReminders.child(remindersKeyList.get(pos)).removeValue();
                 // Remove from the FireBase Storage
-                removeTheRecord(remindersTitleList.get(pos));
+                if (isRecordItem){
+                    removeTheRecord(remindersAudioContentList.get(pos));
+                }
                 remindersTitleList.remove(pos);
                 remindersKeyList.remove(pos);
                 remindersContextList.remove(pos);
@@ -373,7 +424,7 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
             public void onClick(View view) {
                 readAllRemainders();
 
-                playARecordInAD(remindersAudioContentList.get(pos).substring(9,remindersAudioContentList.get(pos).length()), remindersTitleList.get(pos));
+                playARecordInAD(remindersAudioContentList.get(pos), remindersTitleList.get(pos));
 
                 ad.dismiss();
             }
@@ -381,6 +432,14 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         ad.show();
     }
 
+    /**
+     * downLoadFile from the storage
+     *
+     * @param context tof the activity
+     * @param uri the object that tranforms the data
+     * @param fileUrl the Path of the file
+     * @param destinationDirectory the destinationDirectory for the file
+     */
     private File downLoadFile(Context context, Uri uri, String fileUrl, String destinationDirectory) {
         File tempFile = new File(rootPath, fileUrl);
         if (!tempFile.exists()){
@@ -394,6 +453,12 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         return tempFile;
     }
 
+    /**
+     * Save the recording reminder AlertDialog.
+     *
+     * @param tempUrl the paht of the recordings
+     * @param title the title to display
+     */
     @SuppressLint("SetTextI18n")
     private void playARecordInAD(String tempUrl, String title) {
         LinearLayout adScreen = new LinearLayout(this);
@@ -412,12 +477,14 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         mediaPlayer = new MediaPlayer();
         // get the file with the url
 
-        StorageReference filePath = storageRef.child("/records").child(tempUrl);
+        StorageReference filePath = remindersRef.child(tempUrl);
+        tempUrl = tempUrl.substring(19); // Subtracted the unwanted parts from the url - SAVE only the file's name
+        String finalTempUrl = tempUrl;
         filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
                 try {
-                    mediaPlayer.setDataSource(downLoadFile(remindersActivity.this, uri, tempUrl, DIRECTORY_DOWNLOADS).getAbsolutePath());
+                    mediaPlayer.setDataSource(downLoadFile(remindersActivity.this, uri, finalTempUrl, DIRECTORY_DOWNLOADS).getAbsolutePath());
                     mediaPlayer.prepare();
                     seekbar1.setMax(mediaPlayer.getDuration() / 1000);
                     mediaPlayer.start();
@@ -451,7 +518,7 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
+                mediaPlayer.seekTo(seekBar.getProgress() * 1000);
             }
 
             @Override
@@ -475,6 +542,11 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
     }
 
 
+    /**
+     * Gets and Display all the Remainders form FB.
+     *
+     *
+     */
     private void readAllRemainders() {
         Query query = refReminders.orderByChild("lastDateToRemind");
         currentDate = new Date();
@@ -495,8 +567,7 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
                     temp = data.getValue(Reminder.class);
 
                     // Cast from String to Date
-
-                    DateFormat format = new SimpleDateFormat("yyyyMMddHHmmyyyyMMddHHmmss", Locale.ENGLISH);
+                    DateFormat format = new SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH);
                     Date selectedDate = null;
                     try {
                         selectedDate = format.parse(Objects.requireNonNull(temp).getLastDateToRemind());
@@ -519,7 +590,10 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
                 customAdapterReminder = new CustomAdapterReminder(getApplicationContext(), remindersTitleList, remindersContextList, remindersAudioContentList, isTextList, remindersLastDateToRemindList);
                 remaindersLV.setAdapter(customAdapterReminder);
 
-                //sortRemindersBySelectedDate();
+                if (remindersTitleList.isEmpty()){;
+                    statusRemindersTV.setText("אין תזכורות במערכת");
+                    statusRemindersTV.setTextColor(Color.rgb(178, 34,34));
+                }
                 //publishRemainders();
             }
 
@@ -529,6 +603,11 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         });
     }
 
+    /**
+     * Save the recording reminder AlertDialog.
+     *
+     * @param view the view
+     */
     @SuppressLint("SetTextI18n")
     public void saveTheRecordingReminderAD(View view) {
         Reminder tempReminder = new Reminder();
@@ -601,18 +680,23 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
                     if (selectedDate.equals(new Date())){
                         Snackbar.make(recordLayout,"נא לבחור תאריך", 1000).show();
                     }
-//                    else if (currentDate.compareTo(selectedDate) < 0){
-//                        Snackbar.make(recordLayout,"התאריך עבר", 1000).show();
-//                    }
                     else {
                         // Cast the selected Date to String
-                        DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmyyyyMMddHHmmss");
-                        String strDate = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmmyyyyMMddHHmmss");
-                        strDate += dateFormat.format(currentDate);
-
+                        String childID = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmmyyyyMMddHHmmss");
+                        childID += DateConvertor.dateToString(currentDate, "yyyyMMddHHmmyyyyMMddHHmmss");
+                        String strDate = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmm");
                         tempReminder.setLastDateToRemind(strDate);
                         tempReminder.setTextContent("<קטע קול>");
                         Snackbar.make(recordLayout,"התזכורת נשמרה", 1000).show();
+                        // TODO: Notification
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(selectedDate.getTime());
+                        calendar.set(Calendar.HOUR_OF_DAY, 8);;
+                        calendar.set(Calendar.MINUTE, 0);
+                        calendar.set(Calendar.SECOND,0);
+                        if (selectedDate.getHours() >=8){
+                            calendar.add(Calendar.DAY_OF_MONTH, 1);
+                        }
 
                         readAllRemainders();
 
@@ -620,7 +704,7 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
                             String urlOfRecord = uploadTheRecording();
                             tempReminder.setAudioContent(urlOfRecord);
 
-                            refReminders.child(strDate).setValue(tempReminder);
+                            refReminders.child(childID).setValue(tempReminder);
 
                             remindersKeyList.add(strDate);
                             remindersTitleList.add((tempReminder).getTitle());
@@ -628,6 +712,20 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
                             remindersAudioContentList.add(tempReminder.getAudioContent());
                             isTextList.add(tempReminder.isText());
                             remindersLastDateToRemindList.add(tempReminder.getLastDateToRemind());
+
+                            // TODO: Notification
+                            Intent intentToBrod = new Intent(remindersActivity.this, notificationPublisher.class);
+                            intentToBrod.putExtra("SubText", tempReminder.getTextContent());
+                            intentToBrod.putExtra("Title", tempReminder.getTitle());
+                            intentToBrod.putExtra("Content", "תזכורת לעסק | ");
+                            intentToBrod.putExtra("channel", "remindersChannel");
+                            intentToBrod.putExtra("audioContent", tempReminder.getAudioContent());
+                            intentToBrod.putExtra("index", remindersKeyList.get(remindersKeyList.indexOf(strDate)));
+
+                            PendingIntent pendingIntent = PendingIntent.getBroadcast(remindersActivity.this,200, intentToBrod,PendingIntent.FLAG_UPDATE_CURRENT);
+                            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                            readAllRemainders();
                         }
                         else{
                             Snackbar.make(recordLayout,"אין הקלטה לשמירה. הקלט כדי לשמור", 1000).show();
@@ -660,10 +758,13 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
                     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                         Calendar c = Calendar.getInstance();
                         c.set(year, month++, dayOfMonth,0,0,0);
-                        selectedDate = new Date(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH),0,0,0);
-                        selectedDate.setYear(selectedDate.getYear() - 1900);
-                        String strDate = DateConvertor.dateToString(selectedDate, "dd/MM/yyyy");
-                        dateTV.setText(strDate);
+                        selectedDate = new Date(c.get(Calendar.YEAR) - 1900, c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH),8,0,0);
+                        if (selectedDate.after(new Date())){
+                            String strDate = DateConvertor.dateToString(selectedDate, "dd/MM/yyyy");
+                            dateTV.setText(strDate);
+                        } else{
+                            Snackbar.make(dateTV,"תאריך לא רלוונטי", 1000).show();
+                        }
                     }
                 }, year, month, day);
 
@@ -677,14 +778,14 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
     private String uploadTheRecording() {
         String url;
         Uri file = Uri.fromFile(mediaSaverFile);
-        StorageReference recordRef = storageRef.child("/records/Reminders"+file.getLastPathSegment());
+        StorageReference recordRef = remindersRef.child(file.getLastPathSegment());
         recordRef.putFile(file);
         url = recordRef.getPath();
         return url;
     }
 
-    private void removeTheRecord(String titleToSearch) {
-        StorageReference deleteFile = storageRef.child("/records/Reminders"+titleToSearch+".3gp");
+    private void removeTheRecord(String fileUrl) {
+        StorageReference deleteFile = storageRef.child(fileUrl);
         deleteFile.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -693,13 +794,17 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Snackbar.make(reminderLayout,"מחיקה נכשלה", 1000).show();
-                Toast.makeText(remindersActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                Snackbar.make(reminderLayout,"מחיקה נכשלה: "+e.getMessage(), 1000).show();
             }
         });
     }
 
-    // The section of the text reminder
+    /**
+     * Open date picker.
+     *
+     * @param view the button of date
+     */
+// The section of the text reminder
     public void openDatePicker(View view){
         selectedDateTV = findViewById(R.id.selectedDateTV);
 
@@ -713,16 +818,35 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                 Calendar c = Calendar.getInstance();
                 c.set(year, month++, dayOfMonth,0,0,0);
-                selectedDate = new Date(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH),0,0,0);
-                String strDate = DateConvertor.dateToString(selectedDate, "dd/MM/yyyy");
-                selectedDateTV.setText(strDate);
+                selectedDate = new Date(c.get(Calendar.YEAR) -1900, c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH),8,0,0);
+                if (selectedDate.after(new Date())){
+                    String strDate = DateConvertor.dateToString(selectedDate, "dd/MM/yyyy");
+                    selectedDateTV.setText(strDate);
+                } else{
+                    Snackbar.make(selectedDateTV,"תאריך לא רלוונטי", 3000).show();
+                }
             }
         }, year, month, day);
 
+        final TextView titleTV = new TextView(this);
+        titleTV.setText("תאריך אחרון לתזכורת");
+        titleTV.setTextColor(Color.WHITE);
+        titleTV.setBackgroundResource(R.color.orange_500);
+        titleTV.setPadding(0,10,10,0);
+        Typeface typeface = ResourcesCompat.getFont(this, R.font.rubik_semibold);
+        titleTV.setTextSize(25);
+        titleTV.setTypeface(typeface);
+
+        dpd.setCustomTitle(titleTV);
         dpd.show();
     }
 
-    // The section of startRecording methods
+    /**
+     * Start record.
+     *
+     * @param view the button
+     */
+// The section of startRecording methods
     @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("ResourceAsColor")
     public void startRecord(View view) {
@@ -756,6 +880,11 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         }
     }
 
+    /**
+     * startRecording and setting the layout
+     *
+     *
+     */
     private void startRecording() {
         recordLayout = findViewById(R.id.recordLayout);
         Snackbar.make(recordLayout,"מקליט..", 1000).show();
@@ -795,7 +924,12 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         mediaRecorder = null;
     }
 
-    // The section of PlayRecording methods
+    /**
+     * Play the record.
+     *
+     * @param view the view
+     */
+// The section of PlayRecording methods
     public void playTheRecord(View view){
         setContentView(R.layout.record_layout_reminder);
         if (!isRecording){
@@ -878,6 +1012,11 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         isPlaying = false;
     }
 
+    /**
+     * Save the text reminder.
+     *
+     * @param view the view
+     */
     public void saveTheTextReminder(View view) {
         textLayout = findViewById(R.id.textLayout);
         titleReminderET = findViewById(R.id.titleReminderET);
@@ -886,27 +1025,22 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         String tempTitle = titleReminderET.getText().toString();
         String tempContext = contextReminderET.getText().toString();
 
-
         currentDate = new Date();
         if (tempTitle.isEmpty() || tempContext.isEmpty() || selectedDateTV.getText().toString().isEmpty()){
             Snackbar.make(textLayout,"נא למלא את כל השדות", 1000).show();
-        }
-        else if (currentDate.after(selectedDate)){
-            Snackbar.make(textLayout,"התאריך עבר", 1000).show();
         }
         else if (tempTitle.matches("[0-9]+") || tempContext.matches("[0-9]+")){
             Snackbar.make(textLayout,"השדה לא יתחיל עם ספרות", 1000).show();
         }
         else{
             // Cast the selected Date to String
-            DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmyyyyMMddHHmmss");
-            String strDate = dateFormat.format(selectedDate);
-
-            Reminder tempReminder = new Reminder(tempTitle, true, tempContext," ",strDate);
+            String childID = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmmyyyyMMddHHmmss");
+            String strDate = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmm");
+            Reminder tempReminder = new Reminder(tempTitle, true, tempContext,"",strDate);
 
             readAllRemainders();
 
-            refReminders.child(strDate).setValue(tempReminder);
+            refReminders.child(childID).setValue(tempReminder);
 
             remindersKeyList.add(strDate);
             remindersTitleList.add((tempReminder).getTitle());
@@ -914,18 +1048,41 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
             remindersAudioContentList.add(tempReminder.getAudioContent());
             isTextList.add(tempReminder.isText());
             remindersLastDateToRemindList.add(tempReminder.getLastDateToRemind());
-
+            // Clean the layout
             titleReminderET.setText("");
             contextReminderET.setText("");
-            selectedDateTV.setText("");
+            selectedDateTV.setText("dd/mm/yyyy");
 
-            Snackbar.make(textLayout,"התזכורת נשמרה", 1000).show();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(selectedDate.getTime());
+            if (currentDate.getHours() >= 8){
+                Snackbar.make(textLayout,"התזכורת נשמרה ותחל ממחר", 1000).show();
+            } else Snackbar.make(textLayout,"התזכורת נשמרה ותחל מהיום", 1000).show();
+
+            Intent intentToBrod = new Intent(remindersActivity.this, notificationPublisher.class);
+            intentToBrod.putExtra("SubText", "תזכורת לעסק |");
+            intentToBrod.putExtra("ContentTitle", tempReminder.getTitle());
+            intentToBrod.putExtra("ContentText", tempReminder.getTextContent());
+            intentToBrod.putExtra("audioContent", tempReminder.getAudioContent());
+            intentToBrod.putExtra("index", remindersKeyList.get(remindersKeyList.indexOf(strDate)));
+            intentToBrod.putExtra("channel", "remindersChannel");
+
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(remindersActivity.this,200, intentToBrod,PendingIntent.FLAG_UPDATE_CURRENT);
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+            readAllRemainders();
         }
 
     }
 
+
+    /**
+     * Move to main of reminder activity (Where the all reminders).
+     *
+     * @param view the view
+     */
     public void moveToMainOfReminder(View view){
-        setContentView(R.layout.activity_reminder);
+        setContentView(R.layout.activity_reminders);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         remaindersLV = findViewById(R.id.remaindersLV);
         bottomNavigationView.setSelectedItemId(R.id.remainder); // set the selection of the bottomNavigationView object to the current activity

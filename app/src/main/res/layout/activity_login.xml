@@ -64,7 +64,7 @@
                         android:text="הרשמה"
                         android:textAlignment="center"
                         android:textColor="@color/black200"
-                        android:textSize="34sp"
+                        android:textSize="30sp"
                         android:textStyle="bold" />
 
                     <Space
@@ -135,7 +135,8 @@
                         android:layout_width="0px"
                         android:layout_height="match_parent"
                         android:layout_weight="8"
-                        android:hint="סיסמא">
+                        app:endIconMode="password_toggle"
+                        android:hint="סיסמה">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/passwordET"
@@ -248,9 +249,9 @@
                         android:layout_height="match_parent"
                         android:layout_weight="3"
                         android:backgroundTint="@color/orange_500"
-                        android:fontFamily="@font/rubik_medium"
+                        android:fontFamily="@font/rubik_bold"
                         android:onClick="reactToLogin"
-                        android:text="התחבר" />
+                        android:text="כניסה" />
 
                     <Space
                         android:layout_width="0px"
@@ -262,6 +263,32 @@
                     android:layout_width="match_parent"
                     android:layout_height="0px"
                     android:layout_weight="2" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0px"
+                    android:layout_weight="4"
+                    android:orientation="horizontal">
+
+                    <Space
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/currentUserTV"
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="5"
+                        android:fontFamily="@font/rubik_regular"
+                        android:gravity="center"
+                        android:textSize="16sp" />
+
+                    <Space
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"

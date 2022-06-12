@@ -35,12 +35,12 @@ import java.util.HashMap;
 import java.util.Objects;
 
 /**
-    * * @author    Shahar Yani
-    * * @version  	4.1
-    * * @since		03/03/2022
-    *
-    * * This missionsActivity.class displays the all missions by an Event in the business
- * */
+ * * @author    Shahar Yani
+ * * @version  	4.1
+ * * @since		03/03/2022
+ * <p>
+ * * This missionsActivity.class displays the all missions by an Event in the business
+ */
 public class missionsActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener {
 
     BottomNavigationView bottomNavigationView;
@@ -56,8 +56,6 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
 
     CustomAdapterMissions customAdapterMissions;
     CustomAdapterEvents customAdapterEvents;
-
-    User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +103,11 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
         readAllCloseEvents();
     }
 
+    /**
+     * Display all events.
+     *
+     * @param view the view
+     */
     public void displayAllEvents(View view) {
         readAllCloseEvents();
         toMissionsMenu = false;
@@ -156,7 +159,13 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
         });
     }
 
+    /**
+     * Read all missions event.
+     *
+     * @param eventID the event id
+     */
     public void readAllMissionsEvent(String eventID){
+        String eventTitle = titleEvents.get(dateEvents.indexOf(eventID));
         refGreen_Event.child(eventID).child("eventMissions").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dS) {
@@ -180,7 +189,7 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
                     missionsKeysList.add(dS.getKey());
                 }
 
-                customAdapterMissions = new CustomAdapterMissions(getApplicationContext(),titleEvents ,missionTitlesList, missionStatusList, missionContentsList, missionLastDatesList, frequencyList);
+                customAdapterMissions = new CustomAdapterMissions(getApplicationContext(),eventTitle ,missionTitlesList, missionStatusList, missionContentsList, missionLastDatesList, frequencyList);
                 generalLV.setAdapter(customAdapterMissions);
                 toMissionsMenu = true;
                 backToStart.setVisibility(View.VISIBLE);
@@ -191,14 +200,29 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
         });
     }
 
+    /**
+     * Move to previous act.
+     *
+     * @param view the view
+     */
     public void moveToPreviousAct(View view) {
-        super.onBackPressed();
+        startActivity(new Intent(this, MainActivity.class));
     }
 
-    public void moveToEventsActivity(View view) {
-        startActivity(new Intent(this, eventsActivity.class));
+    /**
+     * Move to create an event.
+     *
+     * @param view the view
+     */
+    public void moveToCreateAnEvent(View view) {
+        startActivity(new Intent(this, newEventActivity.class));
     }
 
+    /**
+     * Logout.
+     *
+     * @param item the item
+     */
     public void Logout(MenuItem item) {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         final TextView titleTV = new TextView(this);
@@ -349,14 +373,22 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
             startActivity(si);
         }
         else if (option.equals("מחק")){
-            titleEvents.remove(position);
+            refGreen_Event.child(dateEvents.get(position)).child("eventMissions").removeValue();  // Remove from FireBase DataBase
             dateEvents.remove(position);
             allMissions.remove(missionsKeysList.get(position));
             missionStatusList.remove(position);
             missionsKeysList.remove(position);
 
-            customAdapterMissions = new CustomAdapterMissions(getApplicationContext(),titleEvents ,missionTitlesList, missionStatusList, missionContentsList, missionLastDatesList, frequencyList);
-            generalLV.setAdapter(customAdapterMissions);
+            if (!missionStatusList.isEmpty()){
+                customAdapterMissions = new CustomAdapterMissions(getApplicationContext(),titleEvents.get(position) ,missionTitlesList, missionStatusList, missionContentsList, missionLastDatesList, frequencyList);
+                generalLV.setAdapter(customAdapterMissions);
+            } else{
+                readAllCloseEvents();
+                toMissionsMenu = false;
+                backToStart.setVisibility(View.INVISIBLE);
+                eventIdTV.setText("בחר אירוע כדי להמשיך");
+                eventIdTV.setTextColor(Color.rgb(115, 115, 115));
+            }
         }
 
         return super.onContextItemSelected(item);

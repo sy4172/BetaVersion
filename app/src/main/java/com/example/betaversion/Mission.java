@@ -15,7 +15,7 @@ public class Mission implements Parcelable {
     private boolean isText;
     private String textContent;
     private String audioContentPath;
-    private String dateOfChange;
+    private String dateForNotification;
     private int frequency; // According to a Spinner object.
     private String lastDateToRemind;
 
@@ -30,16 +30,17 @@ public class Mission implements Parcelable {
      * @param isText           the is text
      * @param textContent      the text content
      * @param audioContentPath     the audio content path
-     * @param dateOfChange          the date of the change
+     * @param dateForNotification  the date of the notification
      * @param frequency        the frequency
      * @param lastDateToRemind the last date to remind
      */
-    public Mission(String title, boolean isText, String textContent, String audioContentPath, String dateOfChange, int frequency, String lastDateToRemind){
+    public Mission(String title, boolean isText, String textContent, String audioContentPath,
+                   String dateForNotification, int frequency, String lastDateToRemind){
         this.title = title;
         this.isText = isText;
         this.textContent = textContent;
         this.audioContentPath = audioContentPath;
-        this.dateOfChange = dateOfChange;
+        this.dateForNotification = dateForNotification;
         this.frequency = frequency;
         this.lastDateToRemind = lastDateToRemind;
     }
@@ -121,17 +122,17 @@ public class Mission implements Parcelable {
      *
      * @return the date of change
      */
-    public String getDateOfChange() {
-        return dateOfChange;
+    public String getDateForNotification() {
+        return dateForNotification;
     }
 
     /**
      * Sets date of change.
      *
-     * @param dateOfChange the date of change
+     * @param dateForNotification the date of change
      */
-    public void setDateOfChange(String dateOfChange) {
-        this.dateOfChange = dateOfChange;
+    public void setdateForNotification(String dateForNotification) {
+        this.dateForNotification = dateForNotification;
     }
 
     /**
@@ -176,7 +177,7 @@ public class Mission implements Parcelable {
         isText = in.readBoolean();
         textContent = in.readString();
         audioContentPath = in.readString();
-        dateOfChange = in.readString();
+        dateForNotification = in.readString();
         frequency = in.readInt();
         lastDateToRemind = in.readString();
     }
@@ -207,7 +208,7 @@ public class Mission implements Parcelable {
         }
         parcelOut.writeString(textContent);
         parcelOut.writeString(audioContentPath);
-        parcelOut.writeString(dateOfChange);
+        parcelOut.writeString(dateForNotification);
         parcelOut.writeInt(frequency);
         parcelOut.writeString(lastDateToRemind);
     }

@@ -12,6 +12,8 @@ public class FBref {
     public static final FirebaseStorage storage = FirebaseStorage.getInstance();
 
     public static final StorageReference storageRef = storage.getReference();
+    public static final StorageReference remindersRef = storage.getReference("records/Reminders");
+    public static final StorageReference fileRef = storage.getReference("file");
 
     public static DatabaseReference refReminders = FBDB.getReference("Reminder");
     public static DatabaseReference refBusinessEqu = FBDB.getReference("BusinessEqu");

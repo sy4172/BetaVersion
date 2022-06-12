@@ -6,6 +6,7 @@ import android.os.Handler;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 public class splashActivity extends AppCompatActivity {
 
@@ -18,6 +19,7 @@ public class splashActivity extends AppCompatActivity {
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
+        ContextCompat.startForegroundService(splashActivity.this, new Intent(splashActivity.this, BackgroundService.class));
 
         new Handler().postDelayed(new Runnable(){
             @Override

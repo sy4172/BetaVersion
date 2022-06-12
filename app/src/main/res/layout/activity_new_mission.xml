@@ -125,7 +125,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="2"
                 android:contentDescription="TODO"
-                android:onClick="createTextedMission"
+                android:onClick="createMission"
                 app:srcCompat="@drawable/ic_text_sign"
                 app:tint="@color/orange_500" />
 

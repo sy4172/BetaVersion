@@ -24,9 +24,8 @@ public class DateConvertor {
      */
     public static String dateToString (Date selectedDate, String strFormat){
         DateFormat dateFormat = new SimpleDateFormat(strFormat, Locale.ENGLISH);
-        String dateStr = dateFormat.format(selectedDate);
 
-        return dateStr;
+        return dateFormat.format(selectedDate);
     }
 
     /**
