@@ -104,11 +104,6 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
-        if (currentUser == null){
-            currentUserTV.setText("אין משתמש מחובר במערכת");
-        } else currentUserTV.setText("משתמש מחובר במערכת:"+"\n"+currentUser.getEmail());
-
         // Getting the current user from the FirebaseAuth
         FirebaseAuth.AuthStateListener mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -117,6 +112,12 @@ public class LoginActivity extends AppCompatActivity {
                 currentUser = user;
             }
         };
+
+        mAuthListener.onAuthStateChanged(mAuth);
+        currentUser = mAuth.getCurrentUser();
+        if (currentUser == null){
+            currentUserTV.setText("אין משתמש מחובר במערכת");
+        } else currentUserTV.setText("משתמש מחובר במערכת:"+"\n"+currentUser.getEmail());
     }
 
     /**
@@ -329,6 +330,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void updateUI(FirebaseUser user) {
         currentUser = user;
+        FirebaseAuth.getInstance().updateCurrentUser(currentUser);
     }
 
     /**

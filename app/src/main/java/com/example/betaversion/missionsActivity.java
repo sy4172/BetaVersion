@@ -356,8 +356,13 @@ public class missionsActivity extends AppCompatActivity implements BottomNavigat
         }
         else if (option.equals("צפה")){
             Intent si = new Intent(this, newMissionActivity.class);
+            boolean flag = true;
+            if (position == 1){
+                position --;
+            } else flag = false;
             si.putExtra("eventTitle", titleEvents.get(position));
             si.putExtra("eventID", dateEvents.get(position));
+            if (flag) position ++;
             si.putExtra("missionMode", missionStatusList.get(position));
             si.putExtra("updateMode", false);
             si.putExtra("mission", allMissions.get(missionsKeysList.get(position)));

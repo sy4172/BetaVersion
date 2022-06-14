@@ -1203,10 +1203,9 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
     private void updateFBData(Event tempEvent) {
         BusinessEqu businessEqu = new BusinessEqu();
-        refBusinessEqu.addValueEventListener(new ValueEventListener() {
+        refBusinessEqu.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
                 for (int i = 0; i < 1; i++) {
                     businessEqu.setAvailableEmployees(snapshot.child("availableEmployees").getValue(Integer.class));
                 }
@@ -1217,14 +1216,13 @@ public class newEventActivity extends AppCompatActivity implements AdapterView.O
 
             }
         });
-
         refBusinessEqu.child("availableEmployees").setValue(businessEqu.getAvailableEmployees() - tempEvent.getEventEmployees());
 
         int usedMaterials;
         for (int i = 0; i < tempEvent.getEventEquipments().size(); i++) {
             if (tempEvent.getEventEquipments().get(i).contains("t")){
                 usedMaterials = Integer.parseInt(tempEvent.getEventEquipments().get(i).substring(2));
-                refBusinessEqu.child("materials").child(i+"").child("usedAmount").setValue(usedMaterials);
+                refBusinessEqu.child("materials").child(materialsKeyList.get(i)).child("usedAmount").setValue(usedMaterials);
             }
         }
 

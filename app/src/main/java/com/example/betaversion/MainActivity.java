@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     } else {
                         tempEvent.setEventCharacterize("R");
                         tempEvent.setHasAccepted(false);
-                        reflive_Event.child("redEvent").setValue(tempEvent);
+                        reflive_Event.child("redEvent").child(tempEvent.getDateOfEvent()).setValue(tempEvent);
                     }
                 }
                 customAdapterEventsOrange = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList, isPaidList, hasAcceptedList);
@@ -198,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         hasAcceptedList.add(tempEvent.isHasAccepted());
                     } else {
                         tempEvent.setEventCharacterize("Dead");
-                        refEnd_Event.setValue(tempEvent);
+                        refEnd_Event.child(tempEvent.getDateOfEvent()).setValue(tempEvent);
                     }
                 }
                 customAdapterEventsGreen = new CustomAdapterEvents(getApplicationContext(),titleEvents, dateEvents, namesList, phonesList, employeesList,eventCharacterizeList, isPaidList, hasAcceptedList);

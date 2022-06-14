@@ -1,0 +1,863 @@
+@startuml
+
+title __BETAVERSION's Class Diagram__\n
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.BackgroundService {
+        + createNotificationCH()
+        + onBind()
+        + onCreate()
+        + onDestroy()
+        + onStartCommand()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.BusinessEqu {
+        - availableEmployees : int
+        - efficiency : int
+        - materials : HashMap<String, Material>
+        - showsList : HashMap<String, Shows>
+        - totalEmployees : int
+        + BusinessEqu()
+        + BusinessEqu()
+        + getAvailableEmployees()
+        + getEfficiency()
+        + getMaterials()
+        + getShowsList()
+        + getTotalEmployees()
+        + setAvailableEmployees()
+        + setEfficiency()
+        + setMaterials()
+        + setShowsList()
+        + setTotalEmployees()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.CustomAdapterEvents {
+        ~ context : Context
+        ~ dateEvents : ArrayList<String>
+        ~ employeesList : ArrayList<Integer>
+        ~ eventCharacterizeList : ArrayList<String>
+        ~ hasAcceptedList : ArrayList<Boolean>
+        ~ inflter : LayoutInflater
+        ~ isPaidList : ArrayList<Boolean>
+        ~ namesList : ArrayList<String>
+        ~ phonesList : ArrayList<String>
+        ~ titleEvents : ArrayList<String>
+        + CustomAdapterEvents()
+        + getCount()
+        + getItem()
+        + getItemId()
+        + getView()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.CustomAdapterMaterials {
+        ~ context : Context
+        ~ inflter : LayoutInflater
+        ~ materialsTitleList : ArrayList<String>
+        ~ materialsTotalList : ArrayList<Integer>
+        ~ materialsUsedList : ArrayList<Integer>
+        + CustomAdapterMaterials()
+        + getCount()
+        + getItem()
+        + getItemId()
+        + getView()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.CustomAdapterMissions {
+        ~ context : Context
+        ~ eventTitle : String
+        ~ frequencyList : ArrayList<Integer>
+        ~ inflter : LayoutInflater
+        ~ missionContentsList : ArrayList<String>
+        ~ missionLastDatesList : ArrayList<String>
+        ~ missionStatusList : ArrayList<Boolean>
+        ~ missionTitlesList : ArrayList<String>
+        + CustomAdapterMissions()
+        + getCount()
+        + getItem()
+        + getItemId()
+        + getView()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.CustomAdapterReminder {
+        ~ contentTextList : ArrayList<String>
+        ~ context : Context
+        ~ inflter : LayoutInflater
+        ~ isText : ArrayList<Boolean>
+        ~ lastDateToRemindList : ArrayList<String>
+        ~ remindersAudioContentList : ArrayList<String>
+        ~ remindsTitleList : ArrayList<String>
+        + CustomAdapterReminder()
+        + getCount()
+        + getItem()
+        + getItemId()
+        + getView()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.CustomAdapterShows {
+        ~ context : Context
+        ~ costsList : ArrayList<Integer>
+        ~ descriptionsList : ArrayList<String>
+        ~ employeesList : ArrayList<Integer>
+        ~ inflter : LayoutInflater
+        ~ showTitlesList : ArrayList<String>
+        + CustomAdapterShows()
+        + getCount()
+        + getItem()
+        + getItemId()
+        + getView()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.DateConvertor {
+        {static} + dateToString()
+        {static} + stringToDate()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.Event {
+        - customerEmail : String
+        - customerName : String
+        - customerPhone : String
+        - dateOfCreation : String
+        - dateOfEvent : String
+        - eventCharacterize : String
+        - eventContent : String
+        - eventCost : int
+        - eventEmployees : int
+        - eventEquipments : ArrayList<String>
+        - eventLocation : String
+        - eventMissions : HashMap<String, Mission>
+        - eventName : String
+        - eventPayment : String
+        - eventShows : ArrayList<Boolean>
+        - hasAccepted : boolean
+        - isPaid : boolean
+        + Event()
+        + Event()
+        + getCustomerEmail()
+        + getCustomerName()
+        + getCustomerPhone()
+        + getDateOfCreation()
+        + getDateOfEvent()
+        + getEventCharacterize()
+        + getEventContent()
+        + getEventCost()
+        + getEventEmployees()
+        + getEventEquipments()
+        + getEventLocation()
+        + getEventMissions()
+        + getEventName()
+        + getEventPayment()
+        + getEventShows()
+        + isHasAccepted()
+        + isPaid()
+        + setCustomerEmail()
+        + setCustomerName()
+        + setCustomerPhone()
+        + setDateOfCreation()
+        + setDateOfEvent()
+        + setEventCharacterize()
+        + setEventContent()
+        + setEventCost()
+        + setEventEmployees()
+        + setEventEquipments()
+        + setEventLocation()
+        + setEventMissions()
+        + setEventName()
+        + setEventPayment()
+        + setEventShows()
+        + setHasAccepted()
+        + setPaid()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.FBref {
+        {static} + FBDB : FirebaseDatabase
+        {static} + fileRef : StorageReference
+        {static} + refBusinessEqu : DatabaseReference
+        {static} + refEnd_Event : DatabaseReference
+        {static} + refGreen_Event : DatabaseReference
+        {static} + refOrange_Event : DatabaseReference
+        {static} + refRed_Event : DatabaseReference
+        {static} + refReminders : DatabaseReference
+        {static} + reflive_Event : DatabaseReference
+        {static} + remindersRef : StorageReference
+        {static} + storage : FirebaseStorage
+        {static} + storageRef : StorageReference
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.LoginActivity {
+        ~ checkBox : CheckBox
+        ~ currentUser : FirebaseUser
+        ~ currentUserTV : TextView
+        ~ emailET : EditText
+        ~ isSignUp : boolean
+        ~ layoutView : LinearLayout
+        ~ mAuth : FirebaseAuth
+        ~ messageTV : TextView
+        ~ passwordET : EditText
+        ~ phoneET : EditText
+        ~ phoneLayout : LinearLayout
+        ~ statusTV : TextView
+        {static} - TAG : String
+        + changeConnection()
+        + changeStatus()
+        + createUser()
+        + login()
+        + reactToLogin()
+        # onCreate()
+        # onStart()
+        - anotherUserAD()
+        - checkInternetConnection()
+        - updateUI()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.MainActivity {
+        ~ beforeApprovalLV : ListView
+        ~ bottomNavigationView : BottomNavigationView
+        ~ closeEventsLV : ListView
+        ~ dateEvents : ArrayList<String>
+        ~ employeesList : ArrayList<Integer>
+        ~ eventCharacterizeList : ArrayList<String>
+        ~ eventDate : Date
+        ~ frequencyList : ArrayList<Integer>
+        ~ hasAcceptedList : ArrayList<Boolean>
+        ~ isPaidList : ArrayList<Boolean>
+        ~ isTextList : ArrayList<Boolean>
+        ~ missionContentsList : ArrayList<String>
+        ~ missionLastDatesList : ArrayList<String>
+        ~ missionStatusList : ArrayList<Boolean>
+        ~ missionTitlesList : ArrayList<String>
+        ~ missionsLV : ListView
+        ~ namesList : ArrayList<String>
+        ~ phonesList : ArrayList<String>
+        ~ remaindersLV : ListView
+        ~ remindersAudioContentList : ArrayList<String>
+        ~ remindersContextList : ArrayList<String>
+        ~ remindersLastDateToRemindList : ArrayList<String>
+        ~ remindersTitleList : ArrayList<String>
+        ~ titleEvents : ArrayList<String>
+        + Logout()
+        + moveToCreateAnEvent()
+        + moveToCreditsActivity()
+        + moveToGreenEvents()
+        + moveToMissionsActivity()
+        + moveToOrangeEvents()
+        + moveToPreviousAct()
+        + moveToReminderAct()
+        + onNavigationItemReselected()
+        + onNavigationItemSelected()
+        + onPointerCaptureChanged()
+        # onCreate()
+        # onResume()
+        - readAllBeforeApproval()
+        - readAllCloseEvents()
+        - readAllMissions()
+        - readAllRemainders()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.MapActivity {
+        ~ address : String
+        ~ addressTV : TextView
+        ~ fusedLocationProviderClient : FusedLocationProviderClient
+        ~ gmap : GoogleMap
+        ~ latitude : double
+        ~ locationTV : TextView
+        ~ longitude : double
+        ~ mapView : MapView
+        ~ mapViewBundle : Bundle
+        {static} - MAP_VIEW_BUNDLE_KEY : String
+        + Logout()
+        + displayAddress()
+        + moveToPreviousAct()
+        + onLowMemory()
+        + onMapReady()
+        + onSaveInstanceState()
+        + turnGPSOff()
+        {static} + turnGPSOn()
+        # onCreate()
+        # onDestroy()
+        # onPause()
+        # onResume()
+        # onStart()
+        # onStop()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.Material {
+        - totalAmount : int
+        - typeOfMaterial : String
+        - usedAmount : int
+        + Material()
+        + Material()
+        + getTotalAmount()
+        + getTypeOfMaterial()
+        + getUsedAmount()
+        + setTotalAmount()
+        + setTypeOfMaterial()
+        + setUsedAmount()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.Mission {
+        {static} + CREATOR : Creator<Mission>
+        - audioContentPath : String
+        - dateForNotification : String
+        - frequency : int
+        - isText : boolean
+        - lastDateToRemind : String
+        - textContent : String
+        - title : String
+        + Mission()
+        + Mission()
+        + describeContents()
+        + getAudioContent()
+        + getDateForNotification()
+        + getFrequency()
+        + getLastDateToRemind()
+        + getTextContent()
+        + getTitle()
+        + isText()
+        + setAudioContent()
+        + setFrequency()
+        + setLastDateToRemind()
+        + setText()
+        + setTextContent()
+        + setTitle()
+        + setdateForNotification()
+        + writeToParcel()
+        # Mission()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.Reminder {
+        - audioContent : String
+        - isText : boolean
+        - lastDateToRemind : String
+        - textContent : String
+        - title : String
+        + Reminder()
+        + Reminder()
+        + getAudioContent()
+        + getLastDateToRemind()
+        + getTextContent()
+        + getTitle()
+        + isText()
+        + setAudioContent()
+        + setLastDateToRemind()
+        + setText()
+        + setTextContent()
+        + setTitle()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.Shows {
+        - cost : int
+        - description : String
+        - employees : int
+        - showTitle : String
+        + Shows()
+        + Shows()
+        + getCost()
+        + getDescription()
+        + getEmployees()
+        + getShowTitle()
+        + setCost()
+        + setDescription()
+        + setEmployees()
+        + setShowTitle()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.creditsActivity {
+        ~ LOCATION_PERMISSION_CODE : int
+        ~ READ_DATA_PERMISSION_CODE : int
+        ~ RECORD_PERMISSION_CODE : int
+        ~ WRITE_DATA_PERMISSION_CODE : int
+        ~ currentUserEmailTV : TextView
+        ~ locationCB : CheckBox
+        ~ readStorageCB : CheckBox
+        ~ recordCB : CheckBox
+        ~ writeStorageCB : CheckBox
+        + Logout()
+        + moveToPreviousAct()
+        + onRequestPermissionsResult()
+        + openMailService()
+        + reactToClick()
+        # onCreate()
+        - displayPermissionsStatus()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.eventsActivity {
+        ~ addressList : ArrayList<String>
+        ~ bottomNavigationView : BottomNavigationView
+        ~ dateEd : Date
+        ~ dateEvents : ArrayList<String>
+        ~ dateRangeTV : TextView
+        ~ dateSt : Date
+        ~ employeesList : ArrayList<Integer>
+        ~ eventCharacterizeList : ArrayList<String>
+        ~ eventsList : ListView
+        ~ hasAcceptedList : ArrayList<Boolean>
+        ~ isPaidList : ArrayList<Boolean>
+        ~ namesList : ArrayList<String>
+        ~ phonesList : ArrayList<String>
+        ~ rootPath : File
+        ~ selectionLV : ListView
+        ~ selections : String[]
+        ~ statusEventsTV : TextView
+        ~ titleEvents : ArrayList<String>
+        ~ userSelection : String
+        + Logout()
+        + moveToCreateAnEvent()
+        + moveToPreviousAct()
+        + onContextItemSelected()
+        + onCreateContextMenu()
+        + onItemClick()
+        + onNavigationItemReselected()
+        + onNavigationItemSelected()
+        # onCreate()
+        # onResume()
+        - checkDates()
+        - checkMoney()
+        - downLoadFile()
+        - openDateEndPicker()
+        - openDateRangeAD()
+        - openFile()
+        - readAllEventsByDate()
+        - readEvents()
+        - removeFromFB()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.missionsActivity {
+        ~ allMissions : HashMap<String, Mission>
+        ~ backToStart : ImageView
+        ~ bottomNavigationView : BottomNavigationView
+        ~ dateEvents : ArrayList<String>
+        ~ employeesList : ArrayList<Integer>
+        ~ eventCharacterizeList : ArrayList<String>
+        ~ eventIdTV : TextView
+        ~ frequencyList : ArrayList<Integer>
+        ~ generalLV : ListView
+        ~ hasAcceptedList : ArrayList<Boolean>
+        ~ isPaidList : ArrayList<Boolean>
+        ~ missionContentsList : ArrayList<String>
+        ~ missionLastDatesList : ArrayList<String>
+        ~ missionStatusList : ArrayList<Boolean>
+        ~ missionTitlesList : ArrayList<String>
+        ~ missionsKeysList : ArrayList<String>
+        ~ namesList : ArrayList<String>
+        ~ phonesList : ArrayList<String>
+        ~ titleEvents : ArrayList<String>
+        ~ toMissionsMenu : boolean
+        + Logout()
+        + displayAllEvents()
+        + moveToCreateAnEvent()
+        + moveToPreviousAct()
+        + onContextItemSelected()
+        + onCreateContextMenu()
+        + onNavigationItemReselected()
+        + onNavigationItemSelected()
+        + readAllMissionsEvent()
+        # onCreate()
+        # onResume()
+        - readAllCloseEvents()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.newEventActivity {
+        ~ allEventsDates : ArrayList<String>
+        ~ allMaterials : ArrayList<Material>
+        ~ allShows : ArrayList<Shows>
+        ~ amountOfUsedMaterial : int
+        ~ chipGroupMaterials : ChipGroup
+        ~ chipGroupShows : ChipGroup
+        ~ contentET : EditText
+        ~ currentDate : Date
+        ~ customerEmail : String
+        ~ customerName : String
+        ~ customerPhone : String
+        ~ dateTV : TextView
+        ~ editingMode : boolean
+        ~ emailCustomerET : EditText
+        ~ eventContent : String
+        ~ eventCost : int
+        ~ eventCostTV : TextView
+        ~ eventEmployee : int
+        ~ eventLocation : String
+        ~ eventStrDate : String
+        ~ eventTitleTV : TextView
+        ~ fab : FloatingActionButton
+        ~ flag : ImageView
+        ~ hasAccepted : boolean
+        ~ hasAcceptedButton : ImageView
+        ~ isPaid : boolean
+        ~ isPaidButton : ImageView
+        ~ isToAdd : boolean[]
+        ~ layout : LinearLayout
+        ~ locationET : EditText
+        ~ materialsDataList : ArrayList<Integer>
+        ~ materialsKeyList : ArrayList<String>
+        ~ materialsUsedList : ArrayList<Integer>
+        ~ nameCustomerET : EditText
+        ~ paymentSelection : String[]
+        ~ paymentSpinner : Spinner
+        ~ phoneCustomerET : EditText
+        ~ previousEventDate : String
+        ~ previousEventName : String
+        ~ previousEventStatus : String
+        ~ rootPath : File
+        ~ selectedDate : Date
+        ~ selectedMaterials : ArrayList<String>
+        ~ selectedShows : ArrayList<Boolean>
+        ~ showTitlesList : ArrayList<String>
+        ~ showsCostsList : ArrayList<Integer>
+        ~ showsDesList : ArrayList<String>
+        ~ showsEmployeesList : ArrayList<Integer>
+        ~ totalEmployeeTV : TextView
+        ~ updateMode : boolean
+        ~ userSelection : String
+        + Logout()
+        + changeHasAccepted()
+        + changeIsPaid()
+        + checkIfToExit()
+        + createNewEvent()
+        + editEmployees()
+        + editPrize()
+        + onBackPressed()
+        + onItemSelected()
+        + onNothingSelected()
+        + openDatePicker()
+        # onCreate()
+        - beforeGreenEventAD()
+        - beforeRedEventAD()
+        - changeTitleEvent()
+        - checkEvent()
+        - checkForMaterial()
+        - checkLocation()
+        - clearAllFields()
+        - creatingFile()
+        - displayEvent()
+        - getAllMaterialsToDisplay()
+        - getAllShowsToDisplay()
+        - getMaterialAmountAD()
+        - moveToPreviousAct()
+        - openTimePicker()
+        - removeEventFile()
+        - sendingToEmail()
+        - updateFBData()
+        - uploadToFB()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.newMissionActivity {
+        ~ allMissions : HashMap<String, Mission>
+        ~ context : String
+        ~ contextMissionET : EditText
+        ~ creationMode : boolean
+        ~ dataFile : File
+        ~ dateForNotificationTV : TextView
+        ~ dateOfChange : String
+        ~ eventDateStr : String
+        ~ eventID : String
+        ~ eventTitle : TextView
+        ~ fileDuration : int
+        ~ fileName : String
+        ~ finalDateStr : String
+        ~ finalDateTV : TextView
+        ~ frequency : int
+        ~ frequencyOptions : String[]
+        ~ frequencySpinner : Spinner
+        ~ index : int
+        ~ isPlaying : boolean
+        ~ isRecording : boolean
+        ~ isText : boolean
+        ~ line1 : String
+        ~ line2 : String
+        ~ mediaPlayer : MediaPlayer
+        ~ mediaRecorder : MediaRecorder
+        ~ mediaSaverFile : File
+        ~ playIV : ImageView
+        ~ recordIV : ImageView
+        ~ rootPath : File
+        ~ seekBar : SeekBar
+        ~ selectedDate : Date
+        ~ title : String
+        ~ titleMissionET : EditText
+        ~ updateMode : boolean
+        {static} - PERMISSION_CODE : int
+        - recordPermission : String
+        - storagePermission : String
+        + createMission()
+        + createRecordedMission()
+        + moveToMainOfMission()
+        + onItemSelected()
+        + onNothingSelected()
+        + openDatePicker()
+        + playRecord()
+        + startRecord()
+        # onCreate()
+        - checkInputs()
+        - checkPermissions()
+        - createChannel()
+        - openTimePicker()
+        - playAudio()
+        - startRecording()
+        - stopAudio()
+        - stopRecording()
+        - uploadRecordingFB()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.notificationPublisher {
+        {static} - DISPLAY_ACTION : String
+        {static} - PLAY_ACTION : String
+        + onReceive()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.notificationPublisher.NotificationActionService {
+        + NotificationActionService()
+        # onHandleIntent()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.remindersActivity {
+        ~ bottomNavigationView : BottomNavigationView
+        ~ contextReminderET : EditText
+        ~ creationMode : boolean
+        ~ currentDate : Date
+        ~ dataFile : File
+        ~ fileDuration : int
+        ~ fileName : String
+        ~ index : int
+        ~ isPlaying : boolean
+        ~ isRecording : boolean
+        ~ isTextList : ArrayList<Boolean>
+        ~ isTextNewReminder : boolean
+        ~ mediaPlayer : MediaPlayer
+        ~ mediaRecorder : MediaRecorder
+        ~ mediaSaverFile : File
+        ~ playIV : ImageView
+        ~ recordIV : ImageView
+        ~ recordLayout : LinearLayout
+        ~ remaindersLV : ListView
+        ~ reminderLayout : LinearLayout
+        ~ remindersAudioContentList : ArrayList<String>
+        ~ remindersContextList : ArrayList<String>
+        ~ remindersKeyList : ArrayList<String>
+        ~ remindersLastDateToRemindList : ArrayList<String>
+        ~ remindersTitleList : ArrayList<String>
+        ~ rootPath : File
+        ~ seekBar : SeekBar
+        ~ selectedDate : Date
+        ~ selectedDateTV : TextView
+        ~ statusRemindersTV : TextView
+        ~ textLayout : LinearLayout
+        ~ titleReminderET : EditText
+        ~ toDisplay : boolean
+        {static} - PERMISSION_CODE : int
+        - recordPermission : String
+        + Logout()
+        + moveToMainOfReminder()
+        + moveToPreviousAct()
+        + onBackPressed()
+        + onItemClick()
+        + onNavigationItemReselected()
+        + onNavigationItemSelected()
+        + openAlertDialogSelection()
+        + openDatePicker()
+        + playTheRecord()
+        + saveTheRecordingReminderAD()
+        + saveTheTextReminder()
+        + startRecord()
+        # onCreate()
+        - checkPermissions()
+        - createNotificationCH()
+        - downLoadFile()
+        - methodsOnItemAD()
+        - playARecordInAD()
+        - playAudio()
+        - readAllRemainders()
+        - removeTheRecord()
+        - startRecording()
+        - stopAudio()
+        - stopRecording()
+        - uploadTheRecording()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.settingsActivity {
+        ~ allMaterials : HashMap<String, Material>
+        ~ allShows : HashMap<String, Shows>
+        ~ availableTV : TextView
+        ~ costsList : ArrayList<Integer>
+        ~ dataList : ArrayList<Integer>
+        ~ descriptionsList : ArrayList<String>
+        ~ efficiency : int
+        ~ efficiencyTV : TextView
+        ~ employeesList : ArrayList<Integer>
+        ~ generalLV : ListView
+        ~ keysList : ArrayList<String>
+        ~ materialsTV : TextView
+        ~ materialsTitleList : ArrayList<String>
+        ~ materialsTotalList : ArrayList<Integer>
+        ~ materialsUsedList : ArrayList<Integer>
+        ~ option : String
+        ~ showTitlesList : ArrayList<String>
+        ~ showsTV : TextView
+        ~ totalTV : TextView
+        + Logout()
+        + createNewItem()
+        + createNewMaterial()
+        + createNewShow()
+        + displayMaterials()
+        + displayShows()
+        + moveToCreateAnEvent()
+        + moveToPreviousAct()
+        + moveToPreviousAct()
+        + onContextItemSelected()
+        + onCreateContextMenu()
+        + updateTotalEmployees()
+        # onCreate()
+        - checkMaterialInput()
+        - checkShowsInput()
+        - getAllMaterials()
+        - getAllShows()
+        - getAllSysData()
+        - setEfficiency()
+        - showInUsed()
+        - updateAMaterial()
+        - updateAShow()
+    }
+  }
+  
+
+  namespace com.example.betaversion {
+    class com.example.betaversion.splashActivity {
+        {static} - SPLASH_DISPLAY_LENGTH : long
+        # onCreate()
+    }
+  }
+  
+
+  com.example.betaversion.BackgroundService -up-|> android.app.Service
+  com.example.betaversion.CustomAdapterEvents -up-|> android.widget.BaseAdapter
+  com.example.betaversion.CustomAdapterMaterials -up-|> android.widget.BaseAdapter
+  com.example.betaversion.CustomAdapterMissions -up-|> android.widget.BaseAdapter
+  com.example.betaversion.CustomAdapterReminder -up-|> android.widget.BaseAdapter
+  com.example.betaversion.CustomAdapterShows -up-|> android.widget.BaseAdapter
+  com.example.betaversion.LoginActivity -up-|> androidx.appcompat.app.AppCompatActivity
+  com.example.betaversion.MainActivity .up.|> com.google.android.material.bottomnavigation.BottomNavigationView.OnNavigationItemReselectedListener
+  com.example.betaversion.MainActivity .up.|> com.google.android.material.bottomnavigation.BottomNavigationView.OnNavigationItemSelectedListener
+  com.example.betaversion.MainActivity -up-|> androidx.appcompat.app.AppCompatActivity
+  com.example.betaversion.MainActivity o-- com.example.betaversion.CustomAdapterEvents : customAdapterEventsGreen
+  com.example.betaversion.MainActivity o-- com.example.betaversion.CustomAdapterEvents : customAdapterEventsOrange
+  com.example.betaversion.MainActivity o-- com.example.betaversion.CustomAdapterMissions : customAdapterMissions
+  com.example.betaversion.MapActivity .up.|> com.google.android.gms.maps.OnMapReadyCallback
+  com.example.betaversion.MapActivity -up-|> androidx.appcompat.app.AppCompatActivity
+  com.example.betaversion.Mission .up.|> android.os.Parcelable
+  com.example.betaversion.creditsActivity -up-|> androidx.appcompat.app.AppCompatActivity
+  com.example.betaversion.eventsActivity .up.|> android.view.View.OnCreateContextMenuListener
+  com.example.betaversion.eventsActivity .up.|> android.widget.AdapterView.OnItemClickListener
+  com.example.betaversion.eventsActivity .up.|> com.google.android.material.bottomnavigation.BottomNavigationView.OnNavigationItemReselectedListener
+  com.example.betaversion.eventsActivity .up.|> com.google.android.material.bottomnavigation.BottomNavigationView.OnNavigationItemSelectedListener
+  com.example.betaversion.eventsActivity -up-|> androidx.appcompat.app.AppCompatActivity
+  com.example.betaversion.eventsActivity o-- com.example.betaversion.CustomAdapterEvents : customAdapterEventsGreen
+  com.example.betaversion.eventsActivity o-- com.example.betaversion.CustomAdapterEvents : customAdapterEventsOrange
+  com.example.betaversion.missionsActivity .up.|> com.google.android.material.bottomnavigation.BottomNavigationView.OnNavigationItemReselectedListener
+  com.example.betaversion.missionsActivity .up.|> com.google.android.material.bottomnavigation.BottomNavigationView.OnNavigationItemSelectedListener
+  com.example.betaversion.missionsActivity -up-|> androidx.appcompat.app.AppCompatActivity
+  com.example.betaversion.missionsActivity o-- com.example.betaversion.CustomAdapterEvents : customAdapterEvents
+  com.example.betaversion.missionsActivity o-- com.example.betaversion.CustomAdapterMissions : customAdapterMissions
+  com.example.betaversion.newEventActivity .up.|> android.widget.AdapterView.OnItemSelectedListener
+  com.example.betaversion.newEventActivity -up-|> androidx.appcompat.app.AppCompatActivity
+  com.example.betaversion.newEventActivity o-- com.example.betaversion.Event : newEvent
+  com.example.betaversion.newEventActivity o-- com.example.betaversion.Event : updatedEvent
+  com.example.betaversion.newMissionActivity .up.|> android.widget.AdapterView.OnItemSelectedListener
+  com.example.betaversion.newMissionActivity -up-|> androidx.appcompat.app.AppCompatActivity
+  com.example.betaversion.newMissionActivity o-- com.example.betaversion.Mission : tempMission
+  com.example.betaversion.notificationPublisher -up-|> android.content.BroadcastReceiver
+  com.example.betaversion.notificationPublisher +-down- com.example.betaversion.notificationPublisher.NotificationActionService
+  com.example.betaversion.notificationPublisher.NotificationActionService -up-|> android.app.IntentService
+  com.example.betaversion.remindersActivity .up.|> android.widget.AdapterView.OnItemClickListener
+  com.example.betaversion.remindersActivity .up.|> com.google.android.material.bottomnavigation.BottomNavigationView.OnNavigationItemReselectedListener
+  com.example.betaversion.remindersActivity .up.|> com.google.android.material.bottomnavigation.BottomNavigationView.OnNavigationItemSelectedListener
+  com.example.betaversion.remindersActivity -up-|> androidx.appcompat.app.AppCompatActivity
+  com.example.betaversion.remindersActivity o-- com.example.betaversion.CustomAdapterReminder : customAdapterReminder
+  com.example.betaversion.settingsActivity -up-|> androidx.appcompat.app.AppCompatActivity
+  com.example.betaversion.settingsActivity o-- com.example.betaversion.BusinessEqu : businessEqu
+  com.example.betaversion.settingsActivity o-- com.example.betaversion.CustomAdapterMaterials : customAdapterMaterial
+  com.example.betaversion.settingsActivity o-- com.example.betaversion.CustomAdapterShows : customAdapterShows
+  com.example.betaversion.splashActivity -up-|> androidx.appcompat.app.AppCompatActivity
+
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml

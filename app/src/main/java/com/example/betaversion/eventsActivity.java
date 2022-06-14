@@ -2,6 +2,7 @@ package com.example.betaversion;
 
 import static android.os.Environment.DIRECTORY_DOWNLOADS;
 import static com.example.betaversion.FBref.fileRef;
+import static com.example.betaversion.FBref.refBusinessEqu;
 import static com.example.betaversion.FBref.refEnd_Event;
 import static com.example.betaversion.FBref.refGreen_Event;
 import static com.example.betaversion.FBref.refOrange_Event;
@@ -222,7 +223,7 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
         }
         else if (option.equals("מחק")){
             Snackbar.make(selectionLV, "האירוע "+titleEvents.get(position)+" נמחק", 3000).show();
-            removeFromFB(dateEvents.get(position), eventCharacterizeList.get(position), namesList.get(position)); // Remove from the FireBase
+            removeFromFB(dateEvents.get(position), eventCharacterizeList.get(position), namesList.get(position), position); // Remove from the FireBase
             File fileToDelete = new File(rootPath, titleEvents.get(position)+dateEvents.get(position)+".pdf");
             fileToDelete.delete(); // Deleting for the storage
             titleEvents.remove(position);
@@ -317,10 +318,28 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
      * @param eventId the event id of the selected event
      * @param character the character of the selected event
      * @param eventName the name of the event
+     * @param position the current position
      */
-    private void removeFromFB(String eventId, String character, String eventName) {
+    private void removeFromFB(String eventId, String character, String eventName, int position) {
         switch (character){
             case ("G"):{
+                final int[] countervailEmployees = {0};
+
+                refBusinessEqu.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (int i = 0; i < 1; i++) {
+                            countervailEmployees[0] = snapshot.child("availableEmployees").getValue(Integer.class);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+                refBusinessEqu.child("availableEmployees").setValue(countervailEmployees[0] - employeesList.get(position));
                 refGreen_Event.child(eventId).removeValue();
                 // Remove the PDF file of the event
                 String newEventName = eventName.replace(" ","%20"); // Replacing the SPACE char in to the ASCII value.

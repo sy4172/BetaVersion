@@ -141,15 +141,9 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
             frequencySpinner.setAdapter(adp);
             frequencySpinner.setSelection(tempMission.getFrequency()-1); // To calibrate between the user selection the frequencies list. (The list starts with 0).
             finalDateStr = tempMission.getLastDateToRemind();
-            DateFormat format = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
-            Date tempDate = null;
-            try {
-                tempDate = format.parse(finalDateStr);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            Date tempDate = DateConvertor.stringToDate(finalDateStr, "yyyyMMddHHmm");
             finalDateTV.setText(DateConvertor.dateToString(tempDate, "dd/MM/yyyy"));
-
+            dateForNotificationTV.setText(DateConvertor.dateToString(tempDate, "HH:mm"));
         } else if (!updateMode) {
             setContentView(R.layout.record_layout_mission);
             eventTitle = findViewById(R.id.eventTitle);

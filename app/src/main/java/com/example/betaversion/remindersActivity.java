@@ -476,9 +476,8 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
 
         mediaPlayer = new MediaPlayer();
         // get the file with the url
-
-        StorageReference filePath = remindersRef.child(tempUrl);
         tempUrl = tempUrl.substring(19); // Subtracted the unwanted parts from the url - SAVE only the file's name
+        StorageReference filePath = remindersRef.child(tempUrl);
         String finalTempUrl = tempUrl;
         filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
@@ -682,8 +681,8 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
                     }
                     else {
                         // Cast the selected Date to String
-                        String childID = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmmyyyyMMddHHmmss");
-                        childID += DateConvertor.dateToString(currentDate, "yyyyMMddHHmmyyyyMMddHHmmss");
+                        String childID = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmm");
+                        childID += DateConvertor.dateToString(currentDate, "yyyyMMddHHmmss");
                         String strDate = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmm");
                         tempReminder.setLastDateToRemind(strDate);
                         tempReminder.setTextContent("<קטע קול>");
@@ -1034,8 +1033,8 @@ public class remindersActivity extends AppCompatActivity implements BottomNaviga
         }
         else{
             // Cast the selected Date to String
-            String childID = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmmyyyyMMddHHmmss");
-            String strDate = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmm");
+            String childID = DateConvertor.dateToString(selectedDate, "yyyyMMddHHmm");
+            String strDate = DateConvertor.dateToString(currentDate, "yyyyMMddHHmmss");
             Reminder tempReminder = new Reminder(tempTitle, true, tempContext,"",strDate);
 
             readAllRemainders();
