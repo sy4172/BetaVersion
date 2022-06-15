@@ -330,7 +330,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private void updateUI(FirebaseUser user) {
         currentUser = user;
-        FirebaseAuth.getInstance().updateCurrentUser(currentUser);
     }
 
     /**
