@@ -342,8 +342,7 @@ public class eventsActivity extends AppCompatActivity implements AdapterView.OnI
                 refBusinessEqu.child("availableEmployees").setValue(countervailEmployees[0] - employeesList.get(position));
                 refGreen_Event.child(eventId).removeValue();
                 // Remove the PDF file of the event
-                String newEventName = eventName.replace(" ","%20"); // Replacing the SPACE char in to the ASCII value.
-                StorageReference deleteFile = FirebaseStorage.getInstance().getReferenceFromUrl("https://firebasestorage.googleapis.com/v0/b/betaversion-19d10.appspot.com/o/files"+newEventName+eventId+".pdf"); // The complete url of the PDF file.
+                StorageReference deleteFile = fileRef.child(eventName+eventId+".pdf"); // The complete url of the PDF file.
                 deleteFile.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {

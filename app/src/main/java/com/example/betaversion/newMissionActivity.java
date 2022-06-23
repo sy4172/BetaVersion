@@ -562,7 +562,7 @@ public class newMissionActivity extends AppCompatActivity implements AdapterView
     private String uploadRecordingFB() {
         String url;
         Uri file = Uri.fromFile(mediaSaverFile);
-        StorageReference recordRef = storageRef.child("/records/Missions"+file.getLastPathSegment());
+        StorageReference recordRef = storageRef.child("/records/Missions").child(file.getLastPathSegment());
         recordRef.putFile(file);
         url = recordRef.getPath();
         return url;
